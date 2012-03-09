@@ -19,6 +19,12 @@ pcnt 观看行为计数
 pscnt 播放行为子计数
 adcnt 广告子计数
 prcnt 201事件子计数
+
+process
+寻找唯一id中最后的播放时间点，统计出所有唯一次的播放时长数据
+
+output
+pvid,ocvid,iid,srcid,total,start,play
 """
 
 import sys
@@ -33,7 +39,6 @@ def dumplist(listdata):
 def main(argv=None):
     adata={}
     for line in fileinput.input():
-        # print line[:-1]
         pvid,ocvid,iid,log1,log2,log3,fast,srcid,ip,juid,ppid,pcnt,pscnt, \
             adcnt,prcnt=string.split(line[:-1],"\t")
         try:
@@ -41,7 +46,6 @@ def main(argv=None):
         except ValueError, e:
         	sys.stderr.write(("log3 not include bw %s\n") % log2)
         playid = "%s,%s,%s,%s,%s,%s" % (pvid,ocvid,iid,srcid,total,start)
-        # print playid,ppid,juid,pcnt
         if play > adata.get(playid,0) and adcnt!=0 :
             adata[playid]=play
     dumplist(adata)
