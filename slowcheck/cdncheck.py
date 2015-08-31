@@ -5,6 +5,7 @@ from IPy import IP
 import sys
 import fileinput
 import os
+import time,datetime
 import string
 
 GEOIP = []
@@ -45,9 +46,25 @@ def getVideoRate(url):
     id = url[0]
     return id
 
+def formatTime(timetmp):
+    timetmp = timetmp.strip('""')
+    timedata = time.strptime(timetmp,"%Y-%m-%dT%H:%M:%S+08:00")
+    tm_min = timedata.tm_min / 5 * 5 + 5
+    tm_hour = timedata.tm_hour
+    if tm_min == 60:
+        tm_min = '00'
+        tm_hour = timedata.tm_hour + 1
+    if tm_min < 10:
+        tm_min = '0'+str(tm_min)
+    if tm_hour < 10:
+        tm_hour = '0'+str(tm_hour)
+    timetmp = time.strftime('%Y%m%d', timedata)+str(tm_hour)+str(tm_min)
+    return timetmp
+
 def stripCdnLogFileLine(line):
     record = string.split(line, ',')
     logtype   = record[0]
+    timetmp   = record[1]
     userip    = record[2]
     serverip  = record[3]
     datasize  = record[4]
@@ -63,6 +80,7 @@ def stripCdnLogFileLine(line):
         if videorate == None:
             sys.stderr.write(("%s\n") % line)
             return
+        timetmp =  formatTime(timetmp)
         operator = iplocation[3]
         province = iplocation[1]
     else:
@@ -70,7 +88,7 @@ def stripCdnLogFileLine(line):
         return
     serverlocation = 'NA'
 
-    print "%s,%s,%s,%s,%s,%s,%s,%s" %(userip.strip("\""), operator, province, serverip.strip("\""), serverlocation, datasize.strip("\""), spendtime.strip("\""), videorate)
+    print "%s,%s,%s,%s,%s,%s,%s,%s,%s" %(timetmp, userip.strip("\""), operator, province, serverip.strip("\""), serverlocation, datasize.strip("\""), spendtime.strip("\""), videorate)
 
 
 if __name__ == '__main__':
