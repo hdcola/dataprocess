@@ -70,7 +70,9 @@ def stripCdnLogFileLine(line):
         return
     serverlocation = 'NA'
 
-    print "%s,%s,%s,%s,%s,%s,%s,%s" %(userip.strip("\""), operator, province, serverip.strip("\""), serverlocation, datasize.strip("\""), spendtime.strip("\""), videorate)
+    print "%s,%s,%s,%s,%s,%s,%s,%s" %(userip.strip("\""),  \
+        operator, province, serverip.strip("\""), serverlocation, \
+        datasize.strip("\""), spendtime.strip("\""), videorate)
 
 
 if __name__ == '__main__':
