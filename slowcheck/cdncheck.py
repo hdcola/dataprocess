@@ -37,7 +37,7 @@ def getIpLocation(userip):
     return None
 
 def getVideoRate(url):
-    url = string.split(url, '&id=')
+    url = string.split(url, 'id=')
     if len(url) >= 2:
         url = string.split(url[1], '&')
     else:
