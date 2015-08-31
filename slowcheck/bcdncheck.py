@@ -1,6 +1,19 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+'''
+处理bcdn节点数据
+
+源数据
+182.115.237.195 - - [27/Aug/2015:20:00:00 +0800] "GET http://phonehuodong.imgo.tv/nn_live/nn_x64/aWQ9d21qcV9temIxX21wcF9oZCZjZG5leF9pZD13c19waG9uZV9saXZlJm5uX3RpbWVfbGVuPTA,/wmjq_mzb1_mpp_hd.m3u8 HTTP/1.1" 200 3101 "-" "ArcSoft Player 1.0" 0 61.163.117.12
+
+结果数据
+201508272005,182.115.237.195,联通,河南,61.163.117.12,NA,3101,0,wmjq_mzb1_mpp_hd.m3u8
+
+使用
+python bcdncheck.py geoip文件路径 [ files | - ]
+'''
+
 from IPy import IP
 import sys
 import fileinput

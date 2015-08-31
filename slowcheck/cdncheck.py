@@ -1,6 +1,19 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+'''
+处理cdn节点数据
+
+源数据
+"1","2015-08-27T20:15:25+08:00","42.198.139.35","111.161.8.41","629048","218","http://111.161.8.41:8080/nn_live.ts?nea=%26nn_time_len%3d0&id=wmjq_mzb1_mpp_hd&nn_m3u8=1&nn_file_index=288135543&nn_file_name=20150827T121500Z&nn_file_index_time=1440677715&nn_file_start=1813448&nn_file_end=2442496&nn_ak=01686df8ed1518de6a36ba319ac2163b46&nal=0101ffde550607997c3238de5c3624371b56dee8e930b7&nn_user_id=0&nn_device_id=10&ngs=55deff010006d8e848123796c05a3b6a&ncmsid=13001004&nes=678a358cdf270a6ff7d5cb231a9e5024&nn_time_len=0","hlv","10","200","OK","wmjq_mzb1_mpp_hd",""
+
+结果数据
+111.8.134.147,移动,湖南,111.8.4.235,NA,629048,152,wmjq_mzb1_mpp_hd
+
+使用
+python cdncheck.py geoip文件路径 [ files | - ]
+'''
+
 from IPy import IP
 import sys
 import fileinput
