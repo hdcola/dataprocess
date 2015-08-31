@@ -9,8 +9,7 @@ import string
 
 GEOIP = []
 videoratemap = {''}
-def loadGeoIp(data_dir, filename):
-    filename = os.path.join(data_dir, filename)
+def loadGeoIp(filename):
     fp  = open(filename)
     for i, line in enumerate(fp):
         try:
@@ -75,6 +74,9 @@ def stripCdnLogFileLine(line):
 
 
 if __name__ == '__main__':
-    loadGeoIp('./', 'geoip')
-    for line in fileinput.input():
+    # python cdncheck.py geoippath processfiles
+    # gzcat abc.gz | python cdncheck.py ../geoip -
+    # python cdncheck.py ../geoip afile bfile cfile
+    loadGeoIp(sys.argv[1])
+    for line in fileinput.input(sys.argv[2:]):
         stripCdnLogFileLine(line)
