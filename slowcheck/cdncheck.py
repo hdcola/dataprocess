@@ -54,9 +54,16 @@ def stripCdnLogFileLine(line):
     datasize  = record[4]
     spendtime = record[5]
     url       = record[6]
-    iplocation = getIpLocation(userip)
-    videorate  = getVideoRate(url)
-    if iplocation and videorate and datasize != 0 and spendtime != 0 and logtype != '\"3\"':
+
+    if datasize != 0 and spendtime != 0 and logtype != '\"3\"':
+        iplocation = getIpLocation(userip)
+        if iplocation == None:
+            sys.stderr.write(("%s\n") % line)
+            return
+        videorate  = getVideoRate(url)
+        if videorate == None:
+            sys.stderr.write(("%s\n") % line)
+            return
         operator = iplocation[3]
         province = iplocation[1]
     else:
