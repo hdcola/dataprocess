@@ -10,6 +10,12 @@
 结果数据
 111.8.134.147,移动,湖南,111.8.4.235,NA,629048,152,wmjq_mzb1_mpp_hd
 
+err数据
+indexerr 数据列不够
+iperr ip地址不对
+videorateerr 视频区间不对
+timeerr 时间不对
+
 使用
 python cdncheck.py geoip文件路径 [ files | - ]
 '''
@@ -41,7 +47,7 @@ def loadGeoIp(filename):
             GEOIP[rangmin] = [rangmax, country, province, city, operator]
             GEOIP_SORT.append(rangmin)
         except ValueError:
-            sys.stderr.write(("value error %s\n") % line)
+            sys.stderr.write(("valueerr,%s") % line)
     GEOIP_SORT.sort()
     fp.close()
 
@@ -101,28 +107,39 @@ def formatTime(timetmp):
 
 def stripCdnLogFileLine(line):
     record = string.split(line, ',')
-    logtype   = record[0]
-    timetmp   = record[1]
-    userip    = record[2]
-    serverip  = record[3]
-    datasize  = record[4]
-    spendtime = record[5]
-    url       = record[6]
+    try:
+        logtype   = record[0]
+        timetmp   = record[1]
+        userip    = record[2]
+        serverip  = record[3]
+        datasize  = record[4]
+        spendtime = record[5]
+        url       = record[6]
+    except IndexError as e:
+        sys.stderr.write(("indexerr,%s") % line)
+        return
 
     if datasize != 0 and spendtime != 0 and logtype != '\"3\"':
-        iplocation = getIpLocation(userip)
-        if iplocation == None:
-            sys.stderr.write(("%s\n") % line)
+        try:
+            iplocation = getIpLocation(userip)
+        except ValueError as e:
+            sys.stderr.write(("iperr,%s") % line)
             return
+
         videorate  = getVideoRate(url)
         if videorate == None:
-            sys.stderr.write(("%s\n") % line)
+            sys.stderr.write(("videorateerr,%s") % line)
             return
-        timetmp =  formatTime(timetmp)
+
+        try:
+            timetmp =  formatTime(timetmp)
+        except ValueError as e:
+            sys.stderr.write(("timeerr,%s") % line)
+
         operator = iplocation[4]
         province = iplocation[2]
     else:
-        sys.stderr.write(("%s\n") % line)
+        sys.stderr.write(("pass,%s") % line)
         return
     serverlocation = 'NA'
 
