@@ -10,8 +10,6 @@ import string
 
 GEOIP_SORT = []
 GEOIP  = {}
-videoratemap = {''}
-
 def loadGeoIp(filename):
     fp  = open(filename)
     for i, line in enumerate(fp):
@@ -72,8 +70,7 @@ def getVideoRate(url):
     return id
 
 def formatTime(timetmp):
-    timetmp = timetmp.strip('""')
-    timedata = time.strptime(timetmp,"%Y-%m-%dT%H:%M:%S+08:00")
+    timedata = time.strptime(timetmp,"[%d/%b/%Y:%H:%M:%S +0800]")
     tm_min = timedata.tm_min / 5 * 5 + 5
     tm_hour = timedata.tm_hour
     if tm_min == 60:
@@ -86,35 +83,29 @@ def formatTime(timetmp):
     timetmp = time.strftime('%Y%m%d', timedata)+str(tm_hour)+str(tm_min)
     return timetmp
 
-def stripCdnLogFileLine(line):
-    record = string.split(line, ',')
-    logtype   = record[0]
-    timetmp   = record[1]
-    userip    = record[2]
-    serverip  = record[3]
-    datasize  = record[4]
-    spendtime = record[5]
-    url       = record[6]
-
-    if datasize != 0 and spendtime != 0 and logtype != '\"3\"':
-        iplocation = getIpLocation(userip)
-        if iplocation == None:
-            sys.stderr.write(("%s\n") % line)
-            return
-        videorate  = getVideoRate(url)
-        if videorate == None:
-            sys.stderr.write(("%s\n") % line)
-            return
-        timetmp =  formatTime(timetmp)
-        operator = iplocation[4]
-        province = iplocation[2]
-    else:
+def stripBcdnLogFileLine(line):
+    record         = line.split('\"')
+    try:
+       ipandtime      = record[0].split(' - - ')
+       userip         = ipandtime[0]
+       timetmp        = ipandtime[1]
+       timetmp        = timetmp.strip()
+       timetmp        = formatTime(timetmp)
+       iplocation     = getIpLocation(userip)
+       operator       = iplocation[4]
+       province       = iplocation[2]
+       serverip       = record[6].strip().split(' ')[1]
+       videorate      = record[1].split('/')
+       videorate      = videorate[len(videorate)-2].split(' ')[0]
+       datasize       = record[2].strip().split(' ')[1]
+       spendtime      = record[6].strip().split(' ')[0]
+       serverlocation = 'NA'
+    except IndexError :
         sys.stderr.write(("%s\n") % line)
         return
-    serverlocation = 'NA'
-
-    print "%s,%s,%s,%s,%s,%s,%s,%s,%s" %(timetmp, userip.strip("\""),
-        operator, province, serverip.strip("\""), serverlocation,
+    print "%s,%s,%s,%s,%s,%s,%s,%s,%s" %(timetmp,
+        userip.strip("\""), operator, province,
+        serverip.strip("\""), serverlocation,
         datasize.strip("\""), spendtime.strip("\""), videorate)
 
 
@@ -124,4 +115,4 @@ if __name__ == '__main__':
     # python cdncheck.py ../geoip afile bfile cfile
     loadGeoIp(sys.argv[1])
     for line in fileinput.input(sys.argv[2:]):
-        stripCdnLogFileLine(line)
+        stripBcdnLogFileLine(line)
