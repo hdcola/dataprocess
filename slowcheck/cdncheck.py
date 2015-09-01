@@ -20,6 +20,7 @@ timeerr 时间不对
 python cdncheck.py geoip文件路径 idcinfo文件路径 [ files | - ]
 '''
 
+from videoratelist import VIDEORATELIST
 from IPy import IP
 import sys
 import fileinput
@@ -109,14 +110,19 @@ def getVideoRate(url):
         return None
 
     id = url[0]
-    return id
+    try:
+        videorate = VIDEORATELIST[id]
+    except KeyError as e:
+        videorate = 2*1000
+    return videorate
 
 def genSlowResult(datasize, spendtime, videorate):
   spendtime = int(spendtime.strip('""'))
   datasize = int(datasize.strip('""'))
+  videorate = int(videorate)
   if int(spendtime) != 0:
-    realrate = datasize*1000*8/spendtime
-    if realrate >= videorate * 1024 * 1024:
+    realrate = datasize*8/spendtime
+    if realrate >= videorate:
         return 0
     else:
         return 1
@@ -177,7 +183,7 @@ def stripCdnLogFileLine(line):
             sys.stderr.write(("iperr,%s") % line)
             return
         try:
-            slowResult = genSlowResult(datasize, spendtime, 2)
+            slowResult = genSlowResult(datasize, spendtime, videorate)
         except ValueError as e:
             sys.stderr.write(("iperr,%s") % line)
             return
