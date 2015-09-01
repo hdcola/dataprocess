@@ -119,30 +119,30 @@ def formatTime(timetmp):
 def stripBcdnLogFileLine(line):
     record         = line.split('\"')
     try:
-       ipandtime      = record[0].split(' - - ')
-       userip         = ipandtime[0]
-       timetmp        = ipandtime[1]
-       timetmp        = timetmp.strip()
-       timetmp        = formatTime(timetmp)
-       iplocation     = getIpLocation(userip)
-       operator       = iplocation[4]
-       province       = iplocation[2]
-       serverip       = record[6].strip().split(' ')[1]
-       videorate      = record[1].split('/')
-       videorate      = videorate[len(videorate)-2].split(' ')[0].split('.')[0]
-       datasize       = record[2].strip().split(' ')[1]
-       spendtime      = record[6].strip().split(' ')[0]
+        ipandtime      = record[0].split(' - - ')
+        userip         = ipandtime[0]
+        timetmp        = ipandtime[1]
+        timetmp        = timetmp.strip()
+        timetmp        = formatTime(timetmp)
+        iplocation     = getIpLocation(userip)
+        operator       = iplocation[4]
+        province       = iplocation[2]
+        serverip       = record[6].strip().split(' ')[1]
+        videorate      = record[1].split('/')
+        videorate      = videorate[len(videorate)-2].split(' ')[0].split('.')[0]
+        datasize       = record[2].strip().split(' ')[1]
+        spendtime      = record[6].strip().split(' ')[0]
 
-       if videorate.split('.')[1]=="m3u8":
-           sys.stderr.write(("m3u8,%s") %line )
-           return
+        #if videorate.split('.')[1]=="m3u8":
+        #    sys.stderr.write(("m3u8,%s") %line )
+        #    return
 
-       videorate  =  getVideoRate(videorate)
-       try:
-           slowResult     = genSlowResult(datasize, spendtime, videorate)
-       except ValueError as e:
-           sys.stderr.write(("rate,%s") % line)
-           return
+        videorate  =  getVideoRate(videorate)
+        try:
+            slowResult     = genSlowResult(datasize, spendtime, videorate)
+        except ValueError as e:
+            sys.stderr.write(("rate,%s") % line)
+            return
     except IndexError :
         sys.stderr.write(("indexerr,%s") % line)
         return
