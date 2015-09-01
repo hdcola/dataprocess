@@ -10,7 +10,7 @@
 结果数据
 111.8.134.147,移动,湖南,111.8.4.235,NA,629048,152,wmjq_mzb1_mpp_hd
 
-err数据类型
+err数据
 indexerr 数据列不够
 iperr ip地址不对
 videorateerr 视频区间不对
@@ -112,6 +112,18 @@ def getVideoRate(url):
     id = url[0]
     return id
 
+def genSlowResult(datasize, spendtime, videorate):
+  spendtime = int(spendtime.strip('""'))
+  datasize = int(datasize.strip('""'))
+  if int(spendtime) != 0:
+    realrate = datasize*1000*8/spendtime
+    if realrate >= videorate * 1024 * 1024:
+        return 0
+    else:
+        return 1
+  else:
+    return 0
+
 def formatTime(timetmp):
     timetmp = timetmp.strip('""')
     timedata = time.strptime(timetmp,"%Y-%m-%dT%H:%M:%S+08:00")
@@ -165,13 +177,18 @@ def stripCdnLogFileLine(line):
         except KeyError as e:
             sys.stderr.write(("iperr,%s") % line)
             return
+        try:
+            slowResult = genSlowResult(datasize, spendtime, 2)
+        except ValueError as e:
+            sys.stderr.write(("iperr,%s") % line)
+            return
     else:
         sys.stderr.write(("pass,%s") % line)
         return
 
-    print "%s,%s,%s,%s,%s,%s,%s,%s,%s" %(timetmp, userip.strip("\""),
+    print "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" %(timetmp, userip.strip("\""),
         operator, province, serverip.strip("\""), serverlocation,
-        datasize.strip("\""), spendtime.strip("\""), videorate)
+        datasize.strip("\""), spendtime.strip("\""), videorate, slowResult)
 
 
 if __name__ == '__main__':
