@@ -117,7 +117,7 @@ def formatTime(timetmp):
     return timetmp
 
 def stripBcdnLogFileLine(line):
-    record         = line.replace('\x22', '"')
+    record         = line.replace('\\x22', '"')
     record         = record.strip().split('\"')
     try:
         ipandtime      = record[2].strip().split(' - - ')
@@ -144,7 +144,7 @@ def stripBcdnLogFileLine(line):
         except ValueError as e:
             sys.stderr.write(("rate,%s") % line)
             return
-    except IndexError :
+    except IndexError:
         sys.stderr.write(("indexerr,%s") % line)
         return
     print "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" %(timetmp,
