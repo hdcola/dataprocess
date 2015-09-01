@@ -87,8 +87,8 @@ def getVideoRate(videorateid):
     return videorate
 
 def genSlowResult(datasize, spendtime, videorate):
-    spendtime = int(spendtime.strip('""'))
-    datasize = int(datasize.strip('""'))
+    spendtime = int(spendtime.strip('"'))
+    datasize = int(datasize.strip('"'))
     videorate = int(videorate)
     # datasize 单位为B
     # spendtime 单位为ms
@@ -132,6 +132,11 @@ def stripBcdnLogFileLine(line):
        videorate      = videorate[len(videorate)-2].split(' ')[0].split('.')[0]
        datasize       = record[2].strip().split(' ')[1]
        spendtime      = record[6].strip().split(' ')[0]
+
+       if videorate.split('.')[1]=="m3u8":
+           sys.stderr.write(("m3u8,%s") %line )
+           return
+
        videorate  =  getVideoRate(videorate)
        try:
            slowResult     = genSlowResult(datasize, spendtime, videorate)
@@ -142,9 +147,9 @@ def stripBcdnLogFileLine(line):
         sys.stderr.write(("indexerr,%s") % line)
         return
     print "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" %(timetmp,
-        userip.strip("\""), operator, province,
-        serverip.strip("\""), serverlocation,
-        datasize.strip("\""), spendtime.strip("\""), videorate, slowResult)
+        userip.strip('"'), operator, province,
+        serverip.strip('"'), serverlocation,
+        datasize.strip('"'), spendtime.strip('"'), videorate, slowResult)
 
 
 if __name__ == '__main__':

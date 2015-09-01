@@ -98,7 +98,7 @@ def getIpLocation(userip):
         return None
 
 def getServerLocation(serverip):
-    serverip = serverip.strip('""')
+    serverip = serverip.strip('"')
     location = IDCINFO[serverip]
     return location
 
@@ -128,7 +128,7 @@ def genSlowResult(datasize, spendtime, videorate):
   # spendtime 单位为ms
   # videorate 单位为Kbps
   if int(spendtime) != 0:
-    realrate = datasize*8/spendtime*1000
+    realrate = datasize*8/spendtime
     if realrate >= videorate:
         return 0
     else:
@@ -190,7 +190,7 @@ def stripCdnLogFileLine(line):
             sys.stderr.write(("iperr,%s") % line)
             return
         try:
-            slowResult = genSlowResult(datasize, spendtime, 2000000)
+            slowResult = genSlowResult(datasize, spendtime, videorate)
         except ValueError as e:
             sys.stderr.write(("zeroerr,%s") % line)
             return
@@ -198,9 +198,9 @@ def stripCdnLogFileLine(line):
         sys.stderr.write(("pass,%s") % line)
         return
 
-    print "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" %(timetmp, userip.strip("\""),
-        operator, province, serverip.strip("\""), serverlocation,
-        datasize.strip("\""), spendtime.strip("\""), videorate, slowResult)
+    print "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" %(timetmp, userip.strip('"'),
+        operator, province, serverip.strip('"'), serverlocation,
+        datasize.strip('"'), spendtime.strip('"'), videorate, slowResult)
 
 
 if __name__ == '__main__':
