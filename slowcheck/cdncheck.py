@@ -47,7 +47,7 @@ def loadGeoIp(filename):
             GEOIP[rangmin] = [rangmax, country, province, city, operator]
             GEOIP_SORT.append(rangmin)
         except ValueError:
-            sys.stderr.write(("valueerr,%s") % line)
+            sys.stderr.write(("geoerr,%s") % line)
     GEOIP_SORT.sort()
     fp.close()
 
@@ -64,7 +64,7 @@ def loadIdcInfo(filename):
             else:
                 IDCINFO[serverip[0]] = location
         except ValueError:
-            sys.stderr.write(("valueerr,%s") % line)
+            sys.stderr.write(("idcerr,%s") % line)
     fp.close()
 
 def getRangeKey(userip):
@@ -114,9 +114,11 @@ def getVideoRate(url):
 def genSlowResult(datasize, spendtime, videorate):
   spendtime = int(spendtime.strip('""'))
   datasize = int(datasize.strip('""'))
+  if(spendtime==0 or datasize==0):
+      raise ValueError("size or data is zero")
   if int(spendtime) != 0:
     realrate = datasize*1000*8/spendtime
-    if realrate >= videorate * 1024 * 1024:
+    if realrate >= videorate :
         return 0
     else:
         return 1
@@ -177,9 +179,9 @@ def stripCdnLogFileLine(line):
             sys.stderr.write(("iperr,%s") % line)
             return
         try:
-            slowResult = genSlowResult(datasize, spendtime, 2)
+            slowResult = genSlowResult(datasize, spendtime, 2000000)
         except ValueError as e:
-            sys.stderr.write(("iperr,%s") % line)
+            sys.stderr.write(("zeroerr,%s") % line)
             return
     else:
         sys.stderr.write(("pass,%s") % line)
