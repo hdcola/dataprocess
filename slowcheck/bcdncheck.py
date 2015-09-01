@@ -15,6 +15,7 @@ indexerr 数据列不够
 iperr ip地址不对
 videorateerr 视频区间不对
 timeerr 时间不对
+rateerr 速率计算不对
 
 使用
 python bcdncheck.py geoip文件路径 bcdnname [ files | - ]
@@ -23,8 +24,7 @@ python bcdncheck.py geoip文件路径 bcdnname [ files | - ]
 from IPy import IP
 import sys
 import fileinput
-import os
-import time,datetime
+import time
 import string
 
 GEOIP_SORT = []
@@ -88,6 +88,18 @@ def getVideoRate(url):
     id = url[0]
     return id
 
+def genSlowResult(datasize, spendtime, videorate):
+  spendtime = int(spendtime.strip('""'))
+  datasize = int(datasize.strip('""'))
+  if int(spendtime) != 0:
+    realrate = datasize*1000*8/spendtime
+    if realrate >= videorate * 1024 * 1024:
+        return 0
+    else:
+        return 1
+  else:
+    return 0
+
 def formatTime(timetmp):
     timedata = time.strptime(timetmp,"[%d/%b/%Y:%H:%M:%S +0800]")
     tm_min = timedata.tm_min / 5 * 5 + 5
@@ -118,13 +130,18 @@ def stripBcdnLogFileLine(line):
        videorate      = videorate[len(videorate)-2].split(' ')[0]
        datasize       = record[2].strip().split(' ')[1]
        spendtime      = record[6].strip().split(' ')[0]
+       try:
+           slowResult     = genSlowResult(datasize, spendtime, 2) #2Mbps
+       except ValueError as e:
+           sys.stderr.write(("rate,%s") % line)
+           return
     except IndexError :
         sys.stderr.write(("indexerr,%s") % line)
         return
-    print "%s,%s,%s,%s,%s,%s,%s,%s,%s" %(timetmp,
+    print "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" %(timetmp,
         userip.strip("\""), operator, province,
         serverip.strip("\""), serverlocation,
-        datasize.strip("\""), spendtime.strip("\""), videorate)
+        datasize.strip("\""), spendtime.strip("\""), videorate, slowResult)
 
 
 if __name__ == '__main__':
