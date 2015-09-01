@@ -58,9 +58,8 @@ def loadIdcInfo(filename):
     for i, line in enumerate(fp):
         try:
             record = string.split(line, ",")
-
-            location = record[3]
-            serverip = record[4].strip().split(' ')
+            location = record[4]
+            serverip = record[5].strip().split(' ')
             if len(serverip) > 1:
                 for i in range(0, len(serverip)):
                     IDCINFO[serverip[i]] = location
