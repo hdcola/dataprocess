@@ -10,8 +10,14 @@
 结果数据
 201508272005,182.115.237.195,联通,河南,61.163.117.12,NA,3101,0,wmjq_mzb1_mpp_hd.m3u8
 
+err数据类型
+indexerr 数据列不够
+iperr ip地址不对
+videorateerr 视频区间不对
+timeerr 时间不对
+
 使用
-python bcdncheck.py geoip文件路径 [ files | - ]
+python bcdncheck.py geoip文件路径 bcdnname [ files | - ]
 '''
 
 from IPy import IP
@@ -39,7 +45,7 @@ def loadGeoIp(filename):
             GEOIP[rangmin] = [rangmax, country, province, city, operator]
             GEOIP_SORT.append(rangmin)
         except ValueError:
-            sys.stderr.write(("value error %s\n") % line)
+            sys.stderr.write(("value error,%s") % line)
     GEOIP_SORT.sort()
     fp.close()
 
@@ -112,9 +118,8 @@ def stripBcdnLogFileLine(line):
        videorate      = videorate[len(videorate)-2].split(' ')[0]
        datasize       = record[2].strip().split(' ')[1]
        spendtime      = record[6].strip().split(' ')[0]
-       serverlocation = 'NA'
     except IndexError :
-        sys.stderr.write(("%s\n") % line)
+        sys.stderr.write(("indexerr,%s") % line)
         return
     print "%s,%s,%s,%s,%s,%s,%s,%s,%s" %(timetmp,
         userip.strip("\""), operator, province,
@@ -124,8 +129,10 @@ def stripBcdnLogFileLine(line):
 
 if __name__ == '__main__':
     # python cdncheck.py geoippath processfiles
-    # gzcat abc.gz | python cdncheck.py ../geoip -
-    # python cdncheck.py ../geoip afile bfile cfile
+    # gzcat abc.gz | python cdncheck.py ../geoip bcdnname -
+    # python cdncheck.py ../geoip bcdnname afile bfile cfile
     loadGeoIp(sys.argv[1])
-    for line in fileinput.input(sys.argv[2:]):
+    global serverlocation
+    serverlocation = sys.argv[2]
+    for line in fileinput.input(sys.argv[3:]):
         stripBcdnLogFileLine(line)
