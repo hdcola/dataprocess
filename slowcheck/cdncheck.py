@@ -10,7 +10,7 @@
 结果数据
 111.8.134.147,移动,湖南,111.8.4.235,NA,629048,152,wmjq_mzb1_mpp_hd
 
-err数据
+err数据类型
 indexerr 数据列不够
 iperr ip地址不对
 videorateerr 视频区间不对
