@@ -12,7 +12,8 @@
 
 err数据
 indexerr 数据列不够
-iperr ip地址不对
+useriperr ip地址不对
+serveriperr ip地址不对
 videorateerr 视频区间不对
 timeerr 时间不对
 
@@ -30,6 +31,7 @@ import string
 GEOIP_SORT = []
 GEOIP  = {}
 IDCINFO = {}
+videoratemap = {''}
 
 def loadGeoIp(filename):
     fp  = open(filename)
@@ -56,13 +58,15 @@ def loadIdcInfo(filename):
     for i, line in enumerate(fp):
         try:
             record = string.split(line, ",")
-            location = record[4]
-            serverip = record[5].strip().split(' ')
+
+            location = record[3]
+            serverip = record[4].strip().split(' ')
             if len(serverip) > 1:
-                IDCINFO[serverip[0]] = location
-                IDCINFO[serverip[1]] = location
+                for i in range(0, len(serverip)):
+                    IDCINFO[serverip[i]] = location
             else:
                 IDCINFO[serverip[0]] = location
+
         except ValueError:
             sys.stderr.write(("idcerr,%s") % line)
     fp.close()
@@ -168,7 +172,7 @@ def stripCdnLogFileLine(line):
         try:
             iplocation = getIpLocation(userip)
         except ValueError as e:
-            sys.stderr.write(("iperr,%s") % line)
+            sys.stderr.write(("useriperr,%s") % line)
             return
 
         videorate  = getVideoRate(url)
@@ -186,7 +190,7 @@ def stripCdnLogFileLine(line):
         try:
             serverlocation = getServerLocation(serverip)
         except KeyError as e:
-            sys.stderr.write(("iperr,%s") % line)
+            sys.stderr.write(("serveriperr,%s") % line)
             return
         try:
             slowResult = genSlowResult(datasize, spendtime, videorate)
