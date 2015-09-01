@@ -120,6 +120,9 @@ def genSlowResult(datasize, spendtime, videorate):
   spendtime = int(spendtime.strip('""'))
   datasize = int(datasize.strip('""'))
   videorate = int(videorate)
+  # datasize 单位为B
+  # spendtime 单位为ms
+  # videorate 单位为Kbps
   if int(spendtime) != 0:
     realrate = datasize*8/spendtime
     if realrate >= videorate:
