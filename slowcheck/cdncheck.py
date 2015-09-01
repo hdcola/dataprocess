@@ -31,7 +31,6 @@ import string
 GEOIP_SORT = []
 GEOIP  = {}
 IDCINFO = {}
-videoratemap = {''}
 
 def loadGeoIp(filename):
     fp  = open(filename)

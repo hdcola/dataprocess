@@ -90,6 +90,8 @@ def genSlowResult(datasize, spendtime, videorate):
     spendtime = int(spendtime.strip('"'))
     datasize = int(datasize.strip('"'))
     videorate = int(videorate)
+    if(spendtime==0 or datasize==0):
+        raise ValueError("size or data is zero")
     # datasize 单位为B
     # spendtime 单位为ms
     # videorate 单位为Kbps
@@ -142,7 +144,7 @@ def stripBcdnLogFileLine(line):
         try:
             slowResult     = genSlowResult(datasize, spendtime, videorate)
         except ValueError as e:
-            sys.stderr.write(("rate,%s") % line)
+            sys.stderr.write(("zeroerr,%s") % line)
             return
     except IndexError:
         sys.stderr.write(("indexerr,%s") % line)
