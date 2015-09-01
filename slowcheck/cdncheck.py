@@ -17,18 +17,18 @@ videorateerr 视频区间不对
 timeerr 时间不对
 
 使用
-python cdncheck.py geoip文件路径 [ files | - ]
+python cdncheck.py geoip文件路径 idcinfo文件路径 [ files | - ]
 '''
 
 from IPy import IP
 import sys
 import fileinput
-import os
-import time,datetime
+import time
 import string
 
 GEOIP_SORT = []
 GEOIP  = {}
+IDCINFO = {}
 videoratemap = {''}
 
 def loadGeoIp(filename):
@@ -49,6 +49,23 @@ def loadGeoIp(filename):
         except ValueError:
             sys.stderr.write(("valueerr,%s") % line)
     GEOIP_SORT.sort()
+    fp.close()
+
+def loadIdcInfo(filename):
+    fp  = open(filename)
+    for i, line in enumerate(fp):
+        try:
+            record = string.split(line, ",")
+            location = record[4]
+            serverip = record[5].strip().split(' ')
+            print serverip
+            if len(serverip) > 1:
+                IDCINFO[serverip[0]] = location
+                IDCINFO[serverip[1]] = location
+            else:
+                IDCINFO[serverip[0]] = location
+        except ValueError:
+            sys.stderr.write(("valueerr,%s") % line)
     fp.close()
 
 def getRangeKey(userip):
@@ -79,6 +96,11 @@ def getIpLocation(userip):
             return GEOIP[location]
     else:
         return None
+
+def getServerLocation(serverip):
+    serverip = serverip.strip('""')
+    location = IDCINFO[serverip]
+    return location
 
 def getVideoRate(url):
     url = string.split(url, 'id=')
@@ -138,10 +160,14 @@ def stripCdnLogFileLine(line):
 
         operator = iplocation[4]
         province = iplocation[2]
+        try:
+            serverlocation = getServerLocation(serverip)
+        except KeyError as e:
+            sys.stderr.write(("iperr,%s") % line)
+            return
     else:
         sys.stderr.write(("pass,%s") % line)
         return
-    serverlocation = 'NA'
 
     print "%s,%s,%s,%s,%s,%s,%s,%s,%s" %(timetmp, userip.strip("\""),
         operator, province, serverip.strip("\""), serverlocation,
@@ -149,9 +175,10 @@ def stripCdnLogFileLine(line):
 
 
 if __name__ == '__main__':
-    # python cdncheck.py geoippath processfiles
-    # gzcat abc.gz | python cdncheck.py ../geoip -
-    # python cdncheck.py ../geoip afile bfile cfile
+    # python cdncheck.py geoippath idcinfopath processfiles
+    # gzcat abc.gz | python cdncheck.py ../geoip  ../idcinfo -
+    # python cdncheck.py ../geoip ./idcinfo afile bfile cfile
     loadGeoIp(sys.argv[1])
-    for line in fileinput.input(sys.argv[2:]):
+    loadIdcInfo(sys.argv[2])
+    for line in fileinput.input(sys.argv[3:]):
         stripCdnLogFileLine(line)
