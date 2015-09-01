@@ -117,9 +117,11 @@ def formatTime(timetmp):
     return timetmp
 
 def stripBcdnLogFileLine(line):
-    record         = line.split('\"')
+    record         = line.replace('\x22', '"')
+    record         = record.strip().split('\"')
+    print record
     try:
-        ipandtime      = record[0].split(' - - ')
+        ipandtime      = record[2].strip().split(' - - ')
         userip         = ipandtime[0]
         timetmp        = ipandtime[1]
         timetmp        = timetmp.strip()
@@ -127,11 +129,11 @@ def stripBcdnLogFileLine(line):
         iplocation     = getIpLocation(userip)
         operator       = iplocation[4]
         province       = iplocation[2]
-        serverip       = record[6].strip().split(' ')[1]
-        videorate      = record[1].split('/')
+        serverip       = record[8].strip().split(' ')[1]
+        videorate      = record[3].split('/')
         videorate      = videorate[len(videorate)-2].split(' ')[0].split('.')[0]
-        datasize       = record[2].strip().split(' ')[1]
-        spendtime      = record[6].strip().split(' ')[0]
+        datasize       = record[4].strip().split(' ')[1]
+        spendtime      = record[8].strip().split(' ')[0]
 
         #if videorate.split('.')[1]=="m3u8":
         #    sys.stderr.write(("m3u8,%s") %line )
