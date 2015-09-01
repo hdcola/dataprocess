@@ -119,7 +119,6 @@ def formatTime(timetmp):
 def stripBcdnLogFileLine(line):
     record         = line.replace('\x22', '"')
     record         = record.strip().split('\"')
-    print record
     try:
         ipandtime      = record[2].strip().split(' - - ')
         userip         = ipandtime[0]
