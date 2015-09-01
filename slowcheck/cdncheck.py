@@ -58,7 +58,6 @@ def loadIdcInfo(filename):
             record = string.split(line, ",")
             location = record[4]
             serverip = record[5].strip().split(' ')
-            print serverip
             if len(serverip) > 1:
                 IDCINFO[serverip[0]] = location
                 IDCINFO[serverip[1]] = location
