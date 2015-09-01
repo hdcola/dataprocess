@@ -21,6 +21,7 @@ rateerr 速率计算不对
 python bcdncheck.py geoip文件路径 bcdnname [ files | - ]
 '''
 
+from videoratelist import VIDEORATELIST
 from IPy import IP
 import sys
 import fileinput
@@ -78,27 +79,28 @@ def getIpLocation(userip):
     else:
         return None
 
-def getVideoRate(url):
-    url = string.split(url, 'id=')
-    if len(url) >= 2:
-        url = string.split(url[1], '&')
-    else:
-        return None
-
-    id = url[0]
-    return id
+def getVideoRate(videorateid):
+    try:
+        videorate = VIDEORATELIST[videorateid]
+    except KeyError as e:
+        videorate = 2*1000
+    return videorate
 
 def genSlowResult(datasize, spendtime, videorate):
-  spendtime = int(spendtime.strip('""'))
-  datasize = int(datasize.strip('""'))
-  if int(spendtime) != 0:
-    realrate = datasize*1000*8/spendtime
-    if realrate >= videorate * 1024 * 1024:
-        return 0
+    spendtime = int(spendtime.strip('""'))
+    datasize = int(datasize.strip('""'))
+    videorate = int(videorate)
+    # datasize 单位为B
+    # spendtime 单位为ms
+    # videorate 单位为Kbps
+    if int(spendtime) != 0:
+        realrate = datasize*8/spendtime
+        if realrate >= videorate:
+            return 0
+        else:
+            return 1
     else:
-        return 1
-  else:
-    return 0
+        return 0
 
 def formatTime(timetmp):
     timedata = time.strptime(timetmp,"[%d/%b/%Y:%H:%M:%S +0800]")
@@ -127,11 +129,12 @@ def stripBcdnLogFileLine(line):
        province       = iplocation[2]
        serverip       = record[6].strip().split(' ')[1]
        videorate      = record[1].split('/')
-       videorate      = videorate[len(videorate)-2].split(' ')[0]
+       videorate      = videorate[len(videorate)-2].split(' ')[0].split('.')[0]
        datasize       = record[2].strip().split(' ')[1]
        spendtime      = record[6].strip().split(' ')[0]
+       videorate  =  getVideoRate(videorate)
        try:
-           slowResult     = genSlowResult(datasize, spendtime, 2) #2Mbps
+           slowResult     = genSlowResult(datasize, spendtime, videorate)
        except ValueError as e:
            sys.stderr.write(("rate,%s") % line)
            return
