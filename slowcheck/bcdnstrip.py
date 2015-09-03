@@ -53,15 +53,16 @@ def stripBcdnLogFileLine(filename):
         fp  = open(filename)
 
     for i, line in enumerate(fp):
+        record = string.split(line, ",")
+        userip     = record[1]
         try:
-            record = string.split(line, ",")
-            userip     = record[1]
             if SLOWUSER[userip] == 1:
                 SLOWUSER[userip] = 0
                 print "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" %(record[0],record[1],
                     record[2], record[3], record[4], record[5], record[6],
                     record[7], record[8], 1)
         except KeyError:
+            SLOWUSER[userip] = 0
             print line
     fp.close()
 
