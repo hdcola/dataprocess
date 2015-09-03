@@ -63,7 +63,7 @@ def stripBcdnLogFileLine(filename):
                     record[7], record[8], 1)
         except KeyError:
             SLOWUSER[userip] = 0
-            print line
+            print line.strip()
     fp.close()
 
 if __name__ == '__main__':
