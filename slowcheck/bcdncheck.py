@@ -84,6 +84,7 @@ def getVideoRate(videorateid):
         videorate = VIDEORATELIST[videorateid]
     except KeyError as e:
         videorate = 2*1000
+        print "video2m"
     return videorate
 
 def genSlowResult(datasize, spendtime, videorate):
@@ -132,13 +133,15 @@ def stripBcdnLogFileLine(line):
         province       = iplocation[2]
         serverip       = record[8].strip().split(' ')[1]
         videorate      = record[3].split('/')
+        videoratetest  = videorate[len(videorate)-2].split(' ')[0].split('.')[1]
         videorate      = videorate[len(videorate)-2].split(' ')[0].split('.')[0]
         datasize       = record[4].strip().split(' ')[1]
         spendtime      = record[8].strip().split(' ')[0]
 
-        #if videorate.split('.')[1]=="m3u8":
-        #    sys.stderr.write(("m3u8,%s") %line )
-        #    return
+
+        if videoratetest != "ts":
+            sys.stderr.write(("not_ts,%s") %line )
+            return
 
         videorate  =  getVideoRate(videorate)
         try:
