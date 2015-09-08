@@ -84,7 +84,6 @@ def getVideoRate(videorateid):
         videorate = VIDEORATELIST[videorateid]
     except KeyError as e:
         videorate = 2*1000
-        print "video2m"
     return videorate
 
 def genSlowResult(datasize, spendtime, videorate):
