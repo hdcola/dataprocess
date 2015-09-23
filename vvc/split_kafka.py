@@ -21,18 +21,23 @@ def testTime(timetmp, start_time, end_time):
 
 def split_kafka(line, start_time, end_time):
     record = string.split(line, '- -')
-    record = record[1].strip().split(' ')
+    try:
+        record = record[1].strip().split(' ')
+    except IndexError:
+        sys.stderr.write(("indexerr,%s") % line)
+        return
+
     timetmp = str(record[0]) + str(record[1])
     try:
         if testTime(timetmp, start_time, end_time):
-            print line
+            print line.strip('\n')
     except ValueError:
         sys.stderr.write(("timeerr,%s") % line)
 
 
 if __name__ == '__main__':
-    # gzcat abc.gz | python split_kafka.py "mpp_vv_pcweb" -
-    # python split_kafka.py "mpp_vv_pcweb" afile bfile cfile
+    # gzcat abc.gz | python split_kafka.py start_time end_time  -
+    # python split_kafka.py start_time end_time afile bfile cfile
     start_time = sys.argv[1]
     if len(start_time) != 12:
         start_time = str(start_time) + "0"*(12-len(start_time))
