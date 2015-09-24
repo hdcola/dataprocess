@@ -18,4 +18,7 @@ balanced_consumer = topic.get_simple_consumer()
 #)
 for message in balanced_consumer:
     if message is not None:
-        print message.value
+        try:
+            print message.value
+        except IOError:
+            exit(0)
