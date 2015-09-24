@@ -14,8 +14,11 @@ def testTime(timetmp, start_time, end_time):
         timeStamp = int(time.mktime(timedata))
     except ValueError:
         raise ValueError("timeerr")
+    timeexit = int(end_time) + 600
     if (timeStamp >= int(start_time) and timeStamp <= int(end_time)):
         return True
+    elif (timeStamp > timeexit):
+        exit(0)
     else:
         return False
 
