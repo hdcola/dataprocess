@@ -1,15 +1,27 @@
-#!/bin/bash -x
+#!/bin/sh
+
+. /etc/pydota.conf
 filename=$1
 topic=$2
-work_path="/home/junjian/vvc"
+work_path="${pydota_path}"
 cd $work_path
-bzcat $filename.bz2 | python ${topic}_format.py ./geoip 2> err_${filename}.log | bzip2 > vv_${filename}.bz2
-if [ -f vv_${filename}.bz2 ]; then
-    python count_vv_5min.py ${topic} "all" vv_$filename.bz2 &
-    python count_vv_5min.py ${topic} "chn" vv_$filename.bz2 &
-    python count_vv_5min.py ${topic} "pl" vv_$filename.bz2 &
+bzcat ${pydota_orig}/$filename.bz2 | python bin/format/${topic}_format.py ./geoip 2> ${pydota_des}/err_${filename}.log | bzip2 > ${pydota_des}/vv_${filename}.bz2
+if [ -f ${pydota_des}/vv_${filename}.bz2 ]; then
+    python bin/count_vv_5min.py ${topic} "all" ${pydota_des}/vv_$filename.bz2 ${pydota_report} &
+    [ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
 
-    python count_vv_hour.py ${topic} "all" vv_$filename.bz2 &
-    python count_vv_hour.py ${topic} "chn" vv_$filename.bz2 &
-    python count_vv_hour.py ${topic} "pl" vv_$filename.bz2 &
+    python bin/count_vv_5min.py ${topic} "chn" ${pydota_des}/vv_$filename.bz2 ${pydota_report} &
+    [ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
+
+    python bin/count_vv_5min.py ${topic} "pl"  ${pydota_des}/vv_$filename.bz2 ${pydota_report} &
+    [ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
+
+    python bin/count_vv_hour.py ${topic} "all" ${pydota_des}/vv_$filename.bz2 ${pydota_report} &
+    [ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
+
+    python bin/count_vv_hour.py ${topic} "chn" ${pydota_des}/vv_$filename.bz2 ${pydota_report} &
+    [ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
+
+    python bin/count_vv_hour.py ${topic} "pl"  ${pydota_des}/vv_$filename.bz2 ${pydota_report} &
+    [ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
 fi

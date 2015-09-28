@@ -10,6 +10,6 @@ cd $work_path
 
 for topic in ${topics}; do
     filename=${start_time}"_"${topic}".bz2"
-    python kafka_connect.py $topic | python kafka_split.py ${start_time} ${end_time} 2>/dev/null | bzip2 > ${pydota_orig}/$filename &
+    python ./bin/kafka_connect.py $topic | python ./bin/kafka_split.py ${start_time} ${end_time} 2>/dev/null | bzip2 > ${pydota_orig}/$filename &
     [ ! -z ${pydota_collect_pids} ] && echo $! >> ${pydota_collect_pids}
 done

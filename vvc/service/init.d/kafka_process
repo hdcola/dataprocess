@@ -1,0 +1,39 @@
+#!/bin/sh
+
+. /etc/pydota.conf
+
+start() {
+    if [ -f ${pydota_cron} ]; then
+         cat ${pydota_cron} | sed '/py_dota_process.sh/d' > ${pydota_cron}
+         echo "30 * * * * junjian ${pydota_path}/bin/py_dota_process.sh" >> ${pydota_cron}
+    else
+         echo "30 * * * * junjian ${pydota_path}/bin/py_dota_process.sh" >> ${pydota_cron}
+    fi
+    /etc/init.d/cron restart
+ }
+
+ stop() {
+    if [ -f ${pydota_cron} ]; then
+         cat ${pydota_cron} | sed '/py_dota_process.sh/d' > ${pydota_cron}
+    fi
+    if [ -f ${pydota_process_pids} ]; then
+        for pid in `cat ${pydota_process_pids}`;
+        do
+            kill -9 $pid 1>/dev/null 2>&1
+        done
+    fi
+    /etc/init.d/cron restart
+ }
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop;
+        start;
+        ;;
+esac

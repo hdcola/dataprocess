@@ -68,8 +68,8 @@ def sortRecord(filename, ctype):
             sys.stderr.write(("indexerr,%s") % line)
     fp.close()
 
-def genCsvFileName(stime):
-    return str(clienttype)+"."+str(stime)+".vv."+str(count_type)+".5min.csv"
+def genCsvFileName(reportdir, stime):
+    return str(reportdir)+"/"+str(clienttype)+"."+str(stime)+".vv."+str(count_type)+".5min.csv"
 
 def genCsvTimeName(scount):
     return str(start_time_hour) + CSV_TIMELIST[int(scount)]
@@ -92,7 +92,7 @@ def count_vv(filename, ctype):
                 except KeyError:
                     SORTRECORD1[v[1]] = 1
         else:
-            csvfilename = genCsvFileName(v[0])
+            csvfilename = genCsvFileName(reportdir, v[0])
             csvtimename = genCsvTimeName(mincount)
             cfp  = open(csvfilename, 'a+')
             if count != 1:
@@ -126,4 +126,5 @@ if __name__ == '__main__':
         clienttype = ""
     count_type = sys.argv[2]
     filename = sys.argv[3]
-    count_vv(filename, count_type)
+    reportdir = sys.argv[4]
+    count_vv(filename, count_type, reportdir)

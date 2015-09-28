@@ -14,8 +14,8 @@ def getTimeHour(timetmp):
         tm_hour = '0'+str(tm_hour)
     return tm_hour
 
-def genCsvFileName(stime):
-    return str(clienttype)+"."+str(stime)+".vv."+str(count_type)+".hour.csv"
+def genCsvFileName(reportdir, stime):
+    return str(reportdir)+"/"+str(clienttype)+"."+str(stime)+".vv."+str(count_type)+".hour.csv"
 
 def genCsvTimeName():
     return str(start_time_hour)
@@ -68,10 +68,10 @@ def sortRecord(filename, ctype):
     fp.close()
 
 
-def count_vv(filename, ctype):
+def count_vv(filename, ctype, reportdir):
     sortRecord(filename, ctype)
     for (k, v) in SORTRECORD.items():
-        csvfilename = genCsvFileName(start_time_day)
+        csvfilename = genCsvFileName(reportdir, start_time_day)
         csvtimename = genCsvTimeName()
         cfp  = open(csvfilename, 'a+')
         constr = str(start_time_day) + "," + str(csvtimename) + "," + str(k) + "," + str(v) + "\n"
@@ -94,4 +94,5 @@ if __name__ == '__main__':
         clienttype = ""
     count_type = sys.argv[2]
     filename = sys.argv[3]
-    count_vv(filename, count_type)
+    reportdir = sys.argv[4]
+    count_vv(filename, count_type, reportdir)
