@@ -1,0 +1,19 @@
+###############################################################################
+# pydota项目配置文件样例
+#
+# * kafka_hosts
+#     kafka集群的hosts列表
+# * pydota_path
+#     pydota脚本代码部署根路径
+# * pydota_orig
+#     kafka数据流原始数据归档文件存放根路径
+# * pydota_des
+#     中间结果文件存放根路径
+# * pydota_report
+#     最终结果文件存放根路径
+##############################################################################
+kafka_hosts="10.100.1.51:9092,10.100.1.52:9092,10.100.1.53:9092,10.100.1.54:9092"
+pydota_path="/home/junjian/pydota/"
+pydota_orig="/home/junjian/orig/"
+pydota_des="/home/junjian/des/"
+pydota_report="/home/junjian/report/"
