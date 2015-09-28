@@ -119,9 +119,20 @@ def pcp_format(line):
 
     urlarglist = {}
     for urlargtmptmp in urlargtmp:
-        argkey = urlargtmptmp.split('=')[0]
-        argvalue = urlargtmptmp.split('=')[1]
-        urlarglist[argkey] = argvalue
+        try:
+            argkey = urlargtmptmp.split('=')[0]
+            argvalue = urlargtmptmp.split('=')[1]
+            urlarglist[argkey] = argvalue
+        except IndexError:
+            sys.stderr.write(("urlargerr,%s") % line)
+            return
+    # uid
+    try:
+        uid = urlarglist['uid']
+        formatstring = formatstring + ',' + str(uid)
+    except KeyError:
+        sys.stderr.write(("uiderr,%s") % line)
+        return
 
     # uuid
     try:
@@ -152,33 +163,12 @@ def pcp_format(line):
     except KeyError:
         sys.stderr.write(("biderr,%s") % line)
         return
-    # vid
-    try:
-        vid = urlarglist['vid']
-        formatstring = formatstring + ',' + str(vid)
-    except KeyError:
-        sys.stderr.write(("viderr,%s") % line)
-        return
-    # vts
-    try:
-        vts = urlarglist['vts']
-        formatstring = formatstring + ',' + str(vts)
-    except KeyError:
-        sys.stderr.write(("vtserr,%s") % line)
-        return
     # cid
     try:
         cid = urlarglist['cid']
         formatstring = formatstring + ',' + str(cid)
     except KeyError:
         sys.stderr.write(("ciderr,%s") % line)
-        return
-    # tid
-    try:
-        tid = urlarglist['tid']
-        formatstring = formatstring + ',' + str(tid)
-    except KeyError:
-        sys.stderr.write(("tiderr,%s") % line)
         return
     # plid
     try:
@@ -187,6 +177,28 @@ def pcp_format(line):
     except KeyError:
         sys.stderr.write(("pliderr,%s") % line)
         return
+    # vid
+    try:
+        vid = urlarglist['vid']
+        formatstring = formatstring + ',' + str(vid)
+    except KeyError:
+        sys.stderr.write(("viderr,%s") % line)
+        return
+    # tid
+    try:
+        tid = urlarglist['tid']
+        formatstring = formatstring + ',' + str(tid)
+    except KeyError:
+        sys.stderr.write(("tiderr,%s") % line)
+        return
+    # vts
+    try:
+        vts = urlarglist['vts']
+        formatstring = formatstring + ',' + str(vts)
+    except KeyError:
+        sys.stderr.write(("vtserr,%s") % line)
+        return
+
     # cookie or DID
     try:
         cookie = urlarglist['cookie']
@@ -194,19 +206,16 @@ def pcp_format(line):
     except KeyError:
         sys.stderr.write(("cookieerr,%s") % line)
         return
-    # uid
-    try:
-        uid = urlarglist['uid']
-        formatstring = formatstring + ',' + str(uid)
-    except KeyError:
-        sys.stderr.write(("uiderr,%s") % line)
-        return
     # pt
     try:
-        pt = urlarglist['pt']
+        pt = urlarglist['tp']
         formatstring = formatstring + ',' + str(pt)
     except KeyError:
-        sys.stderr.write(("pterr,%s") % line)
+        try:
+            pt = urlarglist['pt']
+            formatstring = formatstring + ',' + str(pt)
+        except KeyError:
+            sys.stderr.write(("pterr,%s") % line)
         return
     # ln
     try:
