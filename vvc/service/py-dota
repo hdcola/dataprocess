@@ -1,0 +1,2 @@
+30 * * * * junjian /home/junjian/service/py_dota_collect.sh
+30 * * * * junjian /home/junjian/service/py_dota_process.sh
