@@ -15,7 +15,7 @@ def getTimeHour(timetmp):
     return tm_hour
 
 def genCsvFileName(reportdir, stime):
-    return str(reportdir)+"/"+str(clienttype)+"."+str(stime)+".vv."+str(count_type)+".hour.csv"
+    return str(reportdir)+"/"+str(clienttype)+"_"+str(stime)+"_vv_"+str(count_type)+"_hour.csv"
 
 def genCsvTimeName():
     return str(start_time_hour)

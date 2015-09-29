@@ -17,8 +17,8 @@ mkdir -p ${pydota_des}/${sub_path} 2>/dev/null
 mkdir -p ${pydota_report}/${sub_path} 2>/dev/null
 cd $work_path
 for topic in ${topics}; do
-    filenameerr="err_"${start_time}"_"${topic}".log"
-    filename=${start_time}"_"${topic}".bz2"
+    filenameerr="err_"${start_time}"_play_"${topic}".log"
+    filename=${start_time}"_play_"${topic}".bz2"
     python ./bin/kafka_connect.py $topic ${pydota_collect_pids} \
       | python ./bin/kafka_split.py ${start_time} ${end_time} ${topic} 2>${pydota_orig}/${sub_path}/$filenameerr \
       | bzip2 > ${pydota_orig}/${sub_path}/$filename &

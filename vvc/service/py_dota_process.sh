@@ -16,8 +16,8 @@ mkdir -p ${pydota_des}/${sub_path} 2>/dev/null
 mkdir -p ${pydota_report}/${sub_path} 2>/dev/null
 cd $work_path
 for topic in ${topics}; do
-    filename=${start_time}"_"${topic}
+    filename=${start_time}"_play_"${topic}
     if [ -f ${pydota_orig}/${sub_path}/${filename}.bz2 ]; then
-      ./service/py_dota_count_vv.sh ${filename} $topic $sub_path_year $sub_path_month &
+      ./service/py_dota_count_vv.sh ${filename} $topic $sub_path_year $sub_path_month $start_time &
     fi
 done

@@ -69,7 +69,7 @@ def sortRecord(filename, ctype):
     fp.close()
 
 def genCsvFileName(reportdir, stime):
-    return str(reportdir)+"/"+str(clienttype)+"."+str(stime)+".vv."+str(count_type)+".5min.csv"
+    return str(reportdir)+"/"+str(clienttype)+"_"+str(stime)+"_vv_"+str(count_type)+"_5min.csv"
 
 def genCsvTimeName(scount):
     return str(start_time_hour) + CSV_TIMELIST[int(scount)]
