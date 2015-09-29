@@ -114,7 +114,7 @@ def ott_format(line):
 
     # uid
     try:
-        uid = record['user_id'].strip()
+        uid = record['user_id']
         formatstring = formatstring + ',' + str(uid)
     except KeyError:
         uid = ""

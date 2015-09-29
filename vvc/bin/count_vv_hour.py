@@ -8,7 +8,7 @@ import bz2
 
 
 def getTimeHour(timetmp):
-    timedata = time.strptime(timetmp, "%Y%m%d%H:%M:%S")
+    timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
     tm_hour = timedata.tm_hour
     if tm_hour < 10:
         tm_hour = '0'+str(tm_hour)
@@ -21,7 +21,7 @@ def genCsvTimeName():
     return str(start_time_hour)
 
 def formatTime(timetmp):
-    timedata = time.strptime(timetmp, "%Y%m%d%H:%M:%S")
+    timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
     timeStamp = int(time.mktime(timedata))
     return timeStamp
 
