@@ -15,6 +15,8 @@
 #     最终结果文件存放根路径
 # * pydota_log
 #     pydota运行日志路径
+# * pydota_pid_path
+#     pydota pid文件存放路径
 # * pydota_collect_pids
 #     pydota collect进程pid列表
 # * pydota_process_pids
@@ -22,10 +24,11 @@
 ##############################################################################
 kafka_hosts="10.100.1.51:9092,10.100.1.52:9092,10.100.1.53:9092,10.100.1.54:9092"
 pydota_cron="/etc/cron.d/py-dota-test"
-pydota_path="/home/junjian/pydota/"
-pydota_orig="/home/junjian/orig/"
-pydota_des="/home/junjian/des/"
-pydota_report="/home/junjian/report/"
-pydota_log="/home/junjian/log/"
-pydota_collect_pids="/home/junjian/pid/pydota_connect.pids"
-pydota_process_pids="/home/junjian/pid/pydota_process.pids"
+pydota_path="/home/junjian/pydota/pydota/"
+pydota_orig="/home/junjian/pydota/orig/"
+pydota_des="/home/junjian/pydota/des/"
+pydota_report="/home/junjian/pydota/report/"
+pydota_log="/home/junjian/pydota/log/"
+pydota_pid_path="/home/junjian/pydota/pid/"
+pydota_collect_pids="/home/junjian/pydota/pid/pydota_connect.pids"
+pydota_process_pids="/home/junjian/pydota/pid/pydota_process.pids"

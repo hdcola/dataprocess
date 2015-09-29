@@ -3,11 +3,21 @@
 
 from pykafka import KafkaClient
 import sys
+import os
 try:
     pipe_type = sys.argv[1]
 except IndexError as e:
     pipe_type = "mpp_vv_pcweb"
 
+try:
+    pid_file = sys.argv[2]
+    pid = os.getpid()
+    cfp  = open(pid_file, 'a+')
+    constr = str(pid) + "\n"
+    cfp.write(constr)
+    cfp.close()
+except IndexError as e:
+    pass
 client = KafkaClient(hosts="10.100.1.51:9092,10.100.1.52:9092,10.100.1.53:9092,10.100.1.54:9092")
 topic  = client.topics[pipe_type]
 balanced_consumer = topic.get_simple_consumer()

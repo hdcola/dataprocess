@@ -5,15 +5,26 @@ import fileinput
 import sys
 import time
 import string
+import json
 
 filesfps = []
 filesfpscount = 0
-def testTime(timetmp, start_time, end_time):
-    try:
-        timedata = time.strptime(timetmp, "[%d/%b/%Y:%H:%M:%S+0800]")
-        timeStamp = int(time.mktime(timedata))
-    except ValueError:
-        raise ValueError("timeerr")
+def testTime(timetmp, start_time, end_time, topic):
+    if topic == "mpp_vv_pcweb":
+        try:
+            timedata = time.strptime(timetmp, "[%d/%b/%Y:%H:%M:%S+0800]")
+            timeStamp = int(time.mktime(timedata))
+        except ValueError:
+            raise ValueError("timeerr")
+    elif topic == "mpp_vv_mobile":
+        timeStamp = int(timetmp)
+    elif topic == "mpp_vv_mobile_new_version":
+        try:
+            timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
+            timeStamp = int(time.mktime(timedata))
+        except ValueError:
+            raise ValueError("timeerr")
+
     timeexit = int(end_time) + 1800
     if (timeStamp >= int(start_time) and timeStamp <= int(end_time)):
         return True
@@ -22,17 +33,24 @@ def testTime(timetmp, start_time, end_time):
     else:
         return False
 
-def split_kafka(line, start_time, end_time):
-    record = string.split(line, '- -')
-    try:
-        record = record[1].strip().split(' ')
-    except IndexError:
-        sys.stderr.write(("indexerr,%s") % line)
-        return
+def split_kafka(line, start_time, end_time, topic):
+    if topic == "mpp_vv_pcweb":
+        record = string.split(line, '- -')
+        try:
+            record = record[1].strip().split(' ')
+        except IndexError:
+            sys.stderr.write(("indexerr,%s") % line)
+            return
+        timetmp = str(record[0]) + str(record[1])
+    elif topic == "mpp_vv_mobile":
+        record = json.loads(line)
+        timetmp = str(record["time"])
+    elif topic == "mpp_vv_mobile_new_version":
+        record = string.split(line, '\t')
+        timetmp = record[0].strip()
 
-    timetmp = str(record[0]) + str(record[1])
     try:
-        if testTime(timetmp, start_time, end_time):
+        if testTime(timetmp, start_time, end_time, topic):
             print line.strip('\n')
     except ValueError:
         sys.stderr.write(("timeerr,%s") % line)
@@ -53,5 +71,9 @@ if __name__ == '__main__':
     timedata = time.strptime(end_time, "%Y%m%d%H%M")
     end_time = int(time.mktime(timedata))
 
-    for line in fileinput.input(sys.argv[3:]):
-        split_kafka(line, start_time, end_time)
+    try:
+        topic = sys.argv[3]
+    except IndexError:
+        topic = "mpp_vv_pcweb"
+    for line in fileinput.input(sys.argv[4:]):
+        split_kafka(line, start_time, end_time, topic)
