@@ -1,7 +1,7 @@
 #!/bin/sh
 
 . /etc/pydota.conf
-topics=("mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version")
+topics=("mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient")
 work_path="${pydota_path}"
 start_time=`date --date="$DATE - 1 hour" +%Y%m%d%H`
 start_time=${start_time}"00"

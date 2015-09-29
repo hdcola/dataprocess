@@ -71,7 +71,7 @@ def formatTime(timetmp):
     timetmp_time = time.strftime('%H%M%S', timedata)
     return timetmp_date, timetmp_time
 
-def pcp_format(line):
+def pcc_format(line):
     formatstring = ""
     if len(line.strip('\n')) == 0:
         return
@@ -100,6 +100,7 @@ def pcp_format(line):
     except IndexError:
             sys.stderr.write(("iperr,%s") % line)
             return
+
 
     # location
     try:
@@ -154,15 +155,17 @@ def pcp_format(line):
         ref = urllib.unquote(ref)
         formatstring = formatstring + ',' + str(ref)
     except KeyError:
-        sys.stderr.write(("referr,%s") % line)
-        return
+        ref = ""
+        formatstring = formatstring + ',' + str(ref)
+
+
     # bid
     try:
         bid = urlarglist['bid']
         formatstring = formatstring + ',' + str(bid)
     except KeyError:
-        sys.stderr.write(("biderr,%s") % line)
-        return
+        bid = ""
+        formatstring = formatstring + ',' + str(bid)
     # cid
     try:
         cid = urlarglist['cid']
@@ -189,8 +192,8 @@ def pcp_format(line):
         tid = urlarglist['tid']
         formatstring = formatstring + ',' + str(tid)
     except KeyError:
-        sys.stderr.write(("tiderr,%s") % line)
-        return
+        tid = ""
+        formatstring = formatstring + ',' + str(tid)
     # vts
     try:
         vts = urlarglist['vts']
@@ -199,13 +202,21 @@ def pcp_format(line):
         sys.stderr.write(("vtserr,%s") % line)
         return
 
-    # cookie or DID
+    # cookie or DID or mac
     try:
-        cookie = urlarglist['cookie']
+        cookie = urlarglist['did']
         formatstring = formatstring + ',' + str(cookie)
     except KeyError:
-        sys.stderr.write(("cookieerr,%s") % line)
-        return
+        try:
+            cookie = urlarglist['mac']
+            formatstring = formatstring + ',' + str(cookie)
+        except KeyError:
+            try:
+                cookie = urlarglist['cookie']
+                formatstring = formatstring + ',' + str(cookie)
+            except KeyError:
+                sys.stderr.write(("cookieerr,%s") % line)
+                return
     # pt
     try:
         pt = urlarglist['tp']
@@ -216,7 +227,7 @@ def pcp_format(line):
             formatstring = formatstring + ',' + str(pt)
         except KeyError:
             sys.stderr.write(("pterr,%s") % line)
-        return
+            return
     # ln
     try:
         ln = urlarglist['ln']
@@ -229,33 +240,33 @@ def pcp_format(line):
         cf = urlarglist['cf']
         formatstring = formatstring + ',' + str(cf)
     except KeyError:
-        sys.stderr.write(("cferr,%s") % line)
-        return
+        cf = ""
+        formatstring = formatstring + ',' + str(cf)
     # definition
     try:
         definition = urlarglist['definition']
         formatstring = formatstring + ',' + str(definition)
     except KeyError:
-        sys.stderr.write(("definitionerr,%s") % line)
-        return
+        definition = ""
+        formatstring = formatstring + ',' + str(definition)
     # act
     try:
         act = urlarglist['act']
         formatstring = formatstring + ',' + str(act)
     except KeyError:
-        sys.stderr.write(("acterr,%s") % line)
-        return
+        act = ""
+        formatstring = formatstring + ',' + str(act)
     # CLIENTTP
-    clienttp = "pcweb"
+    clienttp = "pcclient"
     formatstring = formatstring + ',' + str(clienttp)
 
     # CLIENTVER
     try:
-        clientver = urlarglist["aver"]
+        clientver = urlarglist["ver"]
         formatstring = formatstring + ',' + str(clientver)
     except KeyError:
-        clientver = ""
-        formatstring = formatstring + ',' + str(clientver)
+        sys.stderr.write(("clientvererr,%s") % line)
+        return
 
     print formatstring
 
@@ -264,4 +275,4 @@ if __name__ == '__main__':
     # python pcp_format.py ./genip afile bfile cfile
     loadGeoIp(sys.argv[1])
     for line in fileinput.input(sys.argv[2:]):
-        pcp_format(line)
+        pcc_format(line)
