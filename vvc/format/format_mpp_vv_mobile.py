@@ -6,6 +6,7 @@ import sys
 import time
 import string
 import urllib
+import json
 from IPy import IP
 
 filesfps = []
@@ -64,191 +65,202 @@ def formatLocation(userip):
 
 def formatTime(timetmp):
     try:
-        timedata = time.strptime(timetmp, "[%d/%b/%Y:%H:%M:%S+0800]")
+        timedata = time.localtime(timetmp)
     except ValueError:
         raise ValueError("timeerr")
     timetmp_date = time.strftime('%Y%m%d', timedata)
     timetmp_time = time.strftime('%H%M%S', timedata)
     return timetmp_date, timetmp_time
 
-def pcp_format(line):
+def mobile_format(line):
     formatstring = ""
     if len(line.strip('\n')) == 0:
         return
     try:
-        record = string.split(line, '- -')
-        recordtmp = record[1].strip().split(' ')
-        timetmp = str(recordtmp[0]) + str(recordtmp[1])
-    except IndexError:
-        sys.stderr.write(("indexerr,%s") % line)
+        record = json.loads(line)
+    except ValueError:
+        sys.stderr.write(("jsonerr,%s") % line)
         return
+
     # date, time
     try:
+        timetmp = record['time']
         timetmp_date, timetmp_time = formatTime(timetmp)
         formatstring = str(timetmp_date) + ',' + str(timetmp_time)
     except ValueError:
         sys.stderr.write(("timeerr,%s") % line)
         return
+    except KeyError:
+        sys.stderr.write(("timeerr,%s") % line)
+        return
+
     # IP
     try:
-        iptmp = record[0].strip().split(',')
-        if len(iptmp) != 1:
-            sys.stderr.write(("iperr,%s") % line)
-            return
-        else:
-            formatstring = formatstring + ',' + str(iptmp[0])
-    except IndexError:
-            sys.stderr.write(("iperr,%s") % line)
-            return
+        iptmp = record["ip"].strip()
+        formatstring = formatstring + ',' + str(iptmp)
+    except KeyError:
+        sys.stderr.write(("iperr,%s") % line)
+        return
 
     # location
     try:
-        locationtmp = formatLocation(iptmp[0])
+        locationtmp = formatLocation(iptmp)
         location_province = locationtmp[2]
         location_city = locationtmp[3]
         formatstring = formatstring + ',' + str(location_province) + ',' + str(location_city)
     except ValueError:
         sys.stderr.write(("locationerr,%s") % line)
         return
-    # url args
-    try:
-        urlargtmp = record[1].strip().split(' ')[3].split('?')[1].split('&')
-    except ValueError or IndexError:
-        sys.stderr.write(("urlargerr,%s") % line)
-        return
 
-    urlarglist = {}
-    for urlargtmptmp in urlargtmp:
-        try:
-            argkey = urlargtmptmp.split('=')[0]
-            argvalue = urlargtmptmp.split('=')[1]
-            urlarglist[argkey] = argvalue
-        except IndexError:
-            sys.stderr.write(("urlargerr,%s") % line)
-            return
     # uid
     try:
-        uid = urlarglist['uid']
+        uid = record['user_id'].strip()
         formatstring = formatstring + ',' + str(uid)
     except KeyError:
-        sys.stderr.write(("uiderr,%s") % line)
-        return
+        uid = ""
+        formatstring = formatstring + ',' + str(uid)
 
     # uuid
     try:
-        uuid = urlarglist['uuid']
+        uuid = record['uuid']
         formatstring = formatstring + ',' + str(uuid)
     except KeyError:
-        sys.stderr.write(("uuiderr,%s") % line)
-        return
+        uuid = ""
+        formatstring = formatstring + ',' + str(uuid)
+
     # guid
     try:
-        guid = urlarglist['guid']
+        guid = record['guid']
         formatstring = formatstring + ',' + str(guid)
     except KeyError:
-        sys.stderr.write(("guiderr,%s") % line)
-        return
+        guid = ""
+        formatstring = formatstring + ',' + str(guid)
+
     # ref
     try:
-        ref = urlarglist['ref']
+        ref = record['ref']
         ref = urllib.unquote(ref)
         formatstring = formatstring + ',' + str(ref)
     except KeyError:
-        sys.stderr.write(("referr,%s") % line)
-        return
+        ref = ""
+        ref = urllib.unquote(ref)
+        formatstring = formatstring + ',' + str(ref)
+
     # bid
     try:
-        bid = urlarglist['bid']
+        bid = record['bid']
         formatstring = formatstring + ',' + str(bid)
     except KeyError:
-        sys.stderr.write(("biderr,%s") % line)
-        return
+        bid = ""
+        formatstring = formatstring + ',' + str(bid)
+
     # cid
     try:
-        cid = urlarglist['cid']
+        cid = record['cid']
         formatstring = formatstring + ',' + str(cid)
     except KeyError:
-        sys.stderr.write(("ciderr,%s") % line)
-        return
+        cid = ""
+        formatstring = formatstring + ',' + str(cid)
+
     # plid
     try:
-        plid = urlarglist['plid']
+        plid = record['plid']
         formatstring = formatstring + ',' + str(plid)
     except KeyError:
-        sys.stderr.write(("pliderr,%s") % line)
-        return
+        plid = ""
+        formatstring = formatstring + ',' + str(plid)
+
     # vid
     try:
-        vid = urlarglist['vid']
+        vid = record["video_info"]['video_id']
         formatstring = formatstring + ',' + str(vid)
     except KeyError:
         sys.stderr.write(("viderr,%s") % line)
         return
+
     # tid
     try:
-        tid = urlarglist['tid']
+        tid = record['tid']
         formatstring = formatstring + ',' + str(tid)
     except KeyError:
-        sys.stderr.write(("tiderr,%s") % line)
-        return
+        tid = ""
+        formatstring = formatstring + ',' + str(tid)
+
     # vts
     try:
-        vts = urlarglist['vts']
+        vts = record['vts']
         formatstring = formatstring + ',' + str(vts)
     except KeyError:
-        sys.stderr.write(("vtserr,%s") % line)
-        return
+        vts = ""
+        formatstring = formatstring + ',' + str(vts)
 
-    # cookie or DID
+    # cookie or DID or mac
     try:
-        cookie = urlarglist['cookie']
+        cookie = record['did']
         formatstring = formatstring + ',' + str(cookie)
     except KeyError:
-        sys.stderr.write(("cookieerr,%s") % line)
-        return
+        try:
+            cookie = record['mac']
+            formatstring = formatstring + ',' + str(cookie)
+        except KeyError:
+            try:
+                cookie = record['cookie']
+                formatstring = formatstring + ',' + str(cookie)
+            except KeyError:
+                sys.stderr.write(("cookieerr,%s") % line)
+                return
     # pt
     try:
-        pt = urlarglist['tp']
+        pt = record['tp']
         formatstring = formatstring + ',' + str(pt)
     except KeyError:
         try:
-            pt = urlarglist['pt']
+            pt = record['pt']
             formatstring = formatstring + ',' + str(pt)
         except KeyError:
-            sys.stderr.write(("pterr,%s") % line)
-        return
+            pt = ""
+            formatstring = formatstring + ',' + str(pt)
     # ln
     try:
-        ln = urlarglist['ln']
+        ln = record['ln']
         formatstring = formatstring + ',' + str(ln)
     except KeyError:
-        sys.stderr.write(("lnerr,%s") % line)
-        return
+        ln = ""
+        formatstring = formatstring + ',' + str(ln)
+
     # cf
     try:
-        cf = urlarglist['cf']
+        cf = record['cf']
         formatstring = formatstring + ',' + str(cf)
     except KeyError:
-        sys.stderr.write(("cferr,%s") % line)
-        return
+        cf = ""
+        formatstring = formatstring + ',' + str(cf)
     # definition
     try:
-        definition = urlarglist['definition']
+        definition = record['video_info']['definition']
         formatstring = formatstring + ',' + str(definition)
     except KeyError:
         sys.stderr.write(("definitionerr,%s") % line)
         return
     # act
     try:
-        act = urlarglist['act']
+        act = record['act']
         formatstring = formatstring + ',' + str(act)
     except KeyError:
-        sys.stderr.write(("acterr,%s") % line)
-        return
+        act = ""
+        formatstring = formatstring + ',' + str(act)
+
     # CLIENTTP
-    clienttp = "PC WEB"
+    clienttp = "mobile"
     formatstring = formatstring + ',' + str(clienttp)
 
+    # CLIENTVER
+    try:
+        clientver = record["apk_version"]
+        formatstring = formatstring + ',' + str(clientver)
+    except KeyError:
+        sys.stderr.write(("clientvererr,%s") % line)
+        return
     print formatstring
 
 if __name__ == '__main__':
@@ -256,4 +268,4 @@ if __name__ == '__main__':
     # python pcp_format.py ./genip afile bfile cfile
     loadGeoIp(sys.argv[1])
     for line in fileinput.input(sys.argv[2:]):
-        pcp_format(line)
+        mobile_format(line)

@@ -43,7 +43,11 @@ def split_kafka(line, start_time, end_time, topic):
             return
         timetmp = str(record[0]) + str(record[1])
     elif topic == "mpp_vv_mobile":
-        record = json.loads(line)
+        try:
+            record = json.loads(line)
+        except ValueError:
+            sys.stderr.write(("jsonerr,%s") % line)
+            return
         timetmp = str(record["time"])
     elif topic == "mpp_vv_mobile_new_version":
         record = string.split(line, '\t')
