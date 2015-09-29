@@ -18,7 +18,7 @@ def testTime(timetmp, start_time, end_time, topic):
             raise ValueError("timeerr")
     elif topic == "mpp_vv_mobile":
         timeStamp = int(timetmp)
-    elif topic == "mpp_vv_mobile_new_version":
+    elif topic == "mpp_vv_mobile_new_version" or topic == "mpp_vv_padweb":
         try:
             timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
             timeStamp = int(time.mktime(timedata))
@@ -49,7 +49,7 @@ def split_kafka(line, start_time, end_time, topic):
             sys.stderr.write(("jsonerr,%s") % line)
             return
         timetmp = str(record["time"])
-    elif topic == "mpp_vv_mobile_new_version":
+    elif topic == "mpp_vv_mobile_new_version" or topic == "mpp_vv_padweb":
         record = string.split(line, '\t')
         timetmp = record[0].strip()
 
