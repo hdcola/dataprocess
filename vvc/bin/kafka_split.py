@@ -10,7 +10,7 @@ import json
 filesfps = []
 filesfpscount = 0
 def testTime(timetmp, start_time, end_time, topic):
-    if topic == "mpp_vv_pcweb" or topic == "mpp_vv_pcclient":
+    if topic == "mpp_vv_pcweb" or topic == "mpp_vv_pcclient" or topic == "mpp_vv_msite":
         try:
             timedata = time.strptime(timetmp, "[%d/%b/%Y:%H:%M:%S+0800]")
             timeStamp = int(time.mktime(timedata))
@@ -34,7 +34,7 @@ def testTime(timetmp, start_time, end_time, topic):
         return False
 
 def split_kafka(line, start_time, end_time, topic):
-    if topic == "mpp_vv_pcweb" or topic == "mpp_vv_pcclient":
+    if topic == "mpp_vv_pcweb" or topic == "mpp_vv_pcclient" or topic == "mpp_vv_msite":
         record = string.split(line, '- -')
         try:
             record = record[1].strip().split(' ')
