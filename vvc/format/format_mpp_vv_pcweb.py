@@ -208,15 +208,19 @@ def pcp_format(line):
         return
     # pt
     try:
-        pt = urlarglist['tp']
-        formatstring = formatstring + ',' + str(pt)
-    except KeyError:
-        try:
+        tp = urlarglist['tp']
+        if str(bid) == '1' and str(tp) == '1':
+            pt = '0'
+        else:
             pt = urlarglist['pt']
-            formatstring = formatstring + ',' + str(pt)
-        except KeyError:
+        formatstring = formatstring + ',' + str(pt)
+        if str(pt) != '0':
             sys.stderr.write(("pterr,%s") % line)
+            return
+    except KeyError:
+        sys.stderr.write(("pterr,%s") % line)
         return
+
     # ln
     try:
         ln = urlarglist['ln']

@@ -234,17 +234,14 @@ def mobile_new_version_format(line):
                 return
     # pt
     try:
-        pt = record['tp']
+        pt = record['pt']
         formatstring = formatstring + ',' + str(pt)
-    except KeyError:
-        try:
-            pt = record['pt']
-            formatstring = formatstring + ',' + str(pt)
-        except KeyError:
-            #pt = ""
-            #formatstring = formatstring + ',' + str(pt)
+        if str(pt) != '0':
             sys.stderr.write(("pterr,%s") % line)
             return
+    except KeyError:
+        sys.stderr.write(("pterr,%s") % line)
+        return
     # ln
     try:
         ln = record['ln']

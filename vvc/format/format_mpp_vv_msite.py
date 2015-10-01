@@ -210,15 +210,17 @@ def msite_format(line):
 
     # pt
     try:
-        pt = urlarglist['tp']
-        formatstring = formatstring + ',' + str(pt)
-    except KeyError:
-        try:
+        if str(bid) == '3':
+            pt = "0"
+        else:
             pt = urlarglist['pt']
-            formatstring = formatstring + ',' + str(pt)
-        except KeyError:
-            pt = ""
-            formatstring = formatstring + ',' + str(pt)
+        formatstring = formatstring + ',' + str(pt)
+        if str(pt) != '0':
+            sys.stderr.write(("pterr,%s") % line)
+            return
+    except KeyError:
+        sys.stderr.write(("pterr,%s") % line)
+        return
     # ln
     try:
         ln = urlarglist['ln']

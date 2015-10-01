@@ -101,7 +101,6 @@ def pcc_format(line):
             sys.stderr.write(("iperr,%s") % line)
             return
 
-
     # location
     try:
         locationtmp = formatLocation(iptmp[0])
@@ -158,7 +157,6 @@ def pcc_format(line):
         ref = ""
         formatstring = formatstring + ',' + str(ref)
 
-
     # bid
     try:
         bid = urlarglist['bid']
@@ -166,6 +164,7 @@ def pcc_format(line):
     except KeyError:
         bid = ""
         formatstring = formatstring + ',' + str(bid)
+
     # cid
     try:
         cid = urlarglist['cid']
@@ -173,6 +172,7 @@ def pcc_format(line):
     except KeyError:
         sys.stderr.write(("ciderr,%s") % line)
         return
+
     # plid
     try:
         plid = urlarglist['plid']
@@ -180,6 +180,7 @@ def pcc_format(line):
     except KeyError:
         sys.stderr.write(("pliderr,%s") % line)
         return
+
     # vid
     try:
         vid = urlarglist['vid']
@@ -187,6 +188,7 @@ def pcc_format(line):
     except KeyError:
         sys.stderr.write(("viderr,%s") % line)
         return
+
     # tid
     try:
         tid = urlarglist['tid']
@@ -194,6 +196,7 @@ def pcc_format(line):
     except KeyError:
         tid = ""
         formatstring = formatstring + ',' + str(tid)
+
     # vts
     try:
         vts = urlarglist['vts']
@@ -219,15 +222,18 @@ def pcc_format(line):
                 return
     # pt
     try:
-        pt = urlarglist['tp']
-        formatstring = formatstring + ',' + str(pt)
-    except KeyError:
-        try:
+        if str(bid) == '4' or str(bid) == '5.1.1':
             pt = urlarglist['pt']
-            formatstring = formatstring + ',' + str(pt)
-        except KeyError:
+        else:
+            pt = urlarglist['pt']
+        formatstring = formatstring + ',' + str(pt)
+        if str(pt) != '0':
             sys.stderr.write(("pterr,%s") % line)
             return
+    except KeyError:
+        sys.stderr.write(("pterr,%s") % line)
+        return
+
     # ln
     try:
         ln = urlarglist['ln']
@@ -235,6 +241,7 @@ def pcc_format(line):
     except KeyError:
         sys.stderr.write(("lnerr,%s") % line)
         return
+
     # cf
     try:
         cf = urlarglist['cf']
@@ -242,6 +249,7 @@ def pcc_format(line):
     except KeyError:
         cf = ""
         formatstring = formatstring + ',' + str(cf)
+
     # definition
     try:
         definition = urlarglist['definition']
@@ -249,6 +257,7 @@ def pcc_format(line):
     except KeyError:
         definition = ""
         formatstring = formatstring + ',' + str(definition)
+
     # act
     try:
         act = urlarglist['act']
@@ -256,6 +265,7 @@ def pcc_format(line):
     except KeyError:
         act = ""
         formatstring = formatstring + ',' + str(act)
+
     # CLIENTTP
     clienttp = "pcclient"
     formatstring = formatstring + ',' + str(clienttp)

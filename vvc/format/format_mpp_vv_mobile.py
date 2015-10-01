@@ -211,15 +211,16 @@ def mobile_format(line):
                 return
     # pt
     try:
-        pt = record['tp']
+        data_type = record["data_type"]
+        if str(data_type) == 'vod':
+            pt = "0"
+        else:
+            sys.stderr.write(("pterr,%s") % line)
+            return
         formatstring = formatstring + ',' + str(pt)
     except KeyError:
-        try:
-            pt = record['pt']
-            formatstring = formatstring + ',' + str(pt)
-        except KeyError:
-            pt = ""
-            formatstring = formatstring + ',' + str(pt)
+        sys.stderr.write(("pterr,%s") % line)
+        return
     # ln
     try:
         ln = record['ln']

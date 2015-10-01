@@ -210,16 +210,8 @@ def ott_format(line):
                 sys.stderr.write(("cookieerr,%s") % line)
                 return
     # pt
-    try:
-        pt = record['tp']
-        formatstring = formatstring + ',' + str(pt)
-    except KeyError:
-        try:
-            pt = record['pt']
-            formatstring = formatstring + ',' + str(pt)
-        except KeyError:
-            pt = ""
-            formatstring = formatstring + ',' + str(pt)
+    pt = '0'
+    formatstring = formatstring + ',' + str(pt)
     # ln
     try:
         ln = record['ln']
