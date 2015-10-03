@@ -69,6 +69,37 @@ def formatTime(timetmp):
     timetmp_time = time.strftime('%H%M%S', timedata)
     return timetmp_date, timetmp_time
 
+def getVersionNum(verstr):
+    try:
+        vertmp = verstr.split('.')
+        if len(vertmp) >= 3:
+            return int(vertmp[0])*100+int(vertmp[1])*10+int(vertmp[2])
+        else:
+            return int(vertmp[0])*100+int(vertmp[1])*10
+    except IndexError:
+        return 0
+    except ValueError:
+        return 0
+
+def collectArgs(fstring, argslist, name, errname, strict):
+    try:
+        nametmp = argslist[name]
+        if strict:
+            if str(nametmp).strip() == "":
+                sys.stderr.write(("%s,%s") % (errname, line))
+                raise ValueError("args is illegal")
+                return
+            else:
+                fstring = fstring + ',' + str(nametmp)
+                return fstring
+        else:
+            fstring = fstring + ',' + str(nametmp)
+            return fstring
+    except KeyError:
+        sys.stderr.write(("%s,%s") % (errname, line))
+        raise ValueError("args is illegal")
+        return
+
 def mobile_new_version_format(line):
     formatstring = ""
     if len(line.strip('\n')) == 0:
@@ -119,173 +150,171 @@ def mobile_new_version_format(line):
         sys.stderr.write(("locationerr,%s") % line)
         return
 
-    # uid
+    clienttag = ""
     try:
-        uid = record['uid']
-        formatstring = formatstring + ',' + str(uid)
+        clientver = record["aver"].lower()
+        if "ipad" in clientver:
+            clienttag = "ipad"
+        elif "apad" in clientver:
+            clienttag = "apad"
+        elif "imgotv_iphone" in clientver:
+            version = clientver.split('_')
+            versionnum = getVersionNum(version[2])
+            if versionnum >= 450 or versionnum <= 453:
+                clienttag = "iphone450453"
+            elif versionnum < 450:
+                clienttag = "iphonel450"
+            elif versionnum >= 454:
+                clienttag = "iphone454"
+        elif "imgotv_aphone" in clientver:
+            version = clientver.split('_')
+            versionnum = getVersionNum(version[2])
+            if versionnum >= 452:
+                clienttag = "aphone452"
+            elif versionnum < 452:
+                clienttag = "aphonel452"
+        elif clientver == "4.5.2":
+            clienttag = "aphone452"
+        else:
+            clienttag = ""
     except KeyError:
-        #uid = ""
-        #formatstring = formatstring + ',' + str(uid)
-        sys.stderr.write(("uiderr,%s") % line)
+        sys.stderr.write(("clienttypeerr,%s") % line)
         return
 
-    # uuid
     try:
-        uuid = record['uuid']
-        formatstring = formatstring + ',' + str(uuid)
-    except KeyError:
-        #uuid = ""
-        #formatstring = formatstring + ',' + str(uuid)
-        sys.stderr.write(("uuiderr,%s") % line)
-        return
+        if clienttag == "aphone452":
+            formatstring = collectArgs(formatstring, record, "uid", "uiderr", False)
+        else:
+            formatstring = formatstring + ','
 
-    # guid
-    try:
-        guid = record['guid']
-        formatstring = formatstring + ',' + str(guid)
-    except KeyError:
-        #guid = ""
-        #formatstring = formatstring + ',' + str(guid)
-        sys.stderr.write(("guiderr,%s") % line)
-        return
+        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
+            formatstring = collectArgs(formatstring, record, "uuid", "uuiderr", True)
+        else:
+            formatstring = formatstring + ','
 
-    # ref
-    try:
-        ref = record['ref']
-        #ref = urllib.unquote(ref)
-        formatstring = formatstring + ',' + str(ref)
-    except KeyError:
-        #ref = ""
-        #ref = urllib.unquote(ref)
-        #formatstring = formatstring + ',' + str(ref)
-        sys.stderr.write(("referr,%s") % line)
-        return
+        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
+            formatstring = collectArgs(formatstring, record, "guid", "guiderr", True)
+        else:
+            formatstring = formatstring + ','
 
-    # bid
-    try:
-        bid = record['bid']
-        formatstring = formatstring + ',' + str(bid)
-    except KeyError:
-        #bid = ""
-        #formatstring = formatstring + ',' + str(bid)
-        sys.stderr.write(("biderr,%s") % line)
-        return
+        # ref
+        formatstring = formatstring + ','
+        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
+            formatstring = collectArgs(formatstring, record, "bid", "biderr", True)
+        else:
+            formatstring = formatstring + ','
 
-    # cid
-    try:
-        cid = record['cid']
-        formatstring = formatstring + ',' + str(cid)
-    except KeyError:
-        #cid = ""
-        #formatstring = formatstring + ',' + str(cid)
-        sys.stderr.write(("ciderr,%s") % line)
-        return
+        if clienttag == "aphone452" or clienttag == "iphone454":
+            formatstring = collectArgs(formatstring, record, "cid", "ciderr", True)
+        else:
+            formatstring = formatstring + ','
 
-    # plid
-    try:
-        plid = record['plid']
-        formatstring = formatstring + ',' + str(plid)
-    except KeyError:
-        #plid = ""
-        #formatstring = formatstring + ',' + str(plid)
-        sys.stderr.write(("plid,%s") % line)
-        return
+        if clienttag == "iphone454":
+            formatstring = collectArgs(formatstring, record, "plid","pliderr", True)
+        else:
+            formatstring = formatstring + ','
 
-    # vid
-    try:
-        vid = record['vid']
-        formatstring = formatstring + ',' + str(vid)
-    except KeyError:
-        sys.stderr.write(("viderr,%s") % line)
-        return
+        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
+            formatstring = collectArgs(formatstring, record, "vid", "viderr", True)
+        else:
+            formatstring = formatstring + ','
 
-    # tid
-    try:
-        tid = record['tid']
-        formatstring = formatstring + ',' + str(tid)
-    except KeyError:
-        #tid = ""
-        #formatstring = formatstring + ',' + str(tid)
-        sys.stderr.write(("tiderr,%s") % line)
-        return
+        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
+            formatstring = formatstring + ','
+        else:
+            formatstring = formatstring + ','
 
-    # vts
-    try:
-        vts = record['vts']
-        formatstring = formatstring + ',' + str(vts)
-    except KeyError:
-        vts = ""
-        formatstring = formatstring + ',' + str(vts)
-
-    # cookie or DID or mac
-    try:
-        cookie = record['did']
-        formatstring = formatstring + ',' + str(cookie)
-    except KeyError:
+        # vts
+        formatstring = formatstring + ','
+        # cookie
+        formatstring = formatstring + ','
+        # pt
         try:
-            cookie = record['mac']
-            formatstring = formatstring + ',' + str(cookie)
-        except KeyError:
-            try:
-                cookie = record['cookie']
-                formatstring = formatstring + ',' + str(cookie)
-            except KeyError:
-                sys.stderr.write(("cookieerr,%s") % line)
+            pt = record['pt']
+            formatstring = formatstring + ',' + str(pt)
+            if str(pt) != '0':
+                sys.stderr.write(("pterr,%s") % line)
                 return
-    # pt
-    try:
-        pt = record['pt']
-        formatstring = formatstring + ',' + str(pt)
-        if str(pt) != '0':
+        except KeyError:
             sys.stderr.write(("pterr,%s") % line)
             return
-    except KeyError:
-        sys.stderr.write(("pterr,%s") % line)
-        return
-    # ln
-    try:
-        ln = record['ln']
-        formatstring = formatstring + ',' + str(ln)
-    except KeyError:
-        ln = ""
-        formatstring = formatstring + ',' + str(ln)
+        # ln
+        formatstring = formatstring + ','
+        # cf
+        formatstring = formatstring + ','
+        # definition
+        formatstring = formatstring + ','
 
-    # cf
-    try:
-        cf = record['cf']
-        formatstring = formatstring + ',' + str(cf)
-    except KeyError:
-        cf = ""
-        formatstring = formatstring + ',' + str(cf)
-    # definition
-    try:
-        definition = record['definition']
-        formatstring = formatstring + ',' + str(definition)
-    except KeyError:
-        definition = ""
-        formatstring = formatstring + ',' + str(definition)
-    # act
-    try:
-        act = record['act']
-        formatstring = formatstring + ',' + str(act)
-    except KeyError:
-        #act = ""
-        #formatstring = formatstring + ',' + str(act)
-        sys.stderr.write(("acterr,%s") % line)
-        return
+        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
+            formatstring = collectArgs(formatstring, record, "act", "acterr", True)
+        else:
+            formatstring = formatstring + ','
 
-    # CLIENTTP
-    clienttp = "mobile"
-    formatstring = formatstring + ',' + str(clienttp)
+        # CLIENTTP
+        try:
+            clientver = record["aver"].lower()
+            if 'iphone' in clientver:
+                clienttp = 'iphone'
+            else:
+                clienttp = 'android'
+            formatstring = formatstring + ',' + str(clienttp)
+        except KeyError:
+            sys.stderr.write(("avererr,%s") % line)
+            return
 
-    # CLIENTVER
-    try:
-        clientver = record["aver"]
-        formatstring = formatstring + ',' + str(clientver)
-    except KeyError:
-        sys.stderr.write(("clientvererr,%s") % line)
+        # CLIENTVER
+        try:
+            act = record["act"]
+            clientver = record["aver"].lower()
+            if "imgotv_iphone" in clientver:
+                if act == 'play':
+                    version = clientver.split('_')
+                    versionnum = getVersionNum(version[2])
+                    if versionnum >= 450 or versionnum <= 453:
+                        formatstring = formatstring + ',' + str(clientver)
+                    else:
+                        sys.stderr.write(("avererr,%s") % line)
+                        return
+                elif act == 'aplay':
+                    version = clientver.split('_')
+                    versionnum = getVersionNum(version[2])
+                    if versionnum >= 453:
+                        formatstring = formatstring + ',' + str(clientver)
+                    else:
+                        sys.stderr.write(("playreperr,%s") % line)
+                        return
+                else:
+                    sys.stderr.write(("acterr,%s") % line)
+                    return
+            elif "imgotv_aphone" in clientver:
+                if act == "aplay":
+                    version = clientver.split('_')
+                    versionnum = getVersionNum(version[2])
+                    if versionnum >= 452:
+                        formatstring = formatstring + ',' + str(clientver)
+                    else:
+                        sys.stderr.write(("avererr,%s") % line)
+                        return
+                else:
+                    sys.stderr.write(("playreperr,%s") % line)
+                    return
+            else:
+                if act == 'aplay':
+                    versionnum = getVersionNum(clientver)
+                    if versionnum >= 452:
+                        formatstring = formatstring + ',' + str(clientver)
+                    else:
+                        sys.stderr.write(("avererr,%s") % line)
+                        return
+                else:
+                    sys.stderr.write(("playreperr,%s") % line)
+                    return
+        except KeyError:
+            sys.stderr.write(("avererr,%s") % line)
+            return
+        print formatstring
+    except ValueError:
         return
-    print formatstring
 
 if __name__ == '__main__':
     # gzcat abc.gz | python pcp_format.py ./genip -

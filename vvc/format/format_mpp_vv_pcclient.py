@@ -71,6 +71,25 @@ def formatTime(timetmp):
     timetmp_time = time.strftime('%H%M%S', timedata)
     return timetmp_date, timetmp_time
 
+def collectArgs(fstring, argslist, name, errname, strict):
+    try:
+        nametmp = argslist[name]
+        if strict:
+            if str(nametmp).strip() == "":
+                sys.stderr.write(("%s,%s") % (errname, line))
+                raise ValueError("args is illegal")
+                return
+            else:
+                fstring = fstring + ',' + str(nametmp)
+                return fstring
+        else:
+            fstring = fstring + ',' + str(nametmp)
+            return fstring
+    except KeyError:
+        sys.stderr.write(("%s,%s") % (errname, line))
+        raise ValueError("args is illegal")
+        return
+
 def pcc_format(line):
     formatstring = ""
     if len(line.strip('\n')) == 0:
@@ -126,159 +145,63 @@ def pcc_format(line):
         except IndexError:
             sys.stderr.write(("urlargerr,%s") % line)
             return
-    # uid
     try:
-        uid = urlarglist['uid']
-        formatstring = formatstring + ',' + str(uid)
-    except KeyError:
-        sys.stderr.write(("uiderr,%s") % line)
-        return
-
-    # uuid
-    try:
-        uuid = urlarglist['uuid']
-        formatstring = formatstring + ',' + str(uuid)
-    except KeyError:
-        sys.stderr.write(("uuiderr,%s") % line)
-        return
-    # guid
-    try:
-        guid = urlarglist['guid']
-        formatstring = formatstring + ',' + str(guid)
-    except KeyError:
-        sys.stderr.write(("guiderr,%s") % line)
-        return
-    # ref
-    try:
-        ref = urlarglist['ref']
-        ref = urllib.unquote(ref)
-        formatstring = formatstring + ',' + str(ref)
-    except KeyError:
-        ref = ""
-        formatstring = formatstring + ',' + str(ref)
-
-    # bid
-    try:
-        bid = urlarglist['bid']
-        formatstring = formatstring + ',' + str(bid)
-    except KeyError:
-        bid = ""
-        formatstring = formatstring + ',' + str(bid)
-
-    # cid
-    try:
-        cid = urlarglist['cid']
-        formatstring = formatstring + ',' + str(cid)
-    except KeyError:
-        sys.stderr.write(("ciderr,%s") % line)
-        return
-
-    # plid
-    try:
-        plid = urlarglist['plid']
-        formatstring = formatstring + ',' + str(plid)
-    except KeyError:
-        sys.stderr.write(("pliderr,%s") % line)
-        return
-
-    # vid
-    try:
-        vid = urlarglist['vid']
-        formatstring = formatstring + ',' + str(vid)
-    except KeyError:
-        sys.stderr.write(("viderr,%s") % line)
-        return
-
-    # tid
-    try:
-        tid = urlarglist['tid']
-        formatstring = formatstring + ',' + str(tid)
-    except KeyError:
-        tid = ""
-        formatstring = formatstring + ',' + str(tid)
-
-    # vts
-    try:
-        vts = urlarglist['vts']
-        formatstring = formatstring + ',' + str(vts)
-    except KeyError:
-        sys.stderr.write(("vtserr,%s") % line)
-        return
-
-    # cookie or DID or mac
-    try:
-        cookie = urlarglist['did']
-        formatstring = formatstring + ',' + str(cookie)
-    except KeyError:
+        formatstring = collectArgs(formatstring, urlarglist, "uid", "uiderr", False)
+        formatstring = collectArgs(formatstring, urlarglist, "uuid", "uuiderr", True)
+        formatstring = collectArgs(formatstring, urlarglist, "guid", "guiderr", True)
+        # ref
+        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, urlarglist, "bid", "biderr", True)
+        formatstring = collectArgs(formatstring, urlarglist, "cid", "ciderr", True)
+        formatstring = collectArgs(formatstring, urlarglist, "plid","pliderr", True)
+        formatstring = collectArgs(formatstring, urlarglist, "vid", "viderr", True)
+        # tid
+        formatstring = formatstring + ','
+        # vts
+        formatstring = formatstring + ','
+        # cookie or DID or mac
         try:
-            cookie = urlarglist['mac']
+            cookie = urlarglist['did']
             formatstring = formatstring + ',' + str(cookie)
         except KeyError:
             try:
-                cookie = urlarglist['cookie']
+                cookie = urlarglist['mac']
                 formatstring = formatstring + ',' + str(cookie)
             except KeyError:
-                sys.stderr.write(("cookieerr,%s") % line)
+                try:
+                    cookie = urlarglist['cookie']
+                    formatstring = formatstring + ',' + str(cookie)
+                except KeyError:
+                    sys.stderr.write(("cookieerr,%s") % line)
+                    return
+        # pt
+        bid = urlarglist['bid'].lower()
+        try:
+            if str(bid) == '4' or str(bid) == '5.1.1':
+                pt = urlarglist['pt']
+            else:
+                pt = urlarglist['pt']
+            formatstring = formatstring + ',' + str(pt)
+            if str(pt) != '0':
+                sys.stderr.write(("pterr,%s") % line)
                 return
-    # pt
-    try:
-        if str(bid) == '4' or str(bid) == '5.1.1':
-            pt = urlarglist['pt']
-        else:
-            pt = urlarglist['pt']
-        formatstring = formatstring + ',' + str(pt)
-        if str(pt) != '0':
+        except KeyError:
             sys.stderr.write(("pterr,%s") % line)
             return
-    except KeyError:
-        sys.stderr.write(("pterr,%s") % line)
+
+        formatstring = collectArgs(formatstring, urlarglist, "ln", "lnerr", False)
+        # cf
+        formatstring = formatstring + ','
+        # definition
+        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, urlarglist, "act", "acterr", True)
+        # CLIENTTP
+        formatstring = formatstring + ',' + "pcclient"
+        # aver
+        formatstring = formatstring + ','
+        print formatstring
+    except ValueError:
         return
-
-    # ln
-    try:
-        ln = urlarglist['ln']
-        formatstring = formatstring + ',' + str(ln)
-    except KeyError:
-        sys.stderr.write(("lnerr,%s") % line)
-        return
-
-    # cf
-    try:
-        cf = urlarglist['cf']
-        formatstring = formatstring + ',' + str(cf)
-    except KeyError:
-        cf = ""
-        formatstring = formatstring + ',' + str(cf)
-
-    # definition
-    try:
-        definition = urlarglist['definition']
-        formatstring = formatstring + ',' + str(definition)
-    except KeyError:
-        definition = ""
-        formatstring = formatstring + ',' + str(definition)
-
-    # act
-    try:
-        act = urlarglist['act']
-        formatstring = formatstring + ',' + str(act)
-    except KeyError:
-        act = ""
-        formatstring = formatstring + ',' + str(act)
-
-    # CLIENTTP
-    clienttp = "pcclient"
-    formatstring = formatstring + ',' + str(clienttp)
-
-    # CLIENTVER
-    try:
-        clientver = urlarglist["ver"]
-        formatstring = formatstring + ',' + str(clientver)
-    except KeyError:
-        sys.stderr.write(("clientvererr,%s") % line)
-        return
-
-    print formatstring
 
 if __name__ == '__main__':
     # gzcat abc.gz | python pcp_format.py ./genip -

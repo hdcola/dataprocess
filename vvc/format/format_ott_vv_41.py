@@ -91,7 +91,7 @@ def collectArgs(fstring, argslist, name, errname, strict):
         raise ValueError("args is illegal")
         return
 
-def ott_format(line):
+def ott_41_format(line):
     formatstring = ""
     if len(line.strip('\n')) == 0:
         return
@@ -135,7 +135,7 @@ def ott_format(line):
         # uid
         formatstring = collectArgs(formatstring, record, "user_id", "user_iderr", False)
         # uuid
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "play_session", "play_sessionerr", True)
         # guid
         formatstring = formatstring + ','
         # ref
@@ -143,11 +143,34 @@ def ott_format(line):
         # bid
         formatstring = formatstring + ','
         # cid
-        formatstring = formatstring + ','
+        try:
+            cid = record["video_info"]['fstlvl_id']
+            formatstring = formatstring + ',' + str(cid)
+        except KeyError:
+            sys.stderr.write(("video_info.fstlvl_iderr,%s") % line)
+            return
         # plid
-        formatstring = formatstring + ','
+        try:
+            plid = record["video_info"]['sndlv_id']
+            if plid.strip() == "":
+                sys.stderr.write(("video_info.sndlv_iderr,%s") % line)
+                return
+            else:
+                formatstring = formatstring + ',' + str(plid)
+        except KeyError:
+            sys.stderr.write(("video_info.sndlv_iderr,%s") % line)
+            return
         # vid
-        formatstring = formatstring + ','
+        try:
+            vid = record["video_info"]['clip_id']
+            if vid.strip() == "":
+                sys.stderr.write(("video_info.clip_iderr,%s") % line)
+                return
+            else:
+                formatstring = formatstring + ',' + str(vid)
+        except KeyError:
+            sys.stderr.write(("video_info.clip_iderr,%s") % line)
+            return
         # tid
         formatstring = formatstring + ','
         # vts
@@ -161,7 +184,17 @@ def ott_format(line):
         # cf
         formatstring = formatstring + ','
         # definition
-        formatstring = formatstring + ','
+        try:
+            definition = record["video_info"]['definition']
+            if definition.strip() == "":
+                sys.stderr.write(("video_info.definitionerr,%s") % line)
+                return
+            else:
+                formatstring = formatstring + ',' + str(definition)
+        except KeyError:
+            sys.stderr.write(("video_info.definitionerr,%s") % line)
+            return
+
         # act
         formatstring = formatstring + ','
         # CLIENTTP
@@ -192,4 +225,4 @@ if __name__ == '__main__':
     # python pcp_format.py ./genip afile bfile cfile
     loadGeoIp(sys.argv[1])
     for line in fileinput.input(sys.argv[2:]):
-        ott_format(line)
+        ott_41_format(line)
