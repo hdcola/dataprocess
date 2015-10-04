@@ -21,6 +21,8 @@
 #     pydota collect进程pid列表
 # * pydota_process_pids
 #     pydota process进程pid列表
+# * bearychat_hook
+#     bearychat_hook是bearychat的hook调用接口
 ##############################################################################
 kafka_hosts="10.100.1.51:9092,10.100.1.52:9092,10.100.1.53:9092,10.100.1.54:9092"
 pydota_cron="/etc/cron.d/py-dota-test"
@@ -32,3 +34,5 @@ pydota_log="/home/junjian/pydota/log/"
 pydota_pid_path="/home/junjian/pydota/pid/"
 pydota_collect_pids="/home/junjian/pydota/pid/pydota_connect.pids"
 pydota_process_pids="/home/junjian/pydota/pid/pydota_process.pids"
+pydota_service="/home/junjian/service/"
+bearychat_hook="curl https://hook.bearychat.com/=bw7by/incoming/a5679625782f600e89264ac077e2752f -X POST --data-urlencode "

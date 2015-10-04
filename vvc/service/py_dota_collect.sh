@@ -1,5 +1,9 @@
 #!/bin/bash
 . /etc/pydota.conf
+. $pydota_service/py_dota.common
+
+bearchat_send "${0}又开始工作啦，各位走过路过不要错过。"
+
 topics=("mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient mpp_vv_msite mpp_vv_padweb mpp_vv_ott ott_vv_41 ott_vv_44")
 work_path="${pydota_path}"
 start_time=`date --date="$DATE + 1 hour" +%Y%m%d%H`
@@ -16,10 +20,17 @@ mkdir -p ${pydota_orig}/${sub_path} 2>/dev/null
 mkdir -p ${pydota_des}/${sub_path} 2>/dev/null
 mkdir -p ${pydota_report}/${sub_path} 2>/dev/null
 cd $work_path
+
+msg="本次处理时间段为：${start_time}至${end_time},子目录为${sub_path}"
+bearchat_send "$msg"
+
+msg=""
 for topic in ${topics}; do
     filenameerr="err_"${start_time}"_play_"${topic}".log"
     filename=${start_time}"_play_"${topic}".bz2"
     python ./bin/kafka_connect.py $topic ${pydota_collect_pids} \
       | python ./bin/kafka_split.py ${start_time} ${end_time} ${topic} 2>${pydota_orig}/${sub_path}/$filenameerr \
       | bzip2 > ${pydota_orig}/${sub_path}/$filename &
+    msg="${msg}${topic}:"
 done
+bearchat_send "订阅${msg}完成"

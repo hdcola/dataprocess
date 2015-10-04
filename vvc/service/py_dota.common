@@ -1,0 +1,12 @@
+#!/bin/bash
+. /etc/pydota.conf
+
+bearchat_send()
+{
+  local txt=$1
+  msg="payload={\"text\":\"${txt}\"}"
+  sendmsg="${bearychat_hook} ${msg}"
+  ${sendmsg}
+}
+
+#bearchat_send "$1"
