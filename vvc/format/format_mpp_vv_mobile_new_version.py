@@ -149,6 +149,9 @@ def mobile_new_version_format(line):
     except ValueError:
         sys.stderr.write(("locationerr,%s") % line)
         return
+    except TypeError:
+        sys.stderr.write(("locationerr,%s") % line)
+        return
 
     clienttag = ""
     try:
@@ -246,9 +249,22 @@ def mobile_new_version_format(line):
         formatstring = formatstring + ','
 
         if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
-            formatstring = collectArgs(formatstring, record, "act", "acterr", True)
+            try:
+                act = record["act"]
+                if act.strip() == "":
+                    sys.stderr.write(("acterr,%s") % line)
+                    return
+                elif act == "aplay":
+                    act = 'play'
+                else:
+                    sys.stderr.write(("acterr,%s") % line)
+                    return
+                formatstring = formatstring + ',' + str(act)
+            except KeyError:
+                sys.stderr.write(("avererr,%s") % line)
+                return
         else:
-            formatstring = formatstring + ','
+            formatstring = formatstring + ',' + 'play'
 
         # CLIENTTP
         try:

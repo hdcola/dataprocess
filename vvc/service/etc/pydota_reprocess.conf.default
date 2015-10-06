@@ -1,0 +1,34 @@
+###############################################################################
+# pydota项目配置文件样例，该文件需要部署到/etc/下
+#
+# * kafka_hosts
+#     kafka集群的hosts列表
+# * pydota_cron
+#     pydota crontab配置所在文件路径
+# * pydota_path
+#     pydota脚本代码部署根路径
+# * pydota_orig
+#     kafka数据流原始数据归档文件存放根路径
+# * pydota_des
+#     中间结果文件存放根路径
+# * pydota_report
+#     最终结果文件存放根路径
+# * pydota_log
+#     pydota运行日志路径
+# * pydota_pid_path
+#     pydota pid文件存放路径
+# * pydota_collect_pids
+#     pydota collect进程pid列表
+# * pydota_process_pids
+#     pydota process进程pid列表
+##############################################################################
+kafka_hosts="10.100.1.51:9092,10.100.1.52:9092,10.100.1.53:9092,10.100.1.54:9092"
+pydota_cron="/etc/cron.d/py-dota-test"
+pydota_path="/home/junjian/pydota/pydota/"
+pydota_orig="/home/junjian/pydota/orig/"
+pydota_des="/home/junjian/pydota/re-des/"
+pydota_report="/home/junjian/pydota/re-report/"
+pydota_log="/home/junjian/pydota/log/"
+pydota_pid_path="/home/junjian/pydota/re-pid/"
+pydota_collect_pids="/home/junjian/pydota/re-pid/pydota_connect.pids"
+pydota_process_pids="/home/junjian/pydota/re-pid/pydota_process.pids"

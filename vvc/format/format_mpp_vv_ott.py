@@ -130,6 +130,9 @@ def ott_format(line):
     except ValueError:
         sys.stderr.write(("locationerr,%s") % line)
         return
+    except TypeError:
+        sys.stderr.write(("locationerr,%s") % line)
+        return
 
     try:
         # uid
@@ -163,7 +166,7 @@ def ott_format(line):
         # definition
         formatstring = formatstring + ','
         # act
-        formatstring = formatstring + ','
+        formatstring = formatstring + ',' + 'play'
         # CLIENTTP
         formatstring = formatstring + ',' + "ott"
         # aver

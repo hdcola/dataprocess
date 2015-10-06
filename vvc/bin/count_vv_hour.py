@@ -54,6 +54,9 @@ def sortRecord(filename, ctype):
                     typetmp = record[10]
             else:
                 typetmp = "all"
+                acttmp = record[20]
+                if acttmp != "play":
+                    continue
 
             if typetmp == "":
                 typetmp = "NaN"

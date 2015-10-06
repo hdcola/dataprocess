@@ -137,6 +137,9 @@ def ott_44_format(line):
     except ValueError:
         sys.stderr.write(("locationerr,%s") % line)
         return
+    except TypeError:
+        sys.stderr.write(("locationerr,%s") % line)
+        return
 
     try:
         # uid
