@@ -142,6 +142,9 @@ def mobile_format(line):
     except ValueError:
         sys.stderr.write(("locationerr,%s") % line)
         return
+    except TypeError:
+        sys.stderr.write(("locationerr,%s") % line)
+        return
 
     clienttag = ""
     try:
@@ -224,7 +227,7 @@ def mobile_format(line):
         formatstring = formatstring + ','
 
         # act
-        formatstring = formatstring + ','
+        formatstring = formatstring + ',' + 'play'
 
         # CLIENTTP
         try:

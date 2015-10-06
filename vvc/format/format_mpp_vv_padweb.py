@@ -128,6 +128,9 @@ def padweb_format(line):
     except ValueError:
         sys.stderr.write(("locationerr,%s") % line)
         return
+    except TypeError:
+        sys.stderr.write(("locationerr,%s") % line)
+        return
 
     # url args
     try:

@@ -130,6 +130,9 @@ def msite_format(line):
     except ValueError:
         sys.stderr.write(("locationerr,%s") % line)
         return
+    except TypeError:
+        sys.stderr.write(("locationerr,%s") % line)
+        return
     # url args
     try:
         urlargtmp = record[1].strip().split(' ')[3].split('?')[1].split('&')
