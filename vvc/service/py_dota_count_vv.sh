@@ -6,7 +6,6 @@ fi
 if [[ -n "$HOME" && -e "$HOME/.pydota" ]]; then
   . "$HOME/.pydota"
 fi
-. $pydota_service/py_dota.common
 
 filename=$1
 topic=$2
