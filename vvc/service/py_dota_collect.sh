@@ -13,10 +13,10 @@ start_time=`date --date="$DATE + 1 hour" +%Y%m%d%H`
 end_time=`date --date="$DATE + 2 hour" +%Y%m%d%H`
 start_time=${start_time}"00"
 end_time=${end_time}"00"
-
 sub_path_year=${start_time:0:4}
 sub_path_month=${start_time:4:2}
 sub_path=${sub_path_year}/${sub_path_month}
+bearychat="${work_path}/bin/bearychat.sh"
 mkdir -p ${pydota_log} 2>/dev/null
 mkdir -p ${pydota_pid_path} 2>/dev/null
 mkdir -p ${pydota_orig}/${sub_path} 2>/dev/null
@@ -24,11 +24,17 @@ mkdir -p ${pydota_des}/${sub_path} 2>/dev/null
 mkdir -p ${pydota_report}/${sub_path} 2>/dev/null
 cd $work_path
 
+msg=""
 for topic in ${topics}; do
     filenameerr="err_"${start_time}"_play_"${topic}".log"
     filename=${start_time}"_play_"${topic}".bz2"
-    python ./bin/kafka_connect.py $topic ${pydota_collect_pids} \
-      | python ./bin/kafka_split.py ${start_time} ${end_time} ${topic} 2>${pydota_orig}/${sub_path}/$filenameerr \
+    ./bin/kafka_connect.py ${topic} ${pydota_collect_pids} \
+      | ./bin/kafka_split.py ${start_time} ${end_time} ${topic} 2>${pydota_orig}/${sub_path}/$filenameerr \
       | bzip2 > ${pydota_orig}/${sub_path}/$filename &
-    msg="${msg}${topic}:"
+
+    msg="${msg}./bin/kafka_connect.py ${topic} ${pydota_collect_pids} | ./bin/kafka_split.py ${start_time} ${end_time} ${topic} 2>${pydota_orig}/${sub_path}/$filenameerr | bzip2 > ${pydota_orig}/${sub_path}/$filename
+
+"
 done
+
+echo "${msg}" | $bearychat -t "py_dota_collect开始${start_time}-${end_time}启动"

@@ -1,5 +1,5 @@
 ###############################################################################
-# pydota项目配置文件样例，该文件需要部署到/etc/下
+# pydota项目配置文件样例，该文件需要部署到/etc/下或用户Home目录下的.pydota
 #
 # * kafka_hosts
 #     kafka集群的hosts列表
@@ -21,8 +21,6 @@
 #     pydota collect进程pid列表
 # * pydota_process_pids
 #     pydota process进程pid列表
-# * bearychat_hook
-#     bearychat_hook是bearychat的hook调用接口
 ##############################################################################
 kafka_hosts="10.100.1.51:9092,10.100.1.52:9092,10.100.1.53:9092,10.100.1.54:9092"
 pydota_cron="/etc/cron.d/py-dota-test"
@@ -34,4 +32,3 @@ pydota_log="/home/junjian/pydota/log/"
 pydota_pid_path="/home/junjian/pydota/pid/"
 pydota_collect_pids="/home/junjian/pydota/pid/pydota_connect.pids"
 pydota_process_pids="/home/junjian/pydota/pid/pydota_process.pids"
-pydota_service="/home/junjian/service/"
