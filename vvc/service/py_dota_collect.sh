@@ -1,5 +1,11 @@
 #!/bin/bash
-. /etc/pydota.conf
+if [[ -e "/etc/pydota.conf" ]]; then
+  . /etc/pydota.conf
+fi
+
+if [[ -n "$HOME" && -e "$HOME/.pydota" ]]; then
+  . "$HOME/.pydota"
+fi
 
 topics=("mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient mpp_vv_msite mpp_vv_padweb mpp_vv_ott ott_vv_41 ott_vv_44")
 work_path="${pydota_path}"
