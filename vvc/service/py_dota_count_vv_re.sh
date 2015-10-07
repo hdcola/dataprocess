@@ -8,6 +8,7 @@ sub_path_month=$4
 start_time=$5
 sub_path=${sub_path_year}/${sub_path_month}
 work_path="${pydota_path}"
+bearychat="${work_path}/bin/bearychat.sh"
 
 cd $work_path
 filenameraw=${start_time}"_playrawdata_"${topic}

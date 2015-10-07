@@ -1,4 +1,8 @@
 #!/bin/bash
+# 从kafka中将对应的信息收集下来
+# 启动后，自动计算时间，从下一小时开始处理，由于kafka上的时间延迟，所以建议提前至少10分钟启动
+# 本程序可以使用cron来启动
+
 if [[ -e "/etc/pydota.conf" ]]; then
   . /etc/pydota.conf
 fi
@@ -37,4 +41,4 @@ for topic in ${topics}; do
 "
 done
 
-echo "${msg}" | $bearychat -t "py_dota_collect开始${start_time}-${end_time}启动"
+echo "${msg}" | $bearychat -t "py_dota_collect开始处理${start_time}-${end_time}数据"
