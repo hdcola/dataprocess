@@ -1,6 +1,12 @@
 #!/bin/sh
+if [[ -e "/etc/pydota.conf" ]]; then
+  . /etc/pydota.conf
+fi
 
-. /etc/pydota.conf
+if [[ -n "$HOME" && -e "$HOME/.pydota" ]]; then
+  . "$HOME/.pydota"
+fi
+
 . $pydota_service/py_dota.common
 
 bearchat_send "${0}又开始工作啦，各位走过路过不要错过。"

@@ -1,5 +1,11 @@
 #!/bin/sh
-. /etc/pydota.conf
+if [[ -e "/etc/pydota.conf" ]]; then
+  . /etc/pydota.conf
+fi
+
+if [[ -n "$HOME" && -e "$HOME/.pydota" ]]; then
+  . "$HOME/.pydota"
+fi
 . $pydota_service/py_dota.common
 
 filename=$1
