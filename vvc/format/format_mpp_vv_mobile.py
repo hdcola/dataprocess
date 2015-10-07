@@ -255,7 +255,7 @@ def mobile_format(line):
                 if "imgotv_aphone" in clientver:
                     version = clientver.split('_')
                     versionnum = getVersionNum(version[2])
-                    if versionnum == 0 or versionnum > 452:
+                    if versionnum == 0 or versionnum >= 452:
                         sys.stderr.write(("apk_versionerr,%s") % line)
                         return
                 if "imgotv_iphone" in clientver:
