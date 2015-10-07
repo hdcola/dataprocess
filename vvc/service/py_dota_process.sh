@@ -15,16 +15,24 @@ start_time=${start_time}"00"
 sub_path_year=${start_time:0:4}
 sub_path_month=${start_time:4:2}
 sub_path=${sub_path_year}/${sub_path_month}
+bearychat="${work_path}/bin/bearychat.sh"
 mkdir -p ${pydota_log} 2>/dev/null
 mkdir -p ${pydota_pid_path} 2>/dev/null
 mkdir -p ${pydota_orig}/${sub_path} 2>/dev/null
 mkdir -p ${pydota_des}/${sub_path} 2>/dev/null
 mkdir -p ${pydota_report}/${sub_path} 2>/dev/null
+msg=""
 
 cd $work_path
 for topic in ${topics}; do
     filename=${start_time}"_play_"${topic}
     if [ -f ${pydota_orig}/${sub_path}/${filename}.bz2 ]; then
-      ./service/py_dota_count_vv.sh ${filename} $topic $sub_path_year $sub_path_month $start_time &
+      ./service/py_dota_count_vv.sh $topic $sub_path_year $sub_path_month $start_time &
+
+      msg="${msg}./service/py_dota_count_vv.sh $topic $sub_path_year $sub_path_month $start_time &
+
+"
     fi
 done
+
+echo "${msg}" | $bearychat -t "py_dota_process开始处理${start_time}数据"
