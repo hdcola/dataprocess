@@ -31,9 +31,9 @@ cd $work_path
 for topic in ${topics}; do
     filename=${start_time}"_play_"${topic}
     if [ -f ${pydota_orig}/${sub_path}/${filename}.bz2 ]; then
-      ./service/py_dota_count_vv.sh $topic $sub_path_year $sub_path_month $start_time &
+      ./service/py_dota_rawdata.sh $topic $start_time &
 
-      msg="${msg}./service/py_dota_count_vv.sh $topic $sub_path_year $sub_path_month $start_time &
+      msg="${msg}./service/py_dota_rawdata.sh $topic $start_time &
 
 "
     fi
