@@ -41,4 +41,7 @@ for topic in ${topics}; do
 "
 done
 
-echo "${msg}" | $bearychat -t "py_dota_collect开始处理${start_time}-${end_time}数据"
+# 详细处理数据报送
+# echo "${msg}" | $bearychat -t "py_dota_collect开始处理${start_time}-${end_time}数据"
+# 简洁处理数据报送
+echo "${topics}" | $bearychat -t "py_dota_collect开始处理${start_time}-${end_time}数据"
