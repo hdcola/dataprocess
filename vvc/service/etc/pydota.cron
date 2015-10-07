@@ -1,2 +1,2 @@
 MAILTO=""
-30 * * * * /home/huangdong/pydota/pydota/servie/py_dota_collect.sh
+30 * * * * /home/huangdong/pydota/pydota/service/py_dota_collect.sh
