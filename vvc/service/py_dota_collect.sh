@@ -37,4 +37,4 @@ for topic in ${topics}; do
 "
 done
 
-echo "${msg}" | $bearychat -t "py_dota_collect开始启动"
+echo "${msg}" | $bearychat -t "py_dota_collect开始${start_time}-${end_time}启动"
