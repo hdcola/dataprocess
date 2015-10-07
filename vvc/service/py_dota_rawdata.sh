@@ -25,6 +25,6 @@ bzcat ${pydota_orig}/${sub_path}/$filename.bz2 | python format/format_${topic}.p
   2> ${pydota_des}/${sub_path}/err_${filenameraw}.log | bzip2 > ${pydota_des}/${sub_path}/${filenameraw}.bz2
 
 err_count=`cat ${pydota_des}/${sub_path}/err_${filenameraw}.log | wc -l`
-raw_size=`ls -l ${pydota_des}/${sub_path}/${filenameraw}.bz2 | awk '{print $5}'`
-msg="error数据有${err_count}条,raw数据有${raw_size}"
+raw_size=`ls -lh ${pydota_des}/${sub_path}/${filenameraw}.bz2 | awk '{print $5}'`
+msg="error数据有${err_count}条,rawdata大小${raw_size}"
 echo "${msg}" | $bearychat -t "${topic} ${start_time}的rawdata数据处理完成"
