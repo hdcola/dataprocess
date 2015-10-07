@@ -1,17 +1,17 @@
 #!/bin/sh
 
 . /etc/pydota_reprocess.conf
-[ "$#" != "1" ] && echo "usage: py_dota_reprocess.sh  [length/hour] " && exit 1
+[ "$#" != "3" ] && echo "usage: py_dota_reprocess.sh  [date] [start_hour] [end_hour] " && exit 1
 
-count=$1
-n=0
-while [ $count -ge $n ]; do
-    hour=$((count-n+1))
-    topics=("mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient mpp_vv_msite mpp_vv_padweb mpp_vv_ott ott_vv_41 ott_vv_44")
+topics=("mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient mpp_vv_msite mpp_vv_padweb mpp_vv_ott ott_vv_41 ott_vv_44")
+datetime=$1
+start_hour=$2
+end_hour=$3
+date -d $datetime +%Y%m%d 1>/dev/null 2>&1 || exit 1
+while [ $end_hour -ge $start_hour ]; do
     work_path="${pydota_path}"
-    start_time=`date --date="$DATE - $hour hour" +%Y%m%d%H`
+    start_time=`date --date="$datetime $start_hour hour" +%Y%m%d%H`
     start_time=${start_time}"00"
-
     sub_path_year=${start_time:0:4}
     sub_path_month=${start_time:4:2}
     sub_path=${sub_path_year}/${sub_path_month}
@@ -27,5 +27,5 @@ while [ $count -ge $n ]; do
             ./service/py_dota_count_vv_re.sh ${filename} $topic $sub_path_year $sub_path_month $start_time 2>${pydota_log}/${start_time}_${topic}
         fi
     done
-    n=$((n+1))
+    start_hour=$((start_hour+1))
 done
