@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+# kafka_connect.py topicname pid_path
+
 from pykafka import KafkaClient
 import sys
 import os
