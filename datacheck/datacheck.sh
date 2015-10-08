@@ -1,7 +1,7 @@
 #!/bin/bash
 #$1 is time
 #$2 is topic list such as: mpp_vv_pcweb, mpp_vv_mobile, mpp_vv_mobile_new_version, mpp_vv_pcclient, mpp_vv_msite, mpp_vv_padweb, mpp_vv_ott, ott_vv_41, ott_vv_44
-
+#!
 if [ "$1" ]; then
 	atime="$1"
 else
