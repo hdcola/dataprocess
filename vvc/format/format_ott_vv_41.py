@@ -199,7 +199,7 @@ def ott_41_format(line):
             return
 
         # act
-        formatstring = formatstring + ','
+        formatstring = formatstring + ',' + 'play'
         # CLIENTTP
         formatstring = formatstring + ',' + "ott"
         # aver
