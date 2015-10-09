@@ -7,7 +7,7 @@ if [ "$1" ]; then
 else
 	atime=$(date +%Y%m%d%H)
 fi
-#atime=2015100812
+atime=2015100812
 
 junjian_path_orig="/home/junjian/pydota/orig/"
 junjian_path_des="/home/junjian/pydota/des/"
@@ -82,10 +82,8 @@ len_topics=${#topics[@]}
 
 #将各端 report 进行对比
 for ((i=0; i<${len_topics}; i++)); do
-	 paste "${junjian_path_report}${ayear}/${amonth}/${topics[$i]}_${adate}_vv_all_hour.csv" "${ben_path_report}${ben_path[$i]}.${adate}.hour.vv.csv" > /home/guangdong/datacheck/report/${ben_path[$i]}.${adate}.csv  
+	 paste "${junjian_path_report}${ayear}/${amonth}/${topics[$i]}_${adate}_vv_all_hour.csv" "${ben_path_report}${ben_path[$i]}.${adate}.hour.vv.csv" | awk 'BEGIN {FS=","} {printf "%s,%s,%s\n", $1, $2, $4}' | awk 'BEGIN {FS=" "} {print $1","$3}' | awk 'BEGIN {FS=","} {printf "%s,%s,%s,%s,%s‰,%s\n", $1, $2, $3, $4, substr(($3-$4)/$4*1000,0,5), ($3-$4)}' > /home/guangdong/datacheck/report/${ben_path[$i]}.${adate}.csv    
 
 done
 
 
-echo ${ben_path_des}
-echo ${ben_path_orig}
