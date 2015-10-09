@@ -1,6 +1,14 @@
 #!/bin/sh
 
-. /etc/pydota_reprocess.conf
+if [[ -e "/etc/pydota.conf" ]]; then
+  . /etc/pydota_reprocess.conf
+fi
+
+if [[ -n "$HOME" && -e "$HOME/.pydota" ]]; then
+  . "$HOME/pydota_reprocess"
+fi
+
+#. /etc/pydota_reprocess.conf
 [ "$#" != "4" ] && echo "usage: py_dota_reprocess.sh  [date] [start_hour] [end_hour] " && exit 1
 
 #topics=("mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient mpp_vv_msite mpp_vv_padweb mpp_vv_ott ott_vv_41 ott_vv_44")

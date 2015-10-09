@@ -1,6 +1,13 @@
 #!/bin/sh
 
-. /etc/pydota_reprocess.conf
+if [[ -e "/etc/pydota.conf" ]]; then
+  . /etc/pydota_reprocess.conf
+fi
+
+if [[ -n "$HOME" && -e "$HOME/.pydota" ]]; then
+  . "$HOME/pydota_reprocess"
+fi
+#. /etc/pydota_reprocess.conf
 filename=$1
 topic=$2
 sub_path_year=$3
