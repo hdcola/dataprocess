@@ -17,6 +17,7 @@ filename=${start_time}"_play_"${topic}
 sub_path=${sub_path_year}/${sub_path_month}
 work_path="${pydota_path}"
 bearychat="${work_path}/bin/bearychat.sh"
+proctime=`date "+%Y/%m/%d %H:%M:%S"`
 
 cd $work_path
 filenameraw=${start_time}"_playrawdata_"${topic}
@@ -33,5 +34,5 @@ msg="error数据有${err_count}条,rawdata大小${raw_size}
 ${err_msg}"
 nowtime=`date "+%Y/%m/%d %H:%M:%S"`
 msg="${msg}
-${nowtime}@${py_dota_process_user}"
+${proctime}-${nowtime}@${py_dota_process_user}"
 echo "${msg}" | $bearychat -t "${topic} ${start_time}的rawdata数据处理完成"
