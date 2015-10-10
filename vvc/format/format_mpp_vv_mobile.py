@@ -204,7 +204,7 @@ def mobile_format(line):
                 sys.stderr.write(("video_info.video_iderr,%s") % line)
                 return
             else:
-                formatstring = formatstring + ',' + vid
+                formatstring = formatstring + ',' + str(vid)
         except KeyError:
             sys.stderr.write(("video_info.video_iderr,%s") % line)
             return
