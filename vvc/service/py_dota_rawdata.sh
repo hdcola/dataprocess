@@ -31,5 +31,7 @@ raw_size=`ls -lh ${pydota_des}/${sub_path}/${filenameraw}.bz2 | awk '{print $5}'
 msg="error数据有${err_count}条,rawdata大小${raw_size}
 错误类型如下：
 ${err_msg}"
-
+nowtime=`date "+%Y/%m/%d %H:%M:%S"`
+msg="${msg}
+${nowtime}@${py_dota_process_user}"
 echo "${msg}" | $bearychat -t "${topic} ${start_time}的rawdata数据处理完成"

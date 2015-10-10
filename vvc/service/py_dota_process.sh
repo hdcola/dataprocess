@@ -43,4 +43,7 @@ done
 # 详细处理数据报送
 # echo "${msg}" | $bearychat -t "py_dota_process开始处理${start_time}数据"
 # 简洁处理数据报送
-echo "${topics}" | $bearychat -t "py_dota_process开始处理${start_time}数据"
+nowtime=`date +%Y/%m/%d %H:%M:%S`
+msg="${topics}
+${nowtime}@${py_dota_process_user}"
+echo "${msg}" | $bearychat -t "py_dota_process开始处理${start_time}数据"
