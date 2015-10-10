@@ -1,3 +1,4 @@
 MAILTO=""
 30 * * * * /home/huangdong/pydota/pydota/service/py_dota_collect.sh
 30 * * * * /home/huangdong/pydota/pydota/service/py_dota_process.sh
+0 * * * * /home/huangdong/pydota/pydota/service/py_dota_count_vv.sh
