@@ -198,7 +198,16 @@ def mobile_format(line):
         formatstring = formatstring + ','
 
         # vid
-        formatstring = formatstring + ','
+        try:
+            vid = record["video_info"]["video_id"]
+            if str(vid).strip() == "":
+                sys.stderr.write(("video_info.video_iderr,%s") % line)
+                return
+            else:
+                formatstring = formatstring + ',' + str(vid)
+        except KeyError:
+            sys.stderr.write(("video_info.video_iderr,%s") % line)
+            return
 
         # tid
         formatstring = formatstring + ','
