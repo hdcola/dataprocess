@@ -46,7 +46,7 @@ function report(){
   nowtime=`date "+%Y/%m/%d %H:%M:%S"`
   msg="${msg}
   ${proctime}-${nowtime}@${py_dota_process_user}"
-  echo "${msg}" | $bearychat -t "${topic} ${start_time:0:6} ${start_time:6:2}:${start_time:8:2}的${field_name}数据统计完成"
+  echo "${msg}" | $bearychat -t "${topic} ${start_time:0:8} ${start_time:8:2}:${start_time:10:2}的${field_name}数据统计完成"
 }
 
 report 11 "cid"
