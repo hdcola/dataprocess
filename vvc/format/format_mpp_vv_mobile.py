@@ -179,7 +179,7 @@ def mobile_format(line):
 
     try:
         # uid
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "user_id", "user_iderr", True)
 
         # uuid
         formatstring = formatstring + ','
@@ -198,7 +198,16 @@ def mobile_format(line):
         formatstring = formatstring + ','
 
         # vid
-        formatstring = formatstring + ','
+        try:
+            vid = record["video_info"]["video_id"]
+            if str(vid).strip() == "":
+                sys.stderr.write(("video_info.video_iderr,%s") % line)
+                return
+            else:
+                formatstring = formatstring + ',' + str(vid)
+        except KeyError:
+            sys.stderr.write(("video_info.video_iderr,%s") % line)
+            return
 
         # tid
         formatstring = formatstring + ','
