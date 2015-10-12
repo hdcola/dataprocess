@@ -33,10 +33,10 @@ for topic in ${topics}; do
     filenameerr="err_"${start_time}"_play_"${topic}".log"
     filename=${start_time}"_play_"${topic}".bz2"
     ./bin/kafka_connect.py ${topic} ${pydota_collect_pids} \
-      | ./bin/kafka_split.py ${start_time} ${end_time} ${topic} 2>${pydota_orig}/${sub_path}/$filenameerr \
+      | ./bin/kafka_split.py ${start_time} ${end_time} ${topic} "${pydota_orig}/${sub_path}" 2>${pydota_orig}/${sub_path}/$filenameerr \
       | bzip2 > ${pydota_orig}/${sub_path}/$filename &
 
-    msg="${msg}./bin/kafka_connect.py ${topic} ${pydota_collect_pids} | ./bin/kafka_split.py ${start_time} ${end_time} ${topic} 2>${pydota_orig}/${sub_path}/$filenameerr | bzip2 > ${pydota_orig}/${sub_path}/$filename
+    msg="${msg}./bin/kafka_connect.py ${topic} ${pydota_collect_pids} | ./bin/kafka_split.py ${start_time} ${end_time} ${topic} "${pydota_orig}/${sub_path}" 2>${pydota_orig}/${sub_path}/$filenameerr | bzip2 > ${pydota_orig}/${sub_path}/$filename
 
 "
 done
