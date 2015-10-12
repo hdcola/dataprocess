@@ -48,7 +48,7 @@ def sortRecord(filename, ctype):
                 typetmp = record[11]
             elif ctype == "chn":
                 tptmp   = record[16]
-                if tptmp != "1":
+                if tptmp != "0":
                     continue
                 else:
                     typetmp = record[10]
