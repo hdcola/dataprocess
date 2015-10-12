@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 # encoding: utf-8
+# 从stdin或第四个参数中取得topic指定起止时间的数据，如果时间正常出到stdout，如果不正常出到stderr
+#
+# python kafka_split.py starttime endtime topic [filepath]
+#
+# bzcat *.bz2 | python kafka_split.py 201510091000 201510091100 mpp_vv_pcweb
+#
 
 import fileinput
 import sys

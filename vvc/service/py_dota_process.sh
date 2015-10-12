@@ -1,6 +1,8 @@
 #!/bin/sh
-# py_dota_process.sh 直接处理上小时的数据
-# py_dota_process.sh 201510072300 处理指定时间的数据
+# 直接处理上小时的数据
+# py_dota_process.sh
+# 处理指定时间的数据
+# py_dota_process.sh 201510072300
 
 if [[ -e "/etc/pydota.conf" ]]; then
   . /etc/pydota.conf
@@ -15,7 +17,6 @@ work_path="${pydota_path}"
 start_time=`date --date="$DATE - 1 hour" +%Y%m%d%H`
 start_time=${start_time}"00"
 start_time=${1:-${start_time}}
-
 sub_path_year=${start_time:0:4}
 sub_path_month=${start_time:4:2}
 sub_path=${sub_path_year}/${sub_path_month}
@@ -42,4 +43,7 @@ done
 # 详细处理数据报送
 # echo "${msg}" | $bearychat -t "py_dota_process开始处理${start_time}数据"
 # 简洁处理数据报送
-echo "${topics}" | $bearychat -t "py_dota_process开始处理${start_time}数据"
+nowtime=`date +%Y/%m/%d %H:%M:%S`
+msg="${topics}
+${nowtime}@${py_dota_process_user}"
+echo "${msg}" | $bearychat -t "py_dota_process开始处理${start_time}数据"
