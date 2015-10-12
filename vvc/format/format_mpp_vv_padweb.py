@@ -184,7 +184,7 @@ def padweb_format(line):
         formatstring = formatstring + ','
         formatstring = collectArgs(formatstring, urlarglist, "cf", "cferr", True)
         # definition
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, urlarglist, "def", "definitionerr", True)
         formatstring = collectArgs(formatstring, urlarglist, "act", "acterr", True)
         # CLIENTTP
         formatstring = formatstring + ',' + "padweb"

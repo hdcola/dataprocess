@@ -40,7 +40,7 @@ def testTime(timetmp, start_time, end_time, topic):
     # 进程退出时间
     time_exit = int(end_time) + 1800
 
-    if (timeStamp >= int(start_time) and timeStamp <= int(end_time)):
+    if (int(start_time) <= timeStamp < int(end_time)):
         return True
     elif (timeStamp > time_exit):
         exit(0)

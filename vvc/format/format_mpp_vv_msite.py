@@ -159,10 +159,10 @@ def msite_format(line):
         formatstring = collectArgs(formatstring, urlarglist, "bid", "biderr", True)
         formatstring = collectArgs(formatstring, urlarglist, "cid", "ciderr", True)
         # plid
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, urlarglist, "plid", "pliderr", False)
         formatstring = collectArgs(formatstring, urlarglist, "vid", "viderr", True)
         # tid
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, urlarglist, "tid", "tiderr", False)
         formatstring = collectArgs(formatstring, urlarglist, "vts", "vtserr", True)
         formatstring = collectArgs(formatstring, urlarglist, "cookie", "cookieerr", True)
         # pt

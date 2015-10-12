@@ -28,3 +28,6 @@ err_count=`cat ${pydota_des}/${sub_path}/err_${filenameraw}.log | wc -l`
 raw_size=`ls -lh ${pydota_des}/${sub_path}/${filenameraw}.bz2 | awk '{print $5}'`
 msg="error数据有${err_count}条,rawdata大小${raw_size}"
 echo "${msg}" | $bearychat -t "${topic} ${start_time}的rawdata数据处理完成"
+
+# 接下来处理这个topic的vv report
+./service/py_dota_count_vv.sh $topic $start_time &
