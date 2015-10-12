@@ -156,7 +156,7 @@ def mobile_format(line):
         elif "imgotv_iphone" in clientver:
             version = clientver.split('_')
             versionnum = getVersionNum(version[2])
-            if versionnum >= 450 or versionnum <= 453:
+            if versionnum >= 450 and versionnum <= 453:
                 clienttag = "iphone450453"
             elif versionnum < 450:
                 clienttag = "iphonel450"
