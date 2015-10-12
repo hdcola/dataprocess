@@ -190,7 +190,7 @@ def msite_format(line):
         formatstring = formatstring + ',' + "phonem"
         # aver
         formatstring = formatstring + ','
-        print formatstring
+        print formatstring.lower()
     except ValueError:
         return
 

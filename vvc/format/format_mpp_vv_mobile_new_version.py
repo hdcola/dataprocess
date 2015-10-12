@@ -342,7 +342,7 @@ def mobile_new_version_format(line):
         except KeyError:
             sys.stderr.write(("avererr,%s") % line)
             return
-        print formatstring
+        print formatstring.lower()
     except ValueError:
         return
 

@@ -204,7 +204,7 @@ def ott_41_format(line):
         formatstring = formatstring + ',' + "ott"
         # aver
         formatstring = collectArgs(formatstring, record, "apk_version", "apk_versionerr", True)
-        print formatstring
+        print formatstring.lower()
     except ValueError:
         return
     # vid

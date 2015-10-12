@@ -195,7 +195,7 @@ def pcp_format(line):
         formatstring = formatstring + ',' + "pcweb"
         # aver
         formatstring = formatstring + ','
-        print formatstring
+        print formatstring.lower()
     except ValueError:
         return
 
