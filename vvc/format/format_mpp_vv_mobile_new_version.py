@@ -113,14 +113,14 @@ def mobile_new_version_format(line):
         sys.stderr.write(("indexerr,%s") % line)
         return
     try:
-        record = json.loads(jsonline)
+        recordall = json.loads(jsonline)
     except ValueError:
         sys.stderr.write(("jsonerr,%s") % line)
         return
     try:
-        record = record[0]
+        record = recordall[0]
     except KeyError:
-        record = record
+        record = recordall
 
     # date, time
     try:
@@ -248,7 +248,9 @@ def mobile_new_version_format(line):
         # definition
         formatstring = formatstring + ','
 
-        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
+        # act
+        act = ""
+        if clienttag == "aphone452" or clienttag == "iphone454":
             try:
                 act = record["act"]
                 if act.strip() == "":
@@ -261,8 +263,21 @@ def mobile_new_version_format(line):
                     return
                 formatstring = formatstring + ',' + str(act)
             except KeyError:
-                sys.stderr.write(("avererr,%s") % line)
+                sys.stderr.write(("acterr,%s") % line)
                 return
+        elif clienttag == "iphone450453":
+            for i in range(len(recordall)):
+                try:
+                    if recordall[i]["act"] == "play":
+                        act = "play"
+                        break
+                except KeyError:
+                    continue
+            if act.strip() == "":
+                sys.stderr.write(("acterr,%s") % line)
+                return
+            else:
+                formatstring = formatstring + ',' + str(act)
         else:
             formatstring = formatstring + ',' + 'play'
 
@@ -280,7 +295,6 @@ def mobile_new_version_format(line):
 
         # CLIENTVER
         try:
-            act = record["act"]
             clientver = record["aver"].lower()
             if "imgotv_iphone" in clientver:
                 if act == 'play':
