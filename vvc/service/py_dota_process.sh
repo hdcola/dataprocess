@@ -28,8 +28,9 @@ mkdir -p ${pydota_des}/${sub_path} 2>/dev/null
 mkdir -p ${pydota_report}/${sub_path} 2>/dev/null
 msg=""
 
-cd $pydota_orig
+cd $pydota_orig/$sub_path
 for done_file in `ls done_*`; do
+    cd $pydota_orig/$sub_path
     start_time=${done_file:5:12}
     topic=${done_file:18}
     rm $done_file 2>/dev/null
