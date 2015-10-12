@@ -179,7 +179,7 @@ def mobile_format(line):
 
     try:
         # uid
-        formatstring = collectArgs(formatstring, record, "user_id", "user_iderr", True)
+        formatstring = collectArgs(formatstring, record, "user_id", "user_iderr", False)
 
         # uuid
         formatstring = formatstring + ','
