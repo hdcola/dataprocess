@@ -201,7 +201,7 @@ def pcc_format(line):
         # CLIENTTP
         formatstring = formatstring + ',' + "pcclient"
         # aver
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, urlarglist, "ver", "vererr", True)
         print formatstring
     except ValueError:
         return

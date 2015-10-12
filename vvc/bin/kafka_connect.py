@@ -11,6 +11,7 @@ try:
 except IndexError as e:
     pipe_type = "mpp_vv_pcweb"
 
+# 将当前进程pid落地
 try:
     pid_file = sys.argv[2]
     pid = os.getpid()
@@ -20,6 +21,8 @@ try:
     cfp.close()
 except IndexError as e:
     pass
+
+# 连接kafka，获取数据，并输出到stdout
 client = KafkaClient(hosts="10.100.1.51:9092,10.100.1.52:9092,10.100.1.53:9092,10.100.1.54:9092")
 topic  = client.topics[pipe_type]
 balanced_consumer = topic.get_simple_consumer()

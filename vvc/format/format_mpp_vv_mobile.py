@@ -64,6 +64,10 @@ def formatLocation(userip):
         return None
 
 def formatTime(timetmp):
+    '''
+    :param timetmp: 移动端时间为时间戳
+    :return:
+    '''
     try:
         timedata = time.localtime(timetmp)
     except ValueError:
@@ -118,10 +122,7 @@ def mobile_format(line):
         timetmp = record['time']
         timetmp_date, timetmp_time = formatTime(timetmp)
         formatstring = str(timetmp_date) + ',' + str(timetmp_time)
-    except ValueError:
-        sys.stderr.write(("timeerr,%s") % line)
-        return
-    except KeyError:
+    except (ValueError, KeyError):
         sys.stderr.write(("timeerr,%s") % line)
         return
 
@@ -139,10 +140,7 @@ def mobile_format(line):
         location_province = locationtmp[2]
         location_city = locationtmp[3]
         formatstring = formatstring + ',' + str(location_province) + ',' + str(location_city)
-    except ValueError:
-        sys.stderr.write(("locationerr,%s") % line)
-        return
-    except TypeError:
+    except (ValueError, TypeError):
         sys.stderr.write(("locationerr,%s") % line)
         return
 
@@ -156,7 +154,7 @@ def mobile_format(line):
         elif "imgotv_iphone" in clientver:
             version = clientver.split('_')
             versionnum = getVersionNum(version[2])
-            if versionnum >= 450 or versionnum <= 453:
+            if 450 <= versionnum <= 453:
                 clienttag = "iphone450453"
             elif versionnum < 450:
                 clienttag = "iphonel450"
@@ -170,7 +168,10 @@ def mobile_format(line):
             elif versionnum < 452:
                 clienttag = "aphonel452"
         elif clientver == "4.5.2":
+            # 4.5.2属于新版，在旧版中丢掉
             clienttag = "aphone452"
+            sys.stderr.write(("avererr,%s") % line)
+            return
         else:
             clienttag = ""
     except KeyError:
@@ -179,7 +180,7 @@ def mobile_format(line):
 
     try:
         # uid
-        formatstring = collectArgs(formatstring, record, "user_id", "user_iderr", True)
+        formatstring = collectArgs(formatstring, record, "user_id", "uiderr", False)
 
         # uuid
         formatstring = formatstring + ','
@@ -198,7 +199,15 @@ def mobile_format(line):
         formatstring = formatstring + ','
 
         # vid
-        formatstring = formatstring + ','
+        try:
+            vid = record["video_info"]["video_id"]
+            if str(vid).strip() == "":
+                sys.stderr.write(("viderr,%s") % line)
+                return
+            formatstring = formatstring + ',' + str(vid)
+        except KeyError:
+            sys.stderr.write(("viderr,%s") % line)
+            return
 
         # tid
         formatstring = formatstring + ','
@@ -224,7 +233,11 @@ def mobile_format(line):
         # cf
         formatstring = formatstring + ','
         # definition
-        formatstring = formatstring + ','
+        try:
+            definition = record["video_info"]["definition"]
+            formatstring = formatstring + ',' + str(definition)
+        except KeyError:
+            formatstring = formatstring + ','
 
         # act
         formatstring = formatstring + ',' + 'play'

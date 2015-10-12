@@ -105,6 +105,7 @@ def mobile_new_version_format(line):
     if len(line.strip('\n')) == 0:
         return
     lineall = string.split(line.strip(), '\t')
+
     try:
         jsonline = lineall[7].strip()
         timetmp  = lineall[0]
@@ -112,24 +113,23 @@ def mobile_new_version_format(line):
     except IndexError:
         sys.stderr.write(("indexerr,%s") % line)
         return
+
     try:
-        record = json.loads(jsonline)
+        recordall = json.loads(jsonline)
     except ValueError:
         sys.stderr.write(("jsonerr,%s") % line)
         return
+
     try:
-        record = record[0]
+        record = recordall[0]
     except KeyError:
-        record = record
+        record = recordall
 
     # date, time
     try:
         timetmp_date, timetmp_time = formatTime(timetmp)
         formatstring = str(timetmp_date) + ',' + str(timetmp_time)
-    except ValueError:
-        sys.stderr.write(("timeerr,%s") % line)
-        return
-    except KeyError:
+    except (ValueError, KeyError):
         sys.stderr.write(("timeerr,%s") % line)
         return
 
@@ -163,7 +163,7 @@ def mobile_new_version_format(line):
         elif "imgotv_iphone" in clientver:
             version = clientver.split('_')
             versionnum = getVersionNum(version[2])
-            if versionnum >= 450 or versionnum <= 453:
+            if 450 <= versionnum <= 453:
                 clienttag = "iphone450453"
             elif versionnum < 450:
                 clienttag = "iphonel450"
@@ -174,7 +174,7 @@ def mobile_new_version_format(line):
             versionnum = getVersionNum(version[2])
             if versionnum >= 452:
                 clienttag = "aphone452"
-            elif versionnum < 452:
+            else:
                 clienttag = "aphonel452"
         elif clientver == "4.5.2":
             clienttag = "aphone452"
@@ -185,16 +185,21 @@ def mobile_new_version_format(line):
         return
 
     try:
+        # iphone 4.5.0以后的版本，未登陆，没uid相关字段。
+        # uid
+        # if clienttag in ("aphone452", "iphone450453", "iphone454"):
         if clienttag == "aphone452":
             formatstring = collectArgs(formatstring, record, "uid", "uiderr", False)
         else:
             formatstring = formatstring + ','
 
+        # uuid
         if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
             formatstring = collectArgs(formatstring, record, "uuid", "uuiderr", True)
         else:
             formatstring = formatstring + ','
 
+        # guid
         if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
             formatstring = collectArgs(formatstring, record, "guid", "guiderr", True)
         else:
@@ -202,35 +207,46 @@ def mobile_new_version_format(line):
 
         # ref
         formatstring = formatstring + ','
+
+        # bid
         if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
             formatstring = collectArgs(formatstring, record, "bid", "biderr", True)
         else:
             formatstring = formatstring + ','
 
+        # cid
         if clienttag == "aphone452" or clienttag == "iphone454":
             formatstring = collectArgs(formatstring, record, "cid", "ciderr", True)
         else:
             formatstring = formatstring + ','
 
-        if clienttag == "iphone454":
+        # plid
+        if clienttag == "aphone452" or clienttag == "iphone454":
             formatstring = collectArgs(formatstring, record, "plid","pliderr", True)
         else:
             formatstring = formatstring + ','
 
+        # vid
         if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
             formatstring = collectArgs(formatstring, record, "vid", "viderr", True)
         else:
             formatstring = formatstring + ','
 
+        # tid
         if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
-            formatstring = formatstring + ','
+            formatstring = collectArgs(formatstring, record, "tid", "tiderr", False)
         else:
             formatstring = formatstring + ','
 
         # vts
         formatstring = formatstring + ','
+
         # cookie
-        formatstring = formatstring + ','
+        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
+            formatstring = collectArgs(formatstring, record, "did", "diderr", False)
+        else:
+            formatstring = formatstring + ','
+
         # pt
         try:
             pt = record['pt']
@@ -246,9 +262,14 @@ def mobile_new_version_format(line):
         # cf
         formatstring = formatstring + ','
         # definition
-        formatstring = formatstring + ','
-
         if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
+            formatstring = collectArgs(formatstring, record, "def", "definitionerr", False)
+        else:
+            formatstring = formatstring + ','
+
+        # act
+        act = ""
+        if clienttag == "aphone452" or clienttag == "iphone454":
             try:
                 act = record["act"]
                 if act.strip() == "":
@@ -261,10 +282,24 @@ def mobile_new_version_format(line):
                     return
                 formatstring = formatstring + ',' + str(act)
             except KeyError:
-                sys.stderr.write(("avererr,%s") % line)
+                sys.stderr.write(("acterr,%s") % line)
                 return
+        elif clienttag == "iphone450453":
+            for i in range(len(recordall)):
+                try:
+                    if recordall[i]["act"] == "play":
+                        act = "play"
+                        break
+                except KeyError:
+                    continue
+            if act.strip() == "":
+                sys.stderr.write(("acterr,%s") % line)
+                return
+            else:
+                formatstring = formatstring + ',' + str(act)
         else:
             formatstring = formatstring + ',' + 'play'
+
 
         # CLIENTTP
         try:
@@ -280,30 +315,29 @@ def mobile_new_version_format(line):
 
         # CLIENTVER
         try:
-            act = record["act"]
             clientver = record["aver"].lower()
             if "imgotv_iphone" in clientver:
                 if act == 'play':
                     version = clientver.split('_')
                     versionnum = getVersionNum(version[2])
-                    if versionnum >= 450 or versionnum <= 453:
+                    if 450 <= versionnum:
                         formatstring = formatstring + ',' + str(clientver)
                     else:
                         sys.stderr.write(("avererr,%s") % line)
                         return
-                elif act == 'aplay':
-                    version = clientver.split('_')
-                    versionnum = getVersionNum(version[2])
-                    if versionnum >= 453:
-                        formatstring = formatstring + ',' + str(clientver)
-                    else:
-                        sys.stderr.write(("playreperr,%s") % line)
-                        return
+                # elif act == 'aplay':
+                #     version = clientver.split('_')
+                #     versionnum = getVersionNum(version[2])
+                #     if versionnum >= 453:
+                #         formatstring = formatstring + ',' + str(clientver)
+                #     else:
+                #         sys.stderr.write(("playreperr,%s") % line)
+                #         return
                 else:
                     sys.stderr.write(("acterr,%s") % line)
                     return
             elif "imgotv_aphone" in clientver:
-                if act == "aplay":
+                if act == "play":
                     version = clientver.split('_')
                     versionnum = getVersionNum(version[2])
                     if versionnum >= 452:
@@ -315,7 +349,7 @@ def mobile_new_version_format(line):
                     sys.stderr.write(("playreperr,%s") % line)
                     return
             else:
-                if act == 'aplay':
+                if act == 'play':
                     versionnum = getVersionNum(clientver)
                     if versionnum >= 452:
                         formatstring = formatstring + ',' + str(clientver)
@@ -325,6 +359,52 @@ def mobile_new_version_format(line):
                 else:
                     sys.stderr.write(("playreperr,%s") % line)
                     return
+
+            # act = record["act"]
+            # clientver = record["aver"].lower()
+            # if "imgotv_iphone" in clientver:
+            #     if act == 'play':
+            #         version = clientver.split('_')
+            #         versionnum = getVersionNum(version[2])
+            #         if versionnum >= 450 or versionnum <= 453:
+            #             formatstring = formatstring + ',' + str(clientver)
+            #         else:
+            #             sys.stderr.write(("avererr,%s") % line)
+            #             return
+            #     elif act == 'aplay':
+            #         version = clientver.split('_')
+            #         versionnum = getVersionNum(version[2])
+            #         if versionnum >= 453:
+            #             formatstring = formatstring + ',' + str(clientver)
+            #         else:
+            #             sys.stderr.write(("playreperr,%s") % line)
+            #             return
+            #     else:
+            #         sys.stderr.write(("acterr,%s") % line)
+            #         return
+            # elif "imgotv_aphone" in clientver:
+            #     if act == "aplay":
+            #         version = clientver.split('_')
+            #         versionnum = getVersionNum(version[2])
+            #         if versionnum >= 452:
+            #             formatstring = formatstring + ',' + str(clientver)
+            #         else:
+            #             sys.stderr.write(("avererr,%s") % line)
+            #             return
+            #     else:
+            #         sys.stderr.write(("playreperr,%s") % line)
+            #         return
+            # else:
+            #     if act == 'aplay':
+            #         versionnum = getVersionNum(clientver)
+            #         if versionnum >= 452:
+            #             formatstring = formatstring + ',' + str(clientver)
+            #         else:
+            #             sys.stderr.write(("avererr,%s") % line)
+            #             return
+            #     else:
+            #         sys.stderr.write(("playreperr,%s") % line)
+            #         return
         except KeyError:
             sys.stderr.write(("avererr,%s") % line)
             return
