@@ -142,7 +142,7 @@ def ott_41_format(line):
         # guid
         formatstring = formatstring + ','
         # ref
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "ref", "referr", True)
         # bid
         formatstring = formatstring + ','
         # cid

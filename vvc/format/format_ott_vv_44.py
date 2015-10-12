@@ -149,7 +149,7 @@ def ott_44_format(line):
         # guid
         formatstring = collectArgs(formatstring, record, "guid", "guiderr", True)
         # ref
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "ref", "referr", True)
         # bid
         formatstring = collectArgs(formatstring, record, "bid", "biderr", True)
         # cid
@@ -157,13 +157,13 @@ def ott_44_format(line):
         # plid
         formatstring = collectArgs(formatstring, record, "oplid", "opliderr", True)
         # vid
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "ovid", "viderr", True)
         # tid
         formatstring = formatstring + ','
         # vts
         formatstring = formatstring + ','
         # cookie
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "did", "cookieerr", True)
         # pt
         formatstring = formatstring + ',' + '0'
         # ln
@@ -171,7 +171,7 @@ def ott_44_format(line):
         # cf
         formatstring = formatstring + ','
         # definition
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "def", "definitionerr", True)
         # act
         formatstring = collectArgs(formatstring, record, "act", "acterr", True)
         # CLIENTTP
