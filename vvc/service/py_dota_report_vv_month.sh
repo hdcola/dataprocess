@@ -33,6 +33,15 @@ function report(){
       }
     }' | awk '{print $2","$1}' | sort \
     > ${pydota_report}/${sub_path}/month_vv_${start_time}.csv
+
+    #设置bearychat发送目标为dota-日报
+    export BEARYCHAT_WEBHOOK="https://hook.bearychat.com/=bw7by/incoming/1d2c96785da623e3299c1d742c4a26fb"
+
+    msg=`cat ${pydota_report}/${sub_path}/month_vv_${start_time}.csv`
+    nowtime=`date "+%Y/%m/%d %H:%M:%S"`
+    msg="${msg}
+    ${nowtime}@${py_dota_process_user}"
+    echo "${msg}" | $bearychat -t "${start_time}的月VV数据统计完成"
 }
 
 report

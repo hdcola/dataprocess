@@ -2,7 +2,7 @@
 # 计算指定天的vv数据
 # py_dota_report_vv_day.sh 20151007
 # 使用指定维度计算指定天的vv数据
-# py_dota_report_vv_day.sh 2015100722 cid
+# py_dota_report_vv_day.sh 20151007 cid
 
 
 if [[ -e "/etc/pydota.conf" ]]; then
@@ -38,6 +38,15 @@ function report(){
       }
     }' | awk '{print $2","$1}' | sort \
     > ${pydota_report}/${sub_path}/day_vv_${start_time}.csv
+
+    #设置bearychat发送目标为dota-日报
+    export BEARYCHAT_WEBHOOK="https://hook.bearychat.com/=bw7by/incoming/1d2c96785da623e3299c1d742c4a26fb"
+
+    msg=`cat ${pydota_report}/${sub_path}/day_vv_${start_time}.csv`
+    nowtime=`date "+%Y/%m/%d %H:%M:%S"`
+    msg="${msg}
+    ${nowtime}@${py_dota_process_user}"
+    echo "${msg}" | $bearychat -t "${start_time}的日VV数据统计完成"
 }
 
 if [ -n "$2" ]; then
