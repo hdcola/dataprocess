@@ -244,7 +244,7 @@ def mobile_format(line):
 
         # CLIENTTP
         try:
-            clientver = record["apk_version"]
+            clientver = record["apk_version"].lower()
             if 'apad' in clientver:
                 clienttp = "apad"
             elif 'ipad' in clientver:
@@ -263,7 +263,7 @@ def mobile_format(line):
 
         # CLIENTVER
         try:
-            clientver = record["apk_version"]
+            clientver = record["apk_version"].lower()
             if '.' in clientver:
                 if "imgotv_aphone" in clientver:
                     version = clientver.split('_')
