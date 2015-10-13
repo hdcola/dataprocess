@@ -146,37 +146,6 @@ def mobile_format(line):
         sys.stderr.write(("locationerr,%s") % line)
         return
 
-    clienttag = ""
-    try:
-        clientver = record["apk_version"].lower()
-        if "ipad" in clientver:
-            clienttag = "ipad"
-        elif "apad" in clientver:
-            clienttag = "apad"
-        elif "imgotv_iphone" in clientver:
-            version = clientver.split('_')
-            versionnum = getVersionNum(version[2])
-            if versionnum >= 450 or versionnum <= 453:
-                clienttag = "iphone450453"
-            elif versionnum < 450:
-                clienttag = "iphonel450"
-            elif versionnum >= 454:
-                clienttag = "iphone454"
-        elif "imgotv_aphone" in clientver:
-            version = clientver.split('_')
-            versionnum = getVersionNum(version[2])
-            if versionnum >= 452:
-                clienttag = "aphone452"
-            elif versionnum < 452:
-                clienttag = "aphonel452"
-        elif clientver == "4.5.2":
-            clienttag = "aphone452"
-        else:
-            clienttag = ""
-    except KeyError:
-        sys.stderr.write(("clienttypeerr,%s") % line)
-        return
-
     try:
         # uid
         formatstring = collectArgs(formatstring, record, "user_id", "user_iderr", False)
@@ -238,6 +207,36 @@ def mobile_format(line):
         # act
         formatstring = formatstring + ',' + 'play'
 
+        clienttag = ""
+        try:
+            clientver = record["apk_version"].lower()
+            if "ipad" in clientver:
+                clienttag = "ipad"
+            elif "apad" in clientver:
+                clienttag = "apad"
+            elif "imgotv_iphone" in clientver:
+                version = clientver.split('_')
+                versionnum = getVersionNum(version[2])
+                if versionnum < 450:
+                    clienttag = "iphonel450"
+                else:
+                    sys.stderr.write(("clienttypeerr,%s") % line)
+                    return
+            elif "imgotv_aphone" in clientver:
+                version = clientver.split('_')
+                versionnum = getVersionNum(version[2])
+                if versionnum < 452:
+                    clienttag = "aphonel452"
+                else:
+                    sys.stderr.write(("clienttypeerr,%s") % line)
+                    return
+            else:
+                sys.stderr.write(("clienttypeerr,%s") % line)
+                return
+        except KeyError:
+            sys.stderr.write(("clienttypeerr,%s") % line)
+            return
+
         # CLIENTTP
         try:
             clientver = record["apk_version"]
@@ -280,7 +279,7 @@ def mobile_format(line):
         except KeyError:
             sys.stderr.write(("apk_versionerr,%s") % line)
             return
-        print formatstring
+        print formatstring.lower()
     except ValueError:
         return
 

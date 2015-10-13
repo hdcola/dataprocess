@@ -202,7 +202,7 @@ def pcc_format(line):
         formatstring = formatstring + ',' + "pcclient"
         # aver
         formatstring = formatstring + ','
-        print formatstring
+        print formatstring.lower()
     except ValueError:
         return
 

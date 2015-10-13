@@ -12,9 +12,8 @@ if [[ -n "$HOME" && -e "$HOME/.pydota" ]]; then
   . "$HOME/.pydota"
 fi
 
-start_time=`date --date="$DATE - 2 hour" +%Y%m%d%H`
-start_time=${start_time}"00"
-start_time=${1:-${start_time}}
+start_time=$1
+topic=$2
 sub_path_year=${start_time:0:4}
 sub_path_month=${start_time:4:2}
 filename=${start_time}"_play_"${topic}
@@ -37,11 +36,11 @@ if [ -f ${pydota_des}/${sub_path}/${filenameraw}.bz2 ]; then
     #[ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
 
     python bin/count_vv_hour.py ${topic} "all" ${pydota_des}/${sub_path}/$filenameraw.bz2 ${pydota_report}/${sub_path} &
-    [ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
+    #[ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
 
-    python bin/count_vv_hour.py ${topic} "chn" ${pydota_des}/${sub_path}/$filenameraw.bz2 ${pydota_report}/${sub_path} &
-    [ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
+    #python bin/count_vv_hour.py ${topic} "chn" ${pydota_des}/${sub_path}/$filenameraw.bz2 ${pydota_report}/${sub_path} &
+    #[ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
 
-    python bin/count_vv_hour.py ${topic} "pl"  ${pydota_des}/${sub_path}/$filenameraw.bz2 ${pydota_report}/${sub_path} &
-    [ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
+    #python bin/count_vv_hour.py ${topic} "pl"  ${pydota_des}/${sub_path}/$filenameraw.bz2 ${pydota_report}/${sub_path} &
+    #[ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
 fi

@@ -190,7 +190,7 @@ def padweb_format(line):
         formatstring = formatstring + ',' + "padweb"
         # aver
         formatstring = formatstring + ','
-        print formatstring
+        print formatstring.lower()
     except ValueError:
         return
 

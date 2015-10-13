@@ -12,7 +12,7 @@ if [[ -n "$HOME" && -e "$HOME/.pydota" ]]; then
   . "$HOME/.pydota"
 fi
 
-topics=("mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient mpp_vv_msite mpp_vv_padweb mpp_vv_ott ott_vv_41 ott_vv_44")
+#topics=("mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient mpp_vv_msite mpp_vv_padweb mpp_vv_ott ott_vv_41 ott_vv_44")
 work_path="${pydota_path}"
 start_time=`date --date="$DATE - 1 hour" +%Y%m%d%H`
 start_time=${start_time}"00"
@@ -28,15 +28,20 @@ mkdir -p ${pydota_des}/${sub_path} 2>/dev/null
 mkdir -p ${pydota_report}/${sub_path} 2>/dev/null
 msg=""
 
-cd $work_path
-for topic in ${topics}; do
+cd $pydota_orig/$sub_path
+for done_file in `ls done_*`; do
+    cd $pydota_orig/$sub_path
+    start_time=${done_file:5:12}
+    topic=${done_file:18}
+    rm $done_file 2>/dev/null
+    cd $work_path
     filename=${start_time}"_play_"${topic}
     if [ -f ${pydota_orig}/${sub_path}/${filename}.bz2 ]; then
-      ./service/py_dota_rawdata.sh $topic $start_time &
+        ./service/py_dota_rawdata.sh $topic $start_time &
 
-      msg="${msg}./service/py_dota_rawdata.sh $topic $start_time &
+        msg="${msg}./service/py_dota_rawdata.sh $topic $start_time &
 
-"
+    "
     fi
 done
 

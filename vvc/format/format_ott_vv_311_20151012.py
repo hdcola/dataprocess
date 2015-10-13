@@ -5,8 +5,8 @@ import fileinput
 import sys
 import time
 import string
-import urllib
 import json
+import urllib
 from IPy import IP
 
 filesfps = []
@@ -64,10 +64,7 @@ def formatLocation(userip):
         return None
 
 def formatTime(timetmp):
-    try:
-        timedata = time.localtime(timetmp)
-    except ValueError:
-        raise ValueError("timeerr")
+    timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
     timetmp_date = time.strftime('%Y%m%d', timedata)
     timetmp_time = time.strftime('%H%M%S', timedata)
     return timetmp_date, timetmp_time
@@ -91,19 +88,30 @@ def collectArgs(fstring, argslist, name, errname, strict):
         raise ValueError("args is illegal")
         return
 
-def ott_41_format(line):
+def ott_vv_311_20151012_format(line):
     formatstring = ""
     if len(line.strip('\n')) == 0:
         return
+
+    lineall = string.split(line.strip(), '\t')
     try:
-        record = json.loads(line)
+        jsonline = lineall[7].strip()
+        timetmp  = lineall[0]
+        iptmp  = lineall[1]
+    except IndexError:
+        sys.stderr.write(("indexerr,%s") % line)
+        return
+    try:
+        record = json.loads(jsonline)
     except ValueError:
         sys.stderr.write(("jsonerr,%s") % line)
         return
-
+    try:
+        record = record[0]
+    except KeyError:
+        record = record
     # date, time
     try:
-        timetmp = float(record['time'])
         timetmp_date, timetmp_time = formatTime(timetmp)
         formatstring = str(timetmp_date) + ',' + str(timetmp_time)
     except ValueError:
@@ -115,15 +123,14 @@ def ott_41_format(line):
 
     # IP
     try:
-        iptmp = record["ip"].strip()
         formatstring = formatstring + ',' + str(iptmp)
-    except KeyError:
+    except ValueError:
         sys.stderr.write(("iperr,%s") % line)
         return
 
     # location
     try:
-        locationtmp = formatLocation(iptmp)
+        locationtmp = formatLocation(iptmp[0])
         location_province = locationtmp[2]
         location_city = locationtmp[3]
         formatstring = formatstring + ',' + str(location_province) + ',' + str(location_city)
@@ -136,50 +143,28 @@ def ott_41_format(line):
 
     try:
         # uid
-        formatstring = collectArgs(formatstring, record, "user_id", "user_iderr", False)
-        # uuid
-        formatstring = collectArgs(formatstring, record, "play_session", "play_sessionerr", True)
-        # guid
         formatstring = formatstring + ','
+        #formatstring = collectArgs(formatstring, record, "uid", "uiderr", False)
+        # uuid
+        formatstring = collectArgs(formatstring, record, "uuid", "uuiderr", False)
+        # guid
+        formatstring = collectArgs(formatstring, record, "guid", "guiderr", True)
         # ref
         formatstring = formatstring + ','
         # bid
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "bid", "biderr", True)
         # cid
-        try:
-            cid = record["video_info"]['fstlvl_id']
-            formatstring = formatstring + ',' + str(cid)
-        except KeyError:
-            sys.stderr.write(("fstlvl_iderr,%s") % line)
-            return
+        formatstring = collectArgs(formatstring, record, "cid", "ciderr", False)
         # plid
-        try:
-            plid = record["video_info"]['sndlvl_id']
-            if plid.strip() == "":
-                sys.stderr.write(("video_info.sndlvl_iderr,%s") % line)
-                return
-            else:
-                formatstring = formatstring + ',' + str(plid)
-        except KeyError:
-            sys.stderr.write(("video_info.sndlvl_iderr,%s") % line)
-            return
+        formatstring = collectArgs(formatstring, record, "oplid", "opliderr", True)
         # vid
-        try:
-            vid = record["video_info"]['clip_id']
-            if vid.strip() == "":
-                sys.stderr.write(("video_info.clip_iderr,%s") % line)
-                return
-            else:
-                formatstring = formatstring + ',' + str(vid)
-        except KeyError:
-            sys.stderr.write(("video_info.clip_iderr,%s") % line)
-            return
+        formatstring = formatstring + ','
         # tid
         formatstring = formatstring + ','
         # vts
         formatstring = formatstring + ','
         # cookie
-        formatstring = collectArgs(formatstring, record, "mac", "macerr", True)
+        formatstring = formatstring + ','
         # pt
         formatstring = formatstring + ',' + '0'
         # ln
@@ -187,45 +172,20 @@ def ott_41_format(line):
         # cf
         formatstring = formatstring + ','
         # definition
-        try:
-            definition = record["video_info"]['definition']
-            if definition.strip() == "":
-                sys.stderr.write(("video_info.definitionerr,%s") % line)
-                return
-            else:
-                formatstring = formatstring + ',' + str(definition)
-        except KeyError:
-            sys.stderr.write(("video_info.definitionerr,%s") % line)
-            return
-
+        formatstring = formatstring + ','
         # act
-        formatstring = formatstring + ',' + 'play'
+        formatstring = collectArgs(formatstring, record, "act", "acterr", True)
         # CLIENTTP
         formatstring = formatstring + ',' + "ott"
         # aver
-        formatstring = collectArgs(formatstring, record, "apk_version", "apk_versionerr", True)
+        formatstring = collectArgs(formatstring, record, "aver", "avererr", True)
         print formatstring.lower()
     except ValueError:
         return
-    # vid
-    #try:
-    #    vid = record["video_info"]['video_id']
-    #    formatstring = formatstring + ',' + str(vid)
-    #except KeyError:
-    #    vid = ""
-    #    formatstring = formatstring + ',' + str(vid)
-
-    ## definition
-    #try:
-    #    definition = record['video_info']['definition']
-    #    formatstring = formatstring + ',' + str(definition)
-    #except KeyError:
-    #    definition = ""
-    #    formatstring = formatstring + ',' + str(definition)
 
 if __name__ == '__main__':
     # gzcat abc.gz | python pcp_format.py ./genip -
     # python pcp_format.py ./genip afile bfile cfile
     loadGeoIp(sys.argv[1])
     for line in fileinput.input(sys.argv[2:]):
-        ott_41_format(line)
+        ott_vv_311_20151012_format(line)

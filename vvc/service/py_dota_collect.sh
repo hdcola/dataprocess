@@ -11,7 +11,7 @@ if [[ -n "$HOME" && -e "$HOME/.pydota" ]]; then
   . "$HOME/.pydota"
 fi
 
-topics=("mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient mpp_vv_msite mpp_vv_padweb mpp_vv_ott ott_vv_41 ott_vv_44")
+topics=("mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient mpp_vv_msite mpp_vv_padweb mpp_vv_ott ott_vv_41 ott_vv_44  mpp_vv_mobile_211_20151012 ott_vv_311_20151012")
 work_path="${pydota_path}"
 start_time=`date --date="$DATE + 1 hour" +%Y%m%d%H`
 end_time=`date --date="$DATE + 2 hour" +%Y%m%d%H`
@@ -33,10 +33,10 @@ for topic in ${topics}; do
     filenameerr="err_"${start_time}"_play_"${topic}".log"
     filename=${start_time}"_play_"${topic}".bz2"
     ./bin/kafka_connect.py ${topic} ${pydota_collect_pids} \
-      | ./bin/kafka_split.py ${start_time} ${end_time} ${topic} 2>${pydota_orig}/${sub_path}/$filenameerr \
+      | ./bin/kafka_split.py ${start_time} ${end_time} ${topic} "${pydota_orig}/${sub_path}" 2>${pydota_orig}/${sub_path}/$filenameerr \
       | bzip2 > ${pydota_orig}/${sub_path}/$filename &
 
-    msg="${msg}./bin/kafka_connect.py ${topic} ${pydota_collect_pids} | ./bin/kafka_split.py ${start_time} ${end_time} ${topic} 2>${pydota_orig}/${sub_path}/$filenameerr | bzip2 > ${pydota_orig}/${sub_path}/$filename
+    msg="${msg}./bin/kafka_connect.py ${topic} ${pydota_collect_pids} | ./bin/kafka_split.py ${start_time} ${end_time} ${topic} "${pydota_orig}/${sub_path}" 2>${pydota_orig}/${sub_path}/$filenameerr | bzip2 > ${pydota_orig}/${sub_path}/$filename
 
 "
 done

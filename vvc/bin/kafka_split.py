@@ -12,10 +12,32 @@ import sys
 import time
 import string
 import json
+import os
 
 filesfps = []
 filesfpscount = 0
-def testTime(timetmp, start_time, end_time, topic):
+
+def setSplitDone(start_time, dirpath, topic):
+    try:
+        timedata = time.localtime(start_time)
+    except ValueError:
+        raise ValueError("timeerr")
+    timetmp_date = time.strftime('%Y%m%d%H', timedata)
+    f = open(dirpath+"/"+"done_"+str(timetmp_date)+"00_"+topic, 'a+')
+    f.close()
+
+def setSplitStart(start_time, dirpath, topic):
+    try:
+        timedata = time.localtime(start_time)
+    except ValueError:
+        raise ValueError("timeerr")
+    timetmp_date = time.strftime('%Y%m%d%H', timedata)
+    try:
+        os.remove(dirpath+"/"+"done_"+str(timetmp_date)+"00_"+topic)
+    except OSError:
+        pass
+
+def testTime(timetmp, start_time, end_time, topic, dirpath):
     if topic == "mpp_vv_pcweb" or topic == "mpp_vv_pcclient" or topic == "mpp_vv_msite":
         try:
             timedata = time.strptime(timetmp, "[%d/%b/%Y:%H:%M:%S+0800]")
@@ -24,7 +46,8 @@ def testTime(timetmp, start_time, end_time, topic):
             raise ValueError("timeerr")
     elif topic == "mpp_vv_mobile" or topic == "mpp_vv_ott" or topic == "ott_vv_41":
         timeStamp = int(timetmp)
-    elif topic == "mpp_vv_mobile_new_version" or topic == "mpp_vv_padweb" or topic == "ott_vv_44":
+    elif topic == "mpp_vv_mobile_new_version" or topic == "mpp_vv_padweb" or topic == "ott_vv_44" \
+        or topic == "ott_vv_311_20151012" or topic == "mpp_vv_mobile_211_20151012":
         try:
             timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
             timeStamp = int(time.mktime(timedata))
@@ -35,11 +58,12 @@ def testTime(timetmp, start_time, end_time, topic):
     if (timeStamp >= int(start_time) and timeStamp <= int(end_time)):
         return True
     elif (timeStamp > timeexit):
+        setSplitDone(start_time, dirpath, topic)
         exit(0)
     else:
         return False
 
-def split_kafka(line, start_time, end_time, topic):
+def split_kafka(line, start_time, end_time, topic, dirpath):
     if topic == "mpp_vv_pcweb" or topic == "mpp_vv_pcclient" or topic == "mpp_vv_msite":
         record = string.split(line, '- -')
         try:
@@ -55,12 +79,13 @@ def split_kafka(line, start_time, end_time, topic):
             sys.stderr.write(("jsonerr,%s") % line)
             return
         timetmp = str(record["time"])
-    elif topic == "mpp_vv_mobile_new_version" or topic == "mpp_vv_padweb" or topic == "ott_vv_44":
+    elif topic == "mpp_vv_mobile_new_version" or topic == "mpp_vv_padweb" or topic == "ott_vv_44" \
+          or topic == "ott_vv_311_20151012" or topic == "mpp_vv_mobile_211_20151012":
         record = string.split(line, '\t')
         timetmp = record[0].strip()
 
     try:
-        if testTime(timetmp, start_time, end_time, topic):
+        if testTime(timetmp, start_time, end_time, topic, dirpath):
             print line.strip('\n')
     except ValueError:
         sys.stderr.write(("timeerr,%s") % line)
@@ -85,5 +110,7 @@ if __name__ == '__main__':
         topic = sys.argv[3]
     except IndexError:
         topic = "mpp_vv_pcweb"
-    for line in fileinput.input(sys.argv[4:]):
-        split_kafka(line, start_time, end_time, topic)
+    dirpath = sys.argv[4]
+    setSplitStart(start_time, dirpath, topic)
+    for line in fileinput.input(sys.argv[5:]):
+        split_kafka(line, start_time, end_time, topic, dirpath)

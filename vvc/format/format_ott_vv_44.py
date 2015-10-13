@@ -178,7 +178,7 @@ def ott_44_format(line):
         formatstring = formatstring + ',' + "ott"
         # aver
         formatstring = collectArgs(formatstring, record, "aver", "avererr", True)
-        print formatstring
+        print formatstring.lower()
     except ValueError:
         return
 
