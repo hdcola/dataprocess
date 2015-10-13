@@ -1,7 +1,7 @@
 #!/bin/sh
 # 计算指定小时的vv指定维度数据
 # py_dota_report_vv_hour.sh 2015100722 cid
-# 计算指定小时的vv所有维度数据
+# 计算指定小时的vv所有维度数据（cid plid vid）
 # py_dota_report_vv_hour.sh 2015100722
 
 if [[ -e "/etc/pydota.conf" ]]; then

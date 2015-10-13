@@ -1,5 +1,5 @@
 #!/bin/sh
-# 计算指定天的vv数据
+# 计算指定天的vv数据（默认使用cid的csv进行计算）
 # py_dota_report_vv_day.sh 20151007
 # 使用指定维度计算指定天的vv数据
 # py_dota_report_vv_day.sh 20151007 cid

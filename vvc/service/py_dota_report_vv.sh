@@ -17,13 +17,16 @@ topic=$2
 sub_path_year=${start_time:0:4}
 sub_path_month=${start_time:4:2}
 sub_path_day=${start_time:6:2}
+# 201510091000_play_ott_vv_44
 filename=${start_time}"_play_"${topic}
 sub_path=${sub_path_year}/${sub_path_month}
 work_path="${pydota_path}"
 bearychat="${work_path}/bin/bearychat.sh"
 
 cd $work_path
+# 201510091000_playrawdata_ott_vv_44
 filenameraw=${start_time}"_playrawdata_"${topic}
+# 201510091000_ott_vv_44
 filenamereport=${start_time}"_"${topic}
 
 function report(){
@@ -34,7 +37,11 @@ function report(){
   field_name=$2
   proctime=`date "+%Y/%m/%d %H:%M:%S"`
   bzcat ${pydota_des}/${sub_path}/${filenameraw}.bz2 \
-    | awk -F"," -v field_no="${field_no}" '{ if($21=="play") {print $1","substr($2,1,2)","$field_no","$22","$23} }' \
+    | awk -F"," -v field_no="${field_no}" '{
+      if($21=="play") {
+        print $1","substr($2,1,2)","$field_no","$22","$23
+      }
+    }' \
     | sort | uniq -c | sort -rn | awk '{print $2","$1}' \
     > ${pydota_report}/${sub_path}/${filenamereport}_${field_name}.csv
 
