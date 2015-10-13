@@ -173,8 +173,19 @@ def ott_vv_311_20151012_format(line):
         formatstring = collectArgs(formatstring, record, "cf", "cferr", True)
         # definition
         formatstring = collectArgs(formatstring, record, "def", "deferr", True)
-        # act
-        formatstring = collectArgs(formatstring, record, "act", "acterr", True)
+        # act act不存在或者为空时，报错，非play时丢弃该数据
+        try:
+            act = record["act"]
+            if str(act).strip() == "play":
+                formatstring = formatstring + "," + "play"
+            elif str(act).strip() == "":
+                sys.stderr.write(("acterr,%s") % line)
+                return
+            else:
+                return
+        except KeyError:
+            sys.stderr.write(("acterr,%s") % line)
+            return
         # CLIENTTP
         formatstring = formatstring + ',' + "ott"
         # aver
