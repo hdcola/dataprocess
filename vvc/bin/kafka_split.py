@@ -6,12 +6,32 @@ import sys
 import time
 import string
 import json
+import os
 
 filesfps = []
 filesfpscount = 0
 
+def setSplitDone(start_time, dirpath, topic):
+    try:
+        timedata = time.localtime(start_time)
+    except ValueError:
+        raise ValueError("timeerr")
+    timetmp_date = time.strftime('%Y%m%d%H', timedata)
+    f = open(dirpath+"/"+"done_"+str(timetmp_date)+"00_"+topic, 'a+')
+    f.close()
 
-def testTime(timetmp, start_time, end_time, topic):
+def setSplitStart(start_time, dirpath, topic):
+    try:
+        timedata = time.localtime(start_time)
+    except ValueError:
+        raise ValueError("timeerr")
+    timetmp_date = time.strftime('%Y%m%d%H', timedata)
+    try:
+        os.remove(dirpath+"/"+"done_"+str(timetmp_date)+"00_"+topic)
+    except OSError:
+        pass
+
+def testTime(timetmp, start_time, end_time, topic, dirpath):
     '''
     :param timetmp: 日志时间
     :param start_time: 日志要求的起始时间，时间戳
@@ -20,8 +40,6 @@ def testTime(timetmp, start_time, end_time, topic):
     :return: bool
     '''
 
-    timeStamp = 0
-    # 将timetmp转换为int型时间戳格式
     if topic == "mpp_vv_pcweb" or topic == "mpp_vv_pcclient" or topic == "mpp_vv_msite":
         try:
             timedata = time.strptime(timetmp, "[%d/%b/%Y:%H:%M:%S+0800]")
@@ -30,25 +48,24 @@ def testTime(timetmp, start_time, end_time, topic):
             raise ValueError("timeerr")
     elif topic == "mpp_vv_mobile" or topic == "mpp_vv_ott" or topic == "ott_vv_41":
         timeStamp = int(timetmp)
-    elif topic == "mpp_vv_mobile_new_version" or topic == "mpp_vv_padweb" or topic == "ott_vv_44":
+    elif topic == "mpp_vv_mobile_new_version" or topic == "mpp_vv_padweb" or topic == "ott_vv_44" \
+            or topic == "ott_vv_311_20151012" or topic == "mpp_vv_mobile_211_20151012":
         try:
             timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
             timeStamp = int(time.mktime(timedata))
         except ValueError:
             raise ValueError("timeerr")
 
-    # 进程退出时间
-    time_exit = int(end_time) + 1800
-
+    timeexit = int(end_time) + 1800
     if (int(start_time) <= timeStamp < int(end_time)):
         return True
-    elif (timeStamp > time_exit):
+    elif (timeStamp > timeexit):
+        setSplitDone(start_time, dirpath, topic)
         exit(0)
     else:
         return False
 
-
-def split_kafka(line, start_time, end_time, topic):
+def split_kafka(line, start_time, end_time, topic, dirpath):
     '''
     :summary: 分topic解析日志，正常日志输出到stdout，异常日志写入stderr
     :param line: kafka获取的一行日志数据
@@ -72,12 +89,13 @@ def split_kafka(line, start_time, end_time, topic):
             sys.stderr.write(("jsonerr,%s") % line)
             return
         timetmp = str(record["time"])
-    elif topic == "mpp_vv_mobile_new_version" or topic == "mpp_vv_padweb" or topic == "ott_vv_44":
+    elif topic == "mpp_vv_mobile_new_version" or topic == "mpp_vv_padweb" or topic == "ott_vv_44" \
+            or topic == "ott_vv_311_20151012" or topic == "mpp_vv_mobile_211_20151012":
         record = string.split(line, '\t')
         timetmp = record[0].strip()
 
     try:
-        if testTime(timetmp, start_time, end_time, topic):
+        if testTime(timetmp, start_time, end_time, topic, dirpath):
             print line.strip('\n')
     except ValueError:
         sys.stderr.write(("timeerr,%s") % line)
@@ -86,8 +104,6 @@ def split_kafka(line, start_time, end_time, topic):
 if __name__ == '__main__':
     # gzcat abc.gz | python split_kafka.py start_time end_time  -
     # python split_kafka.py start_time end_time afile bfile cfile
-
-    # 将输入的起止时间转换为时间戳
     start_time = sys.argv[1]
     if len(start_time) != 12:
         start_time = str(start_time) + "0"*(12-len(start_time))
@@ -104,7 +120,7 @@ if __name__ == '__main__':
         topic = sys.argv[3]
     except IndexError:
         topic = "mpp_vv_pcweb"
-
-    # 逐行解析日志
-    for line in fileinput.input(sys.argv[4:]):
-        split_kafka(line, start_time, end_time, topic)
+    dirpath = sys.argv[4]
+    setSplitStart(start_time, dirpath, topic)
+    for line in fileinput.input(sys.argv[5:]):
+        split_kafka(line, start_time, end_time, topic, dirpath)

@@ -44,7 +44,7 @@ for topic in ${topics}; do
     filename=${start_time}"_play_"${topic}".bz2"
     # 后台运行，结束时间半小时后，进程退出
     ./bin/kafka_connect.py ${topic} ${pydota_collect_pids} \
-      | ./bin/kafka_split.py ${start_time} ${end_time} ${topic} 2>${pydota_orig}/${sub_path}/$filenameerr \
+      | ./bin/kafka_split.py ${start_time} ${end_time} ${topic} ${pydota_orig}/${sub_path} 2>${pydota_orig}/${sub_path}/$filenameerr \
       | bzip2 > ${pydota_orig}/${sub_path}/$filename &
 
     msg="${msg}./bin/kafka_connect.py ${topic} ${pydota_collect_pids} | ./bin/kafka_split.py ${start_time} ${end_time} ${topic} 2>${pydota_orig}/${sub_path}/$filenameerr | bzip2 > ${pydota_orig}/${sub_path}/$filename
