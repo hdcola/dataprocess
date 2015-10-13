@@ -150,16 +150,12 @@ def ott_41_format(line):
             cid = record["video_info"]['fstlvl_id']
             formatstring = formatstring + ',' + str(cid)
         except KeyError:
-            sys.stderr.write(("fstlvl_iderr,%s") % line)
+            sys.stderr.write(("video_info.fstlvl_iderr,%s") % line)
             return
         # plid
         try:
             plid = record["video_info"]['sndlvl_id']
-            if plid.strip() == "":
-                sys.stderr.write(("video_info.sndlvl_iderr,%s") % line)
-                return
-            else:
-                formatstring = formatstring + ',' + str(plid)
+            formatstring = formatstring + ',' + str(plid)
         except KeyError:
             sys.stderr.write(("video_info.sndlvl_iderr,%s") % line)
             return

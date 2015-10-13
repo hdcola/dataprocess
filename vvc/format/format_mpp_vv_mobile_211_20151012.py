@@ -6,6 +6,7 @@ import sys
 import time
 import string
 import urllib
+import json
 from IPy import IP
 
 filesfps = []
@@ -68,6 +69,18 @@ def formatTime(timetmp):
     timetmp_time = time.strftime('%H%M%S', timedata)
     return timetmp_date, timetmp_time
 
+def getVersionNum(verstr):
+    try:
+        vertmp = verstr.split('.')
+        if len(vertmp) >= 3:
+            return int(vertmp[0])*100+int(vertmp[1])*10+int(vertmp[2])
+        else:
+            return int(vertmp[0])*100+int(vertmp[1])*10
+    except IndexError:
+        return 0
+    except ValueError:
+        return 0
+
 def collectArgs(fstring, argslist, name, errname, strict):
     try:
         nametmp = argslist[name]
@@ -87,19 +100,27 @@ def collectArgs(fstring, argslist, name, errname, strict):
         raise ValueError("args is illegal")
         return
 
-def padweb_format(line):
+def mobile_new_version_211_20151012_format(line):
     formatstring = ""
     if len(line.strip('\n')) == 0:
         return
-
     lineall = string.split(line.strip(), '\t')
     try:
-        urlarg = lineall[7].strip()
+        jsonline = lineall[7].strip()
         timetmp  = lineall[0]
         iptmp  = lineall[1]
     except IndexError:
         sys.stderr.write(("indexerr,%s") % line)
         return
+    try:
+        recordall = json.loads(jsonline)
+    except ValueError:
+        sys.stderr.write(("jsonerr,%s") % line)
+        return
+    try:
+        record = recordall[0]
+    except KeyError:
+        record = recordall
 
     # date, time
     try:
@@ -121,7 +142,7 @@ def padweb_format(line):
 
     # location
     try:
-        locationtmp = formatLocation(iptmp[0])
+        locationtmp = formatLocation(iptmp)
         location_province = locationtmp[2]
         location_city = locationtmp[3]
         formatstring = formatstring + ',' + str(location_province) + ',' + str(location_city)
@@ -132,46 +153,38 @@ def padweb_format(line):
         sys.stderr.write(("locationerr,%s") % line)
         return
 
-    # url args
     try:
-        urlargtmp = urlarg.split('&')
-    except ValueError:
-        sys.stderr.write(("urlargerr,%s") % line)
-        return
 
-    urlarglist = {}
-    for urlargtmptmp in urlargtmp:
+        #uid
         try:
-            argkey = urlargtmptmp.split('=')[0]
-            argvalue = urlargtmptmp.split('=')[1]
-            urlarglist[argkey] = argvalue
-        except IndexError:
-            sys.stderr.write(("urlargerr,%s") % line)
-            return
+            uid = record["uid"]
+            formatstring = formatstring + ',' + str(uid)
+        except KeyError:
+            formatstring = formatstring + ','
+        #uuid
+        formatstring = formatstring + ','
 
-    try:
-        formatstring = collectArgs(formatstring, urlarglist, "uid", "uiderr", False)
-        formatstring = collectArgs(formatstring, urlarglist, "uuid", "uuiderr", True)
-        formatstring = collectArgs(formatstring, urlarglist, "guid", "guiderr", True)
+        formatstring = collectArgs(formatstring, record, "guid", "guiderr", True)
+
         # ref
         formatstring = formatstring + ','
-        formatstring = collectArgs(formatstring, urlarglist, "bid", "biderr", True)
-        # cid
+        formatstring = collectArgs(formatstring, record, "bid", "biderr", True)
+        formatstring = collectArgs(formatstring, record, "cid", "ciderr", False)
+
+        #plid
         formatstring = formatstring + ','
-        # plid
+
+        formatstring = collectArgs(formatstring, record, "vid", "viderr", True)
+
         formatstring = formatstring + ','
-        formatstring = collectArgs(formatstring, urlarglist, "vid", "viderr", True)
-        formatstring = collectArgs(formatstring, urlarglist, "tid", "tiderr", False)
+
         # vts
         formatstring = formatstring + ','
-        formatstring = collectArgs(formatstring, urlarglist, "cookie", "cookieerr", True)
+        # cookie
+        formatstring = formatstring + ','
         # pt
         try:
-            bid = urlarglist['bid']
-            if str(bid) == '4.0.3' or str(bid) == '4.1.1':
-                pt = urlarglist['pt']
-            else:
-                pt = urlarglist['pt']
+            pt = record['pt']
             formatstring = formatstring + ',' + str(pt)
             if str(pt) != '0':
                 sys.stderr.write(("pterr,%s") % line)
@@ -179,18 +192,72 @@ def padweb_format(line):
         except KeyError:
             sys.stderr.write(("pterr,%s") % line)
             return
-
         # ln
         formatstring = formatstring + ','
-        formatstring = collectArgs(formatstring, urlarglist, "cf", "cferr", True)
-        # definition
-        formatstring = collectArgs(formatstring, urlarglist, "def", "definitionerr", True)
-        formatstring = collectArgs(formatstring, urlarglist, "act", "acterr", True)
-        # CLIENTTP
-        formatstring = formatstring + ',' + "padweb"
-        # aver
+        # cf
         formatstring = formatstring + ','
-        print formatstring
+        # definition
+        formatstring = formatstring + ','
+
+        # act
+        act = ""
+        try:
+            act = record["act"]
+            if act.strip() == "":
+                sys.stderr.write(("acterr,%s") % line)
+                return
+            elif act == "aplay":
+                act = 'play'
+            else:
+                sys.stderr.write(("acterr,%s") % line)
+                return
+            formatstring = formatstring + ',' + str(act)
+        except KeyError:
+            sys.stderr.write(("acterr,%s") % line)
+            return
+
+        # CLIENTTP
+        try:
+            clientver = record["aver"].lower()
+            if 'iphone' in clientver:
+                clienttp = 'iphone'
+            else:
+                clienttp = 'android'
+            formatstring = formatstring + ',' + str(clienttp)
+        except KeyError:
+            sys.stderr.write(("avererr,%s") % line)
+            return
+
+        # CLIENTVER
+        try:
+            clientver = record["aver"].lower()
+            if "imgotv-aphone" in clientver:
+                if act == "play":
+                    version = clientver.split('-')
+                    versionnum = getVersionNum(version[2])
+                    if versionnum >= 452:
+                        formatstring = formatstring + ',' + str(clientver)
+                    else:
+                        sys.stderr.write(("avererr,%s") % line)
+                        return
+                else:
+                    sys.stderr.write(("playreperr,%s") % line)
+                    return
+            else:
+                if act == 'aplay':
+                    versionnum = getVersionNum(clientver)
+                    if versionnum >= 452:
+                        formatstring = formatstring + ',' + str(clientver)
+                    else:
+                        sys.stderr.write(("avererr,%s") % line)
+                        return
+                else:
+                    sys.stderr.write(("playreperr,%s") % line)
+                    return
+        except KeyError:
+            sys.stderr.write(("avererr,%s") % line)
+            return
+        print formatstring.lower()
     except ValueError:
         return
 
@@ -199,4 +266,4 @@ if __name__ == '__main__':
     # python pcp_format.py ./genip afile bfile cfile
     loadGeoIp(sys.argv[1])
     for line in fileinput.input(sys.argv[2:]):
-        padweb_format(line)
+        mobile_new_version_211_20151012_format(line)

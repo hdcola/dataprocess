@@ -157,7 +157,7 @@ def msite_format(line):
         # ref
         formatstring = formatstring + ','
         formatstring = collectArgs(formatstring, urlarglist, "bid", "biderr", True)
-        formatstring = collectArgs(formatstring, urlarglist, "cid", "ciderr", True)
+        formatstring = collectArgs(formatstring, urlarglist, "cid", "ciderr", False)
         # plid
         formatstring = collectArgs(formatstring, urlarglist, "plid", "pliderr", False)
         formatstring = collectArgs(formatstring, urlarglist, "vid", "viderr", True)

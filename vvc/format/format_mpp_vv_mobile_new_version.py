@@ -190,6 +190,12 @@ def mobile_new_version_format(line):
         # if clienttag in ("aphone452", "iphone450453", "iphone454"):
         if clienttag == "aphone452":
             formatstring = collectArgs(formatstring, record, "uid", "uiderr", False)
+        elif clienttag == "iphone450453" or clienttag == "iphone454":
+            try:
+                uid = record["uid"]
+                formatstring = formatstring + ',' + str(uid)
+            except KeyError:
+                formatstring = formatstring + ','
         else:
             formatstring = formatstring + ','
 
@@ -216,13 +222,13 @@ def mobile_new_version_format(line):
 
         # cid
         if clienttag == "aphone452" or clienttag == "iphone454":
-            formatstring = collectArgs(formatstring, record, "cid", "ciderr", True)
+            formatstring = collectArgs(formatstring, record, "cid", "ciderr", False)
         else:
             formatstring = formatstring + ','
 
         # plid
         if clienttag == "aphone452" or clienttag == "iphone454":
-            formatstring = collectArgs(formatstring, record, "plid","pliderr", True)
+            formatstring = collectArgs(formatstring, record, "plid","pliderr", False)
         else:
             formatstring = formatstring + ','
 

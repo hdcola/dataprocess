@@ -5,6 +5,7 @@ import fileinput
 import sys
 import time
 import string
+import json
 import urllib
 from IPy import IP
 
@@ -63,10 +64,7 @@ def formatLocation(userip):
         return None
 
 def formatTime(timetmp):
-    try:
-        timedata = time.strptime(timetmp, "[%d/%b/%Y:%H:%M:%S+0800]")
-    except ValueError:
-        raise ValueError("timeerr")
+    timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
     timetmp_date = time.strftime('%Y%m%d', timedata)
     timetmp_time = time.strftime('%H%M%S', timedata)
     return timetmp_date, timetmp_time
@@ -90,17 +88,28 @@ def collectArgs(fstring, argslist, name, errname, strict):
         raise ValueError("args is illegal")
         return
 
-def pcp_format(line):
+def ott_vv_311_20151012_format(line):
     formatstring = ""
     if len(line.strip('\n')) == 0:
         return
+
+    lineall = string.split(line.strip(), '\t')
     try:
-        record = string.split(line, '- -')
-        recordtmp = record[1].strip().split(' ')
-        timetmp = str(recordtmp[0]) + str(recordtmp[1])
+        jsonline = lineall[7].strip()
+        timetmp  = lineall[0]
+        iptmp  = lineall[1]
     except IndexError:
         sys.stderr.write(("indexerr,%s") % line)
         return
+    try:
+        record = json.loads(jsonline)
+    except ValueError:
+        sys.stderr.write(("jsonerr,%s") % line)
+        return
+    try:
+        record = record[0]
+    except KeyError:
+        record = record
     # date, time
     try:
         timetmp_date, timetmp_time = formatTime(timetmp)
@@ -108,17 +117,16 @@ def pcp_format(line):
     except ValueError:
         sys.stderr.write(("timeerr,%s") % line)
         return
+    except KeyError:
+        sys.stderr.write(("timeerr,%s") % line)
+        return
+
     # IP
     try:
-        iptmp = record[0].strip().split(',')
-        if len(iptmp) != 1:
-            sys.stderr.write(("iperr,%s") % line)
-            return
-        else:
-            formatstring = formatstring + ',' + str(iptmp[0])
-    except IndexError:
-            sys.stderr.write(("iperr,%s") % line)
-            return
+        formatstring = formatstring + ',' + str(iptmp)
+    except ValueError:
+        sys.stderr.write(("iperr,%s") % line)
+        return
 
     # location
     try:
@@ -132,72 +140,46 @@ def pcp_format(line):
     except TypeError:
         sys.stderr.write(("locationerr,%s") % line)
         return
-    # url args
-    try:
-        urlargtmp = record[1].strip().split(' ')[3].split('?')[1].split('&')
-    except ValueError or IndexError:
-        sys.stderr.write(("urlargerr,%s") % line)
-        return
 
-    urlarglist = {}
-    for urlargtmptmp in urlargtmp:
-        try:
-            argkey = urlargtmptmp.split('=')[0]
-            argvalue = urlargtmptmp.split('=')[1]
-            urlarglist[argkey] = argvalue
-        except IndexError:
-            sys.stderr.write(("urlargerr,%s") % line)
-            return
     try:
-        formatstring = collectArgs(formatstring, urlarglist, "uid", "uiderr", False)
-        formatstring = collectArgs(formatstring, urlarglist, "uuid", "uuiderr", True)
-        formatstring = collectArgs(formatstring, urlarglist, "guid", "guiderr", True)
-        # ref
-        try:
-            ref = urlarglist['ref']
-            if ref.strip() == "":
-                sys.stderr.write(("referr,%s") % line)
-                return
-            else:
-                ref = urllib.unquote(ref)
-                if ref.find(",") != -1:
-                    ref.replace(",", "")
-                formatstring = formatstring + ',' + str(ref)
-        except KeyError:
-            sys.stderr.write(("referr,%s") % line)
-            return
-
-        formatstring = collectArgs(formatstring, urlarglist, "bid", "biderr", True)
-        formatstring = collectArgs(formatstring, urlarglist, "cid", "ciderr", False)
-        formatstring = collectArgs(formatstring, urlarglist, "plid","pliderr", False)
-        formatstring = collectArgs(formatstring, urlarglist, "vid", "viderr", True)
-        formatstring = collectArgs(formatstring, urlarglist, "tid", "tiderr", False)
-        formatstring = collectArgs(formatstring, urlarglist, "vts", "vtserr", True)
-        formatstring = collectArgs(formatstring, urlarglist, "cookie", "cookieerr", True)
-        # pt
-        try:
-            bid = urlarglist['bid']
-            tp = urlarglist['tp']
-            if str(bid) == '1' and str(tp) == '1':
-                pt = '0'
-            else:
-                pt = urlarglist['pt']
-            formatstring = formatstring + ',' + str(pt)
-            if str(pt) != '0':
-                sys.stderr.write(("pterr,%s") % line)
-                return
-        except KeyError:
-            sys.stderr.write(("pterr,%s") % line)
-            return
-        formatstring = collectArgs(formatstring, urlarglist, "ln", "lnerr", False)
-        formatstring = collectArgs(formatstring, urlarglist, "cf", "cferr", True)
-        formatstring = collectArgs(formatstring, urlarglist, "definition", "definitionerr", True)
-        formatstring = collectArgs(formatstring, urlarglist, "act", "acterr", True)
-        # CLIENTTP
-        formatstring = formatstring + ',' + "pcweb"
-        # aver
+        # uid
         formatstring = formatstring + ','
-        print formatstring
+        #formatstring = collectArgs(formatstring, record, "uid", "uiderr", False)
+        # uuid
+        formatstring = collectArgs(formatstring, record, "uuid", "uuiderr", False)
+        # guid
+        formatstring = collectArgs(formatstring, record, "guid", "guiderr", True)
+        # ref
+        formatstring = formatstring + ','
+        # bid
+        formatstring = collectArgs(formatstring, record, "bid", "biderr", True)
+        # cid
+        formatstring = collectArgs(formatstring, record, "cid", "ciderr", False)
+        # plid
+        formatstring = collectArgs(formatstring, record, "oplid", "opliderr", True)
+        # vid
+        formatstring = formatstring + ','
+        # tid
+        formatstring = formatstring + ','
+        # vts
+        formatstring = formatstring + ','
+        # cookie
+        formatstring = formatstring + ','
+        # pt
+        formatstring = formatstring + ',' + '0'
+        # ln
+        formatstring = formatstring + ','
+        # cf
+        formatstring = formatstring + ','
+        # definition
+        formatstring = formatstring + ','
+        # act
+        formatstring = collectArgs(formatstring, record, "act", "acterr", True)
+        # CLIENTTP
+        formatstring = formatstring + ',' + "ott"
+        # aver
+        formatstring = collectArgs(formatstring, record, "aver", "avererr", True)
+        print formatstring.lower()
     except ValueError:
         return
 
@@ -206,4 +188,4 @@ if __name__ == '__main__':
     # python pcp_format.py ./genip afile bfile cfile
     loadGeoIp(sys.argv[1])
     for line in fileinput.input(sys.argv[2:]):
-        pcp_format(line)
+        ott_vv_311_20151012_format(line)

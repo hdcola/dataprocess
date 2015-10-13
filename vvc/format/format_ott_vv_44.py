@@ -155,9 +155,9 @@ def ott_44_format(line):
         # cid
         formatstring = collectArgs(formatstring, record, "cid", "ciderr", False)
         # plid
-        formatstring = collectArgs(formatstring, record, "oplid", "opliderr", True)
+        formatstring = collectArgs(formatstring, record, "oplid", "opliderr", False)
         # vid
-        formatstring = collectArgs(formatstring, record, "ovid", "viderr", True)
+        formatstring = collectArgs(formatstring, record, "ovid", "oviderr", True)
         # tid
         formatstring = formatstring + ','
         # vts

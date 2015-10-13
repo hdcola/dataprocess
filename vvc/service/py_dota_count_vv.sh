@@ -12,20 +12,15 @@ if [[ -n "$HOME" && -e "$HOME/.pydota" ]]; then
   . "$HOME/.pydota"
 fi
 
-[ "$#" == "0" ] && echo "usage: py_dota_reprocess.sh  [topic] [start_time] " && exit 1
+[ "$#" != "2" ] && echo "usage: py_dota_reprocess.sh  [start_time] [topic] " && exit 1
 
-if [ $# -ge 2 ];then
-  start_time=$2;
-else
-  start_time=`date --date="$DATE - 2 hour" +%Y%m%d%H`
-  start_time=${start_time}"00"
-fi
+topic=$2
+start_time=$1
 
 #start_time=${1:-${start_time}}
 sub_path_year=${start_time:0:4}
 sub_path_month=${start_time:4:2}
 
-topic=$1
 filename=${start_time}"_play_"${topic}
 sub_path=${sub_path_year}/${sub_path_month}
 work_path="${pydota_path}"
@@ -46,11 +41,11 @@ if [ -f ${pydota_des}/${sub_path}/${filenameraw}.bz2 ]; then
     #[ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
 
     python bin/count_vv_hour.py ${topic} "all" ${pydota_des}/${sub_path}/$filenameraw.bz2 ${pydota_report}/${sub_path} &
-    [ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
+#    [ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
 
     python bin/count_vv_hour.py ${topic} "chn" ${pydota_des}/${sub_path}/$filenameraw.bz2 ${pydota_report}/${sub_path} &
-    [ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
+#    [ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
 
     python bin/count_vv_hour.py ${topic} "pl"  ${pydota_des}/${sub_path}/$filenameraw.bz2 ${pydota_report}/${sub_path} &
-    [ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
+#    [ ! -z ${pydota_process_pids} ] && echo $! >> ${pydota_process_pids}
 fi

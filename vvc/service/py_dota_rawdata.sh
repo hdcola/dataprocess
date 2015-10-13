@@ -38,4 +38,5 @@ ${proctime}-${nowtime}@${py_dota_process_user}"
 echo "${msg}" | $bearychat -t "${topic} ${start_time}的rawdata数据处理完成"
 
 # 接下来处理这个topic的vv report
-./service/py_dota_count_vv.sh $topic $start_time &
+./service/py_dota_report_vv.sh $start_time $topic &
+./service/py_dota_count_vv.sh $start_time $topic  &
