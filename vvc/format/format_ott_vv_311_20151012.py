@@ -159,7 +159,8 @@ def ott_vv_311_20151012_format(line):
         # vid
         formatstring = collectArgs(formatstring, record, "ovid", "oviderr", True)
         # tid
-        formatstring = collectArgs(formatstring, record, "tid", "tiderr", False)
+        # formatstring = collectArgs(formatstring, record, "tid", "tiderr", False)
+        formatstring = formatstring + ','
         # vts
         formatstring = collectArgs(formatstring, record, "vts", "vtserr", True)
         # cookie
