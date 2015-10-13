@@ -156,32 +156,28 @@ def mobile_new_version_211_20151012_format(line):
     try:
 
         #uid
-        try:
-            uid = record["uid"]
-            formatstring = formatstring + ',' + str(uid)
-        except KeyError:
-            formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "uuid", "uuiderr", False)
         #uuid
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "suuid", "suiderr", True)
 
         formatstring = collectArgs(formatstring, record, "guid", "guiderr", True)
 
         # ref
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "ref", "referr", False)
         formatstring = collectArgs(formatstring, record, "bid", "biderr", True)
         formatstring = collectArgs(formatstring, record, "cid", "ciderr", False)
 
         #plid
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "plid", "pliderr", False)
 
         formatstring = collectArgs(formatstring, record, "vid", "viderr", True)
 
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "tid", "tiderr", False)
 
         # vts
         formatstring = formatstring + ','
         # cookie
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "did", "diderr", False)
         # pt
         try:
             pt = record['pt']
@@ -197,7 +193,7 @@ def mobile_new_version_211_20151012_format(line):
         # cf
         formatstring = formatstring + ','
         # definition
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "def", "deferr", False)
 
         # act
         act = ""

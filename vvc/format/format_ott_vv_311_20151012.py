@@ -143,36 +143,35 @@ def ott_vv_311_20151012_format(line):
 
     try:
         # uid
-        formatstring = formatstring + ','
-        #formatstring = collectArgs(formatstring, record, "uid", "uiderr", False)
-        # uuid
         formatstring = collectArgs(formatstring, record, "uuid", "uuiderr", False)
+        # uuid
+        formatstring = collectArgs(formatstring, record, "suuid", "suuiderr", True)
         # guid
         formatstring = collectArgs(formatstring, record, "guid", "guiderr", True)
         # ref
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "ref", "referr", False)
         # bid
         formatstring = collectArgs(formatstring, record, "bid", "biderr", True)
         # cid
         formatstring = collectArgs(formatstring, record, "cid", "ciderr", False)
         # plid
-        formatstring = collectArgs(formatstring, record, "oplid", "opliderr", True)
+        formatstring = collectArgs(formatstring, record, "oplid", "opliderr", False)
         # vid
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "ovid", "oviderr", True)
         # tid
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "tid", "tiderr", False)
         # vts
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "vts", "vtserr", True)
         # cookie
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "did", "diderr", True)
         # pt
         formatstring = formatstring + ',' + '0'
         # ln
         formatstring = formatstring + ','
         # cf
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "cf", "cferr", True)
         # definition
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "def", "deferr", True)
         # act
         formatstring = collectArgs(formatstring, record, "act", "acterr", True)
         # CLIENTTP
