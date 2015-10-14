@@ -62,7 +62,7 @@ function report(){
   fi
 
   cat ${files} | awk -F, '{
-    type=$1","$2;
+    type=$1","$2","$3;
     if(!(type in sum)){
       sum[type]=0};
       sum[type]=sum[type]+$NF
@@ -72,18 +72,17 @@ function report(){
         print sum[i]" "i
       }
     }' | awk '{print $2","$1}' | sort \
-    > ${pydota_report}/${sub_path}/day_vv_${start_time}_${clienttype}.csv
+    > ${pydota_report}/${sub_path}/day_vv_${field}_${start_time}_${clienttype}.csv
 
     #设置bearychat发送目标为dota-日报
     export BEARYCHAT_WEBHOOK="https://hook.bearychat.com/=bw7by/incoming/1d2c96785da623e3299c1d742c4a26fb"
 
-    msg=`cat ${pydota_report}/${sub_path}/day_vv_${start_time}.csv`
+    msg=`cat ${pydota_report}/${sub_path}/day_vv_${field}_${start_time}_${clienttype}.csv|head -n 50`
     nowtime=`date "+%Y/%m/%d %H:%M:%S"`
     msg="${msg}
     ${nowtime}@${py_dota_process_user}"
-    echo "${msg}" | $bearychat -t "${start_time}的日VV数据统计完成"
+    echo "${msg}" | $bearychat -t "${start_time}的${clienttype}的${field}日VV数据统计完成"
 }
-
 
 if [ -n "$2" ]; then
   field=$2

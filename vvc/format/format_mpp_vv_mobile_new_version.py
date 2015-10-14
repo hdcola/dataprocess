@@ -221,13 +221,13 @@ def mobile_new_version_format(line):
             formatstring = formatstring + ','
 
         # cid
-        if clienttag == "aphone452" or clienttag == "iphone454":
+        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
             formatstring = collectArgs(formatstring, record, "cid", "ciderr", False)
         else:
             formatstring = formatstring + ','
 
         # plid
-        if clienttag == "aphone452" or clienttag == "iphone454":
+        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
             formatstring = collectArgs(formatstring, record, "plid","pliderr", False)
         else:
             formatstring = formatstring + ','
