@@ -161,7 +161,7 @@ def pcp_format(line):
             else:
                 ref = urllib.unquote(ref)
                 if ref.find(",") != -1:
-                    ref.replace(",", "")
+                    ref = ref.replace(",", "")
                 formatstring = formatstring + ',' + str(ref)
         except KeyError:
             sys.stderr.write(("referr,%s") % line)

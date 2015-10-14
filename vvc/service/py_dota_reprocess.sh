@@ -1,5 +1,5 @@
 #!/bin/sh
-
+# 移动端数据较大，各个时间段并行运行，其他端并行运行。
 if [[ -e "/etc/pydota.conf" ]]; then
   . /etc/pydota_reprocess.conf
 fi
@@ -32,7 +32,12 @@ while [ $end_hour -ge $start_hour ]; do
     cd $work_path
     filename=${start_time}"_play_"${topic}
     if [ -f ${pydota_orig}/${sub_path}/${filename}.bz2 ]; then
-        ./service/py_dota_count_vv_re.sh ${filename} $topic $sub_path_year $sub_path_month $start_time 2>${pydota_log}/${start_time}_${topic}
+        # 仅mobile端后台运行，并行
+        if [[ ${topic} =~ "mobile" ]];then
+            ./service/py_dota_count_vv_re.sh ${filename} $topic $sub_path_year $sub_path_month $start_time 2>${pydota_log}/${start_time}_${topic} &
+        else
+            ./service/py_dota_count_vv_re.sh ${filename} $topic $sub_path_year $sub_path_month $start_time 2>${pydota_log}/${start_time}_${topic}
+        fi
     fi
     start_hour=$((start_hour+1))
 done
