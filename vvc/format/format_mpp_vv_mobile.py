@@ -220,7 +220,15 @@ def mobile_format(line):
         # vts
         formatstring = formatstring + ','
         # cookie
-        formatstring = collectArgs(formatstring, record, "mac", "macerr", True)
+        try:
+            cookie = record["mac"]
+            if str(cookie).strip() == "":
+                sys.stderr.write(("macerr,%s") % line)
+                return
+            formatstring = formatstring + ',' + str(cookie).lower()
+        except KeyError:
+            sys.stderr.write(("macerr,%s") % line)
+            return
         # pt
         try:
             data_type = record["data_type"]

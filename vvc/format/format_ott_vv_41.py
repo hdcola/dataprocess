@@ -138,7 +138,11 @@ def ott_41_format(line):
         # uid
         formatstring = collectArgs(formatstring, record, "user_id", "user_iderr", False)
         # uuid
-        formatstring = collectArgs(formatstring, record, "play_session", "play_sessionerr", True)
+        try:
+            uuid = record["play_session"]
+            formatstring = formatstring + ',' + str(uuid)
+        except KeyError:
+            formatstring = formatstring + ','
         # guid
         formatstring = formatstring + ','
         # ref

@@ -250,7 +250,15 @@ def mobile_new_version_format(line):
 
         # cookie
         if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
-            formatstring = collectArgs(formatstring, record, "did", "diderr", False)
+            try:
+                cookie = record["did"]
+                if str(cookie).strip() == "":
+                    sys.stderr.write(("diderr,%s") % line)
+                    return
+                formatstring = formatstring + ',' + str(cookie).lower()
+            except KeyError:
+                sys.stderr.write(("diderr,%s") % line)
+                return
         else:
             formatstring = formatstring + ','
 

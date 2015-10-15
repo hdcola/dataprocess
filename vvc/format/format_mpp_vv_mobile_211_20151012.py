@@ -182,7 +182,15 @@ def mobile_new_version_211_20151012_format(line):
         # vts
         formatstring = formatstring + ','
         # cookie
-        formatstring = collectArgs(formatstring, record, "did", "diderr", False)
+        try:
+            cookie = record["did"]
+            if str(cookie).strip() == "":
+                sys.stderr.write(("diderr,%s") % line)
+                return
+            formatstring = formatstring + ',' + str(cookie).lower()
+        except KeyError:
+            sys.stderr.write(("diderr,%s") % line)
+            return
         # pt
         try:
             pt = record['pt']
@@ -206,7 +214,7 @@ def mobile_new_version_211_20151012_format(line):
             if act.strip() == "":
                 sys.stderr.write(("acterr,%s") % line)
                 return
-            elif act == "aplay":
+            elif act == "aplay" or act == "play":
                 act = 'play'
             else:
                 sys.stderr.write(("acterr,%s") % line)
@@ -221,8 +229,13 @@ def mobile_new_version_211_20151012_format(line):
             clientver = record["aver"].lower()
             if 'iphone' in clientver:
                 clienttp = 'iphone'
-            else:
+            elif 'aphone' in clientver:
                 clienttp = 'android'
+            elif 'ipad' in clientver:
+                clienttp = 'ipad'
+            else:
+                sys.stderr.write(("avererr,%s") % line)
+                return
             formatstring = formatstring + ',' + str(clienttp)
         except KeyError:
             sys.stderr.write(("avererr,%s") % line)
