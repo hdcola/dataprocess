@@ -170,7 +170,18 @@ def ott_44_format(line):
         # cookie
         formatstring = collectArgs(formatstring, record, "did", "diderr", True)
         # pt
-        formatstring = formatstring + ',' + '0'
+        try:
+            bid = record["bid"]
+            pt = record["pt"]
+            if str(bid) == '3.0.1' and str(pt) == '1':
+                pt = '0'
+            formatstring = formatstring + ',' + str(pt)
+            if str(pt) != '0':
+                sys.stderr.write(("pterr,%s") % line)
+                return
+        except KeyError:
+            sys.stderr.write(("pterr,%s") % line)
+            return
         # ln
         formatstring = formatstring + ','
         # cf
