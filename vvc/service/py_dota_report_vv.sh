@@ -40,8 +40,9 @@ function report(){
 
   csv_count=`cat ${pydota_report}/${sub_path}/${filenamereport}_${field_name}.csv | wc -l`
   topmsg=`cat ${pydota_report}/${sub_path}/${filenamereport}_${field_name}.csv | head -5`
+  report_size=`ls -lh ${pydota_report}/${sub_path}/${filenamereport}_${field_name}.csv | awk '{print $5}'`
 
-  msg="${field_name}数据有${csv_count}条
+  msg="${field_name}数据有${csv_count}条,report_size大小${report_size}
   ${topmsg}"
   nowtime=`date "+%Y/%m/%d %H:%M:%S"`
   msg="${msg}

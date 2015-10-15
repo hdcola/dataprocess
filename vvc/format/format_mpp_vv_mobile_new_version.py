@@ -109,7 +109,7 @@ def mobile_new_version_format(line):
     try:
         jsonline = lineall[7].strip()
         timetmp  = lineall[0]
-        iptmp  = lineall[1]
+        iptmp  = lineall[1].strip()
     except IndexError:
         sys.stderr.write(("indexerr,%s") % line)
         return
@@ -239,9 +239,10 @@ def mobile_new_version_format(line):
             formatstring = formatstring + ','
 
         # tid
-        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
-            formatstring = collectArgs(formatstring, record, "tid", "tiderr", False)
-        else:
+        try:
+            tid = record["tid"]
+            formatstring = formatstring + ',' + str(tid)
+        except KeyError:
             formatstring = formatstring + ','
 
         # vts

@@ -1,6 +1,7 @@
 #!/bin/sh
-# 计算指定月的vv数据
+# 计算指定月的vv数据 以及制定某一天的汇总数据
 # py_dota_report_vv_month.sh 201510
+# py_dota_report_vv_month.sh 20151014
 
 if [[ -e "/etc/pydota.conf" ]]; then
   . /etc/pydota.conf

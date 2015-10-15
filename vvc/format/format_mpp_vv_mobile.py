@@ -210,7 +210,12 @@ def mobile_format(line):
             return
 
         # tid
-        formatstring = formatstring + ','
+        try:
+            tid = record["tid"]
+            formatstring = formatstring + ',' + str(tid)
+        except KeyError:
+            formatstring = formatstring + ','
+
 
         # vts
         formatstring = formatstring + ','

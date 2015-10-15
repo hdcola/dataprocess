@@ -170,7 +170,13 @@ def pcp_format(line):
         formatstring = collectArgs(formatstring, urlarglist, "cid", "ciderr", False)
         formatstring = collectArgs(formatstring, urlarglist, "plid","pliderr", False)
         formatstring = collectArgs(formatstring, urlarglist, "vid", "viderr", True)
-        formatstring = collectArgs(formatstring, urlarglist, "tid", "tiderr", False)
+
+        try:
+            tid = urlarglist["tid"]
+            formatstring = formatstring + ',' + str(tid)
+        except KeyError:
+            formatstring = formatstring + ','
+
         formatstring = collectArgs(formatstring, urlarglist, "vts", "vtserr", True)
         formatstring = collectArgs(formatstring, urlarglist, "cookie", "cookieerr", True)
         # pt

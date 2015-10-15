@@ -152,7 +152,12 @@ def ott_format(line):
         # vid
         formatstring = formatstring + ','
         # tid
-        formatstring = formatstring + ','
+        try:
+            tid = record["tid"]
+            formatstring = formatstring + ',' + str(tid)
+        except KeyError:
+            formatstring = formatstring + ','
+
         # vts
         formatstring = formatstring + ','
         # cookie

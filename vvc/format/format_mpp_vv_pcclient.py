@@ -159,7 +159,12 @@ def pcc_format(line):
         formatstring = collectArgs(formatstring, urlarglist, "plid","pliderr", False)
         formatstring = collectArgs(formatstring, urlarglist, "vid", "viderr", True)
         # tid
-        formatstring = formatstring + ','
+        try:
+            tid = urlarglist["tid"]
+            formatstring = formatstring + ',' + str(tid)
+        except KeyError:
+            formatstring = formatstring + ','
+
         # vts
         formatstring = formatstring + ','
         # cookie or DID or mac

@@ -108,7 +108,7 @@ def mobile_new_version_211_20151012_format(line):
     try:
         jsonline = lineall[7].strip()
         timetmp  = lineall[0]
-        iptmp  = lineall[1]
+        iptmp  = lineall[1].strip()
     except IndexError:
         sys.stderr.write(("indexerr,%s") % line)
         return
@@ -172,7 +172,12 @@ def mobile_new_version_211_20151012_format(line):
 
         formatstring = collectArgs(formatstring, record, "vid", "viderr", True)
 
-        formatstring = collectArgs(formatstring, record, "tid", "tiderr", False)
+        # tid
+        try:
+            tid = record["tid"]
+            formatstring = formatstring + ',' + str(tid)
+        except KeyError:
+            formatstring = formatstring + ','
 
         # vts
         formatstring = formatstring + ','

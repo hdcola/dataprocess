@@ -97,7 +97,7 @@ def ott_vv_311_20151012_format(line):
     try:
         jsonline = lineall[7].strip()
         timetmp  = lineall[0]
-        iptmp  = lineall[1]
+        iptmp  = lineall[1].strip()
     except IndexError:
         sys.stderr.write(("indexerr,%s") % line)
         return
@@ -130,7 +130,7 @@ def ott_vv_311_20151012_format(line):
 
     # location
     try:
-        locationtmp = formatLocation(iptmp[0])
+        locationtmp = formatLocation(iptmp)
         location_province = locationtmp[2]
         location_city = locationtmp[3]
         formatstring = formatstring + ',' + str(location_province) + ',' + str(location_city)
@@ -160,7 +160,12 @@ def ott_vv_311_20151012_format(line):
         formatstring = collectArgs(formatstring, record, "ovid", "oviderr", True)
         # tid
         # formatstring = collectArgs(formatstring, record, "tid", "tiderr", False)
-        formatstring = formatstring + ','
+        try:
+            tid = record["tid"]
+            formatstring = formatstring + ',' + str(tid)
+        except KeyError:
+            formatstring = formatstring + ','
+
         # vts
         formatstring = collectArgs(formatstring, record, "vts", "vtserr", True)
         # cookie

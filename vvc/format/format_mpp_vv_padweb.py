@@ -96,7 +96,7 @@ def padweb_format(line):
     try:
         urlarg = lineall[7].strip()
         timetmp  = lineall[0]
-        iptmp  = lineall[1]
+        iptmp  = lineall[1].strip()
     except IndexError:
         sys.stderr.write(("indexerr,%s") % line)
         return
@@ -121,7 +121,7 @@ def padweb_format(line):
 
     # location
     try:
-        locationtmp = formatLocation(iptmp[0])
+        locationtmp = formatLocation(iptmp)
         location_province = locationtmp[2]
         location_city = locationtmp[3]
         formatstring = formatstring + ',' + str(location_province) + ',' + str(location_city)
@@ -161,7 +161,12 @@ def padweb_format(line):
         # plid
         formatstring = formatstring + ','
         formatstring = collectArgs(formatstring, urlarglist, "vid", "viderr", True)
-        formatstring = collectArgs(formatstring, urlarglist, "tid", "tiderr", False)
+        try:
+            tid = urlarglist["tid"]
+            formatstring = formatstring + ',' + str(tid)
+        except KeyError:
+            formatstring = formatstring + ','
+
         # vts
         formatstring = formatstring + ','
         formatstring = collectArgs(formatstring, urlarglist, "cookie", "cookieerr", True)

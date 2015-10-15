@@ -171,7 +171,12 @@ def ott_41_format(line):
             sys.stderr.write(("video_info.clip_iderr,%s") % line)
             return
         # tid
-        formatstring = formatstring + ','
+        try:
+            tid = record["tid"]
+            formatstring = formatstring + ',' + str(tid)
+        except KeyError:
+            formatstring = formatstring + ','
+
         # vts
         formatstring = formatstring + ','
         # cookie
