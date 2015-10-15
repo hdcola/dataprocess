@@ -15,7 +15,7 @@ fi
 
 function print_help()
 {
-    echo "usage: py_dota_report_vv_day_new [start_time] [field] [clienttype]"
+    echo "usage: py_dota_report_vv_day_new.sh [start_time] [field] [clienttype]"
     echo "--start_time: 计算数据的日期，精确到日"
     echo "--field: 媒资内容的纬度, 值为vid/cid/plid"
     echo "--clienttype: 终端类型，值为pcweb/pcclient/mobile/padweb/msite/ott/mpp，为空时为全平台"
@@ -62,7 +62,11 @@ function report(){
   fi
 
   cat ${files} | awk -F, '{
-    type=$1","$2","$3;
+    if($3==""){
+      type=$1",NULL";
+    }else{
+      type=$1","$3;
+    }
     if(!(type in sum)){
       sum[type]=0};
       sum[type]=sum[type]+$NF
@@ -77,7 +81,7 @@ function report(){
     #设置bearychat发送目标为dota-日报
     export BEARYCHAT_WEBHOOK="https://hook.bearychat.com/=bw7by/incoming/1d2c96785da623e3299c1d742c4a26fb"
 
-    msg=`cat ${pydota_report}/${sub_path}/day_vv_${field}_${start_time}_${clienttype}.csv|head -n 10`
+    msg=`cat ${pydota_report}/${sub_path}/day_vv_${field}_${start_time}_${clienttype}.csv|sort -t"," -k3rn | head -n 10`
     report_size=`ls -lh ${pydota_report}/${sub_path}/day_vv_${field}_${start_time}_${clienttype}.csv | awk '{print $5}'`
     nowtime=`date "+%Y/%m/%d %H:%M:%S"`
     msg="report_size的大小${report_size}

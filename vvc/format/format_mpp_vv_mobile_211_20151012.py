@@ -201,7 +201,6 @@ def mobile_new_version_211_20151012_format(line):
         formatstring = collectArgs(formatstring, record, "def", "deferr", False)
 
         # act
-        act = ""
         try:
             act = record["act"]
             if act.strip() == "":
@@ -233,28 +232,32 @@ def mobile_new_version_211_20151012_format(line):
         try:
             clientver = record["aver"].lower()
             if "imgotv-aphone" in clientver:
-                if act == "play":
-                    version = clientver.split('-')
-                    versionnum = getVersionNum(version[2])
-                    if versionnum >= 452:
-                        formatstring = formatstring + ',' + str(clientver)
-                    else:
-                        sys.stderr.write(("avererr,%s") % line)
-                        return
+                version = clientver.split('-')
+                versionnum = getVersionNum(version[2])
+                if versionnum >= 453:
+                    formatstring = formatstring + ',' + str(clientver).lower()
                 else:
-                    sys.stderr.write(("playreperr,%s") % line)
+                    sys.stderr.write(("avererr,%s") % line)
+                    return
+            elif "imgotv-iphone" in clientver:
+                version = clientver.split('-')
+                versionnum = getVersionNum(version[2])
+                if versionnum >= 455:
+                    formatstring = formatstring + ',' + str(clientver).lower()
+                else:
+                    sys.stderr.write(("avererr,%s") % line)
+                    return
+            elif "ipad" in clientver:
+                version = clientver.split('-')
+                versionnum = getVersionNum(version[2])
+                if versionnum >= 423:
+                    formatstring = formatstring + ',' + str(clientver).lower()
+                else:
+                    sys.stderr.write(("avererr,%s") % line)
                     return
             else:
-                if act == 'aplay':
-                    versionnum = getVersionNum(clientver)
-                    if versionnum >= 452:
-                        formatstring = formatstring + ',' + str(clientver)
-                    else:
-                        sys.stderr.write(("avererr,%s") % line)
-                        return
-                else:
-                    sys.stderr.write(("playreperr,%s") % line)
-                    return
+                sys.stderr.write(("avererr,%s") % line)
+                return
         except KeyError:
             sys.stderr.write(("avererr,%s") % line)
             return
