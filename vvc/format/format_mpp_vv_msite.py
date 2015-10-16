@@ -149,6 +149,21 @@ def msite_format(line):
         except IndexError:
             sys.stderr.write(("urlargerr,%s") % line)
             return
+
+    # act提前校验
+    try:
+        act = urlarglist["act"]
+        if str(act).strip() == "play":
+            act = "play"
+        elif str(act).strip() == "":
+            sys.stderr.write(("acterr,%s") % line)
+            return
+        else:
+            return
+    except KeyError:
+        sys.stderr.write(("acterr,%s") % line)
+        return
+
     try:
         formatstring = collectArgs(formatstring, urlarglist, "uid", "uiderr", False)
         formatstring = collectArgs(formatstring, urlarglist, "uuid", "uuiderr", True)
@@ -190,7 +205,10 @@ def msite_format(line):
         formatstring = formatstring + ','
         # definition
         formatstring = formatstring + ','
-        formatstring = collectArgs(formatstring, urlarglist, "act", "acterr", True)
+
+        # act act不存在或者为空时，报错，非play时丢弃该数据
+        formatstring = formatstring + ',' + str(act)
+
         # CLIENTTP
         formatstring = formatstring + ',' + "phonem"
         # aver

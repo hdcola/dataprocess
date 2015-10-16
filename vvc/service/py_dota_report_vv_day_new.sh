@@ -21,8 +21,8 @@ function print_help()
     echo "--clienttype: 终端类型，值为pcweb/pcclient/mobile/padweb/msite/ott/mpp，为空时为全平台"
     echo "samples:"
     echo "-----------------------------------------------------------------------------------"
-    echo "py_dota_report_vv_day_new.sh 20151013    vid    mpp   : mpp指定日期各个小时的vid vv数据"
-    echo "py_dota_report_vv_day_new.sh 20151013    cid          : 所有端指定日期各个小时的cid vv数据"
+    echo "py_dota_report_vv_day_new.sh 20151013    vid    mpp   : mpp指定天的各vid 总vv数据"
+    echo "py_dota_report_vv_day_new.sh 20151013    cid          : 所有端指定天的的各cid 总vv数据"
     echo "-----------------------------------------------------------------------------------"
 }
 

@@ -122,6 +122,21 @@ def mobile_new_version_211_20151012_format(line):
     except KeyError:
         record = recordall
 
+    # 提前丢掉act为非play的日志
+    try:
+        act = record["act"]
+        if act.strip() == "":
+            sys.stderr.write(("acterr,%s") % line)
+            return
+        elif act == "aplay" or act == "play":
+            act = 'play'
+        else:
+            return
+    except KeyError:
+        sys.stderr.write(("acterr,%s") % line)
+        return
+
+
     # date, time
     try:
         timetmp_date, timetmp_time = formatTime(timetmp)
@@ -209,20 +224,7 @@ def mobile_new_version_211_20151012_format(line):
         formatstring = collectArgs(formatstring, record, "def", "deferr", False)
 
         # act
-        try:
-            act = record["act"]
-            if act.strip() == "":
-                sys.stderr.write(("acterr,%s") % line)
-                return
-            elif act == "aplay" or act == "play":
-                act = 'play'
-            else:
-                sys.stderr.write(("acterr,%s") % line)
-                return
-            formatstring = formatstring + ',' + str(act)
-        except KeyError:
-            sys.stderr.write(("acterr,%s") % line)
-            return
+        formatstring = formatstring + ',' + str(act)
 
         # CLIENTTP
         try:

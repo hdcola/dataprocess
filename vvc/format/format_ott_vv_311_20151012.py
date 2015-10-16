@@ -110,6 +110,21 @@ def ott_vv_311_20151012_format(line):
         record = record[0]
     except KeyError:
         record = record
+
+    # act提前校验
+    try:
+        act = record["act"]
+        if str(act).strip() == "play":
+            act = "play"
+        elif str(act).strip() == "":
+            sys.stderr.write(("acterr,%s") % line)
+            return
+        else:
+            return
+    except KeyError:
+        sys.stderr.write(("acterr,%s") % line)
+        return
+
     # date, time
     try:
         timetmp_date, timetmp_time = formatTime(timetmp)
@@ -186,19 +201,9 @@ def ott_vv_311_20151012_format(line):
         formatstring = collectArgs(formatstring, record, "cf", "cferr", True)
         # definition
         formatstring = collectArgs(formatstring, record, "def", "deferr", True)
-        # act act不存在或者为空时，报错，非play时丢弃该数据
-        try:
-            act = record["act"]
-            if str(act).strip() == "play":
-                formatstring = formatstring + "," + "play"
-            elif str(act).strip() == "":
-                sys.stderr.write(("acterr,%s") % line)
-                return
-            else:
-                return
-        except KeyError:
-            sys.stderr.write(("acterr,%s") % line)
-            return
+        # act
+        formatstring = formatstring + "," + str(act)
+
         # CLIENTTP
         formatstring = formatstring + ',' + "ott"
         # aver

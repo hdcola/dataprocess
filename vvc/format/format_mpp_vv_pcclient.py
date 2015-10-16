@@ -148,6 +148,21 @@ def pcc_format(line):
         except IndexError:
             sys.stderr.write(("urlargerr,%s") % line)
             return
+
+    # act提前校验
+    try:
+        act = urlarglist["act"]
+        if str(act).strip() == "play":
+            act = "play"
+        elif str(act).strip() == "":
+            sys.stderr.write(("acterr,%s") % line)
+            return
+        else:
+            return
+    except KeyError:
+        sys.stderr.write(("acterr,%s") % line)
+        return
+
     try:
         formatstring = collectArgs(formatstring, urlarglist, "uid", "uiderr", False)
         formatstring = collectArgs(formatstring, urlarglist, "uuid", "uuiderr", True)
@@ -202,19 +217,9 @@ def pcc_format(line):
         formatstring = formatstring + ','
         # definition
         formatstring = formatstring + ','
-        # act act不存在或者为空时，报错，非play时丢弃该数据
-        try:
-            act = urlarglist["act"]
-            if str(act).strip() == "play":
-                formatstring = formatstring + "," + "play"
-            elif str(act).strip() == "":
-                sys.stderr.write(("acterr,%s") % line)
-                return
-            else:
-                return
-        except KeyError:
-            sys.stderr.write(("acterr,%s") % line)
-            return
+        # act
+        formatstring = formatstring + "," + str(act)
+
         # CLIENTTP
         formatstring = formatstring + ',' + "pcclient"
         # aver

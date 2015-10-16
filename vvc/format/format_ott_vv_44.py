@@ -141,6 +141,20 @@ def ott_44_format(line):
         sys.stderr.write(("locationerr,%s") % line)
         return
 
+    # act提前校验
+    try:
+        act = record["act"]
+        if str(act).strip() == "play":
+            act = "play"
+        elif str(act).strip() == "":
+            sys.stderr.write(("acterr,%s") % line)
+            return
+        else:
+            return
+    except KeyError:
+        sys.stderr.write(("acterr,%s") % line)
+        return
+
     try:
         # uid
         formatstring = collectArgs(formatstring, record, "uid", "uiderr", False)
@@ -188,19 +202,8 @@ def ott_44_format(line):
         formatstring = formatstring + ','
         # definition
         formatstring = collectArgs(formatstring, record, "def", "deferr", True)
-        # act act不存在或者为空时，报错，非play时丢弃该数据
-        try:
-            act = record["act"]
-            if str(act).strip() == "play":
-                formatstring = formatstring + "," + "play"
-            elif str(act).strip() == "":
-                sys.stderr.write(("acterr,%s") % line)
-                return
-            else:
-                return
-        except KeyError:
-            sys.stderr.write(("acterr,%s") % line)
-            return
+        # act
+        formatstring = formatstring + "," + str(act)
         # CLIENTTP
         formatstring = formatstring + ',' + "ott"
         # aver
