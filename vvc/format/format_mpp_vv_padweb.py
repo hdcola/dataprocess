@@ -68,7 +68,7 @@ def formatTime(timetmp):
     timetmp_time = time.strftime('%H%M%S', timedata)
     return timetmp_date, timetmp_time
 
-def collectArgs(fstring, argslist, name, errname, strict):
+def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
     try:
         nametmp = argslist[name]
         if strict:
@@ -83,9 +83,13 @@ def collectArgs(fstring, argslist, name, errname, strict):
             fstring = fstring + ',' + str(nametmp)
             return fstring
     except KeyError:
-        sys.stderr.write(("%s,%s") % (errname, line))
-        raise ValueError("args is illegal")
-        return
+        if isNaN:
+            fstring = fstring + ',-'
+            return fstring
+        else:
+            sys.stderr.write(("%s,%s") % (errname, line))
+            raise ValueError("args is illegal")
+            return
 
 def padweb_format(line):
     formatstring = ""
@@ -164,25 +168,25 @@ def padweb_format(line):
         return
 
     try:
-        formatstring = collectArgs(formatstring, urlarglist, "uid", "uiderr", False)
-        formatstring = collectArgs(formatstring, urlarglist, "uuid", "uuiderr", True)
-        formatstring = collectArgs(formatstring, urlarglist, "guid", "guiderr", True)
+        formatstring = collectArgs(formatstring, urlarglist, "uid", "uiderr", False, True)
+        formatstring = collectArgs(formatstring, urlarglist, "uuid", "uuiderr", False, True)
+        formatstring = collectArgs(formatstring, urlarglist, "guid", "guiderr", False, True)
         # ref
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, urlarglist, "ref", "referr", False, True)
         formatstring = collectArgs(formatstring, urlarglist, "bid", "biderr", True)
         # cid
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, urlarglist, "cid", "ciderr", False, True)
         # plid
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, urlarglist, "plid", "pliderr", False, True)
         formatstring = collectArgs(formatstring, urlarglist, "vid", "viderr", True)
         try:
             tid = urlarglist["tid"]
             formatstring = formatstring + ',' + str(tid)
         except KeyError:
-            formatstring = formatstring + ','
+            formatstring = formatstring + ',-'
 
         # vts
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, urlarglist, "vts", "vtserr", False, True)
         formatstring = collectArgs(formatstring, urlarglist, "cookie", "cookieerr", True)
         # pt
         try:
@@ -200,10 +204,10 @@ def padweb_format(line):
             return
 
         # ln
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, urlarglist, "ln", "lnerr", False, True)
         formatstring = collectArgs(formatstring, urlarglist, "cf", "cferr", True)
         # definition
-        formatstring = collectArgs(formatstring, urlarglist, "def", "definitionerr", True)
+        formatstring = collectArgs(formatstring, urlarglist, "def", "dererr", True)
 
         # act
         formatstring = formatstring + "," + str(act)

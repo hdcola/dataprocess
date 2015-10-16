@@ -71,7 +71,7 @@ def formatTime(timetmp):
     timetmp_time = time.strftime('%H%M%S', timedata)
     return timetmp_date, timetmp_time
 
-def collectArgs(fstring, argslist, name, errname, strict):
+def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
     try:
         nametmp = argslist[name]
         if strict:
@@ -86,9 +86,14 @@ def collectArgs(fstring, argslist, name, errname, strict):
             fstring = fstring + ',' + str(nametmp)
             return fstring
     except KeyError:
-        sys.stderr.write(("%s,%s") % (errname, line))
-        raise ValueError("args is illegal")
-        return
+        if isNaN:
+            fstring = fstring + ',-'
+            return fstring
+        else:
+            sys.stderr.write(("%s,%s") % (errname, line))
+            raise ValueError("args is illegal")
+            return
+
 
 def pcp_format(line):
     formatstring = ""
@@ -164,9 +169,9 @@ def pcp_format(line):
         return
 
     try:
-        formatstring = collectArgs(formatstring, urlarglist, "uid", "uiderr", False)
-        formatstring = collectArgs(formatstring, urlarglist, "uuid", "uuiderr", True)
-        formatstring = collectArgs(formatstring, urlarglist, "guid", "guiderr", True)
+        formatstring = collectArgs(formatstring, urlarglist, "uid", "uiderr", False, True)
+        formatstring = collectArgs(formatstring, urlarglist, "uuid", "uuiderr", False, True)
+        formatstring = collectArgs(formatstring, urlarglist, "guid", "guiderr", False, True)
         # ref
         try:
             ref = urlarglist['ref']
@@ -178,21 +183,16 @@ def pcp_format(line):
                     ref = ref.replace(",", "")
                 formatstring = formatstring + ',' + str(ref)
         except KeyError:
-            sys.stderr.write(("referr,%s") % line)
-            return
+            formatstring = formatstring + ',-'
 
         formatstring = collectArgs(formatstring, urlarglist, "bid", "biderr", True)
-        formatstring = collectArgs(formatstring, urlarglist, "cid", "ciderr", False)
-        formatstring = collectArgs(formatstring, urlarglist, "plid","pliderr", False)
+        formatstring = collectArgs(formatstring, urlarglist, "cid", "ciderr", False, True)
+        formatstring = collectArgs(formatstring, urlarglist, "plid", "pliderr", False, True)
         formatstring = collectArgs(formatstring, urlarglist, "vid", "viderr", True)
 
-        try:
-            tid = urlarglist["tid"]
-            formatstring = formatstring + ',' + str(tid)
-        except KeyError:
-            formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, urlarglist, "tid", "tiderr", False, True)
 
-        formatstring = collectArgs(formatstring, urlarglist, "vts", "vtserr", True)
+        formatstring = collectArgs(formatstring, urlarglist, "vts", "vtserr", False, True)
         formatstring = collectArgs(formatstring, urlarglist, "cookie", "cookieerr", True)
         # pt
         try:
@@ -209,7 +209,7 @@ def pcp_format(line):
         except KeyError:
             sys.stderr.write(("pterr,%s") % line)
             return
-        formatstring = collectArgs(formatstring, urlarglist, "ln", "lnerr", False)
+        formatstring = collectArgs(formatstring, urlarglist, "ln", "lnerr", False, True)
         formatstring = collectArgs(formatstring, urlarglist, "cf", "cferr", True)
         formatstring = collectArgs(formatstring, urlarglist, "definition", "definitionerr", True)
         # act

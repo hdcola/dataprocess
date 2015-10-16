@@ -72,7 +72,7 @@ def formatTime(timetmp):
     timetmp_time = time.strftime('%H%M%S', timedata)
     return timetmp_date, timetmp_time
 
-def collectArgs(fstring, argslist, name, errname, strict):
+def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
     try:
         nametmp = argslist[name]
         if strict:
@@ -87,9 +87,13 @@ def collectArgs(fstring, argslist, name, errname, strict):
             fstring = fstring + ',' + str(nametmp)
             return fstring
     except KeyError:
-        sys.stderr.write(("%s,%s") % (errname, line))
-        raise ValueError("args is illegal")
-        return
+        if isNaN:
+            fstring = fstring + ',-'
+            return fstring
+        else:
+            sys.stderr.write(("%s,%s") % (errname, line))
+            raise ValueError("args is illegal")
+            return
 
 def ott_41_format(line):
     formatstring = ""
@@ -136,7 +140,7 @@ def ott_41_format(line):
 
     try:
         # uid
-        formatstring = collectArgs(formatstring, record, "user_id", "user_iderr", False)
+        formatstring = collectArgs(formatstring, record, "user_id", "user_iderr", False, True)
         # uuid
         try:
             uuid = record["play_session"]
@@ -144,25 +148,25 @@ def ott_41_format(line):
         except KeyError:
             formatstring = formatstring + ','
         # guid
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "guid", "guiderr", False, True)
         # ref
-        formatstring = collectArgs(formatstring, record, "ref", "referr", False)
+        formatstring = collectArgs(formatstring, record, "ref", "referr", False, True)
         # bid
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "bid", "biderr", False, True)
         # cid
         try:
             cid = record["video_info"]['fstlvl_id']
             formatstring = formatstring + ',' + str(cid)
         except KeyError:
-            sys.stderr.write(("video_info.fstlvl_iderr,%s") % line)
-            return
+            formatstring = formatstring + ',-'
+
         # plid
         try:
             plid = record["video_info"]['sndlvl_id']
             formatstring = formatstring + ',' + str(plid)
         except KeyError:
-            sys.stderr.write(("video_info.sndlvl_iderr,%s") % line)
-            return
+            formatstring = formatstring + ',-'
+
         # vid
         try:
             vid = record["video_info"]['clip_id']
@@ -179,22 +183,22 @@ def ott_41_format(line):
             tid = record["tid"]
             formatstring = formatstring + ',' + str(tid)
         except KeyError:
-            formatstring = formatstring + ','
+            formatstring = formatstring + ',-'
 
         # vts
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "vts", "vtserr", False, True)
         # cookie
         formatstring = collectArgs(formatstring, record, "mac", "macerr", True)
         # pt
         formatstring = formatstring + ',' + '0'
         # ln
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "ln", "lnerr", False, True)
         # cf
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "cf", "cferr", False, True)
         # definition
         try:
             definition = record["video_info"]['definition']
-            if definition.strip() == "":
+            if str(definition).strip() == "":
                 sys.stderr.write(("video_info.definitionerr,%s") % line)
                 return
             else:

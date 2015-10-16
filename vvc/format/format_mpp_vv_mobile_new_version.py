@@ -81,7 +81,7 @@ def getVersionNum(verstr):
     except ValueError:
         return 0
 
-def collectArgs(fstring, argslist, name, errname, strict):
+def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
     try:
         nametmp = argslist[name]
         if strict:
@@ -96,9 +96,13 @@ def collectArgs(fstring, argslist, name, errname, strict):
             fstring = fstring + ',' + str(nametmp)
             return fstring
     except KeyError:
-        sys.stderr.write(("%s,%s") % (errname, line))
-        raise ValueError("args is illegal")
-        return
+        if isNaN:
+            fstring = fstring + ',-'
+            return fstring
+        else:
+            sys.stderr.write(("%s,%s") % (errname, line))
+            raise ValueError("args is illegal")
+            return
 
 def mobile_new_version_format(line):
     formatstring = ""
@@ -188,31 +192,16 @@ def mobile_new_version_format(line):
         # iphone 4.5.0以后的版本，未登陆，没uid相关字段。
         # uid
         # if clienttag in ("aphone452", "iphone450453", "iphone454"):
-        if clienttag == "aphone452":
-            formatstring = collectArgs(formatstring, record, "uid", "uiderr", False)
-        elif clienttag == "iphone450453" or clienttag == "iphone454":
-            try:
-                uid = record["uid"]
-                formatstring = formatstring + ',' + str(uid)
-            except KeyError:
-                formatstring = formatstring + ','
-        else:
-            formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "uid", "uiderr", False, True)
 
         # uuid
-        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
-            formatstring = collectArgs(formatstring, record, "uuid", "uuiderr", True)
-        else:
-            formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "uuid", "uuiderr", False, True)
 
         # guid
-        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
-            formatstring = collectArgs(formatstring, record, "guid", "guiderr", True)
-        else:
-            formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "guid", "guiderr", False, True)
 
         # ref
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "ref", "referr", False, True)
 
         # bid
         if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
@@ -221,16 +210,10 @@ def mobile_new_version_format(line):
             formatstring = formatstring + ','
 
         # cid
-        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
-            formatstring = collectArgs(formatstring, record, "cid", "ciderr", False)
-        else:
-            formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "cid", "ciderr", False, True)
 
         # plid
-        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
-            formatstring = collectArgs(formatstring, record, "plid","pliderr", False)
-        else:
-            formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "plid", "pliderr", False, True)
 
         # vid
         if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
@@ -239,14 +222,10 @@ def mobile_new_version_format(line):
             formatstring = formatstring + ','
 
         # tid
-        try:
-            tid = record["tid"]
-            formatstring = formatstring + ',' + str(tid)
-        except KeyError:
-            formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "tid", "tiderr", False, True)
 
         # vts
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "vts", "vtserr", False, True)
 
         # cookie
         if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
@@ -273,14 +252,11 @@ def mobile_new_version_format(line):
             sys.stderr.write(("pterr,%s") % line)
             return
         # ln
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "ln", "lnerr", False, True)
         # cf
-        formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "cf", "cferr", False, True)
         # definition
-        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
-            formatstring = collectArgs(formatstring, record, "def", "definitionerr", False)
-        else:
-            formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "def", "deferr", False, True)
 
         # act
         act = ""

@@ -69,7 +69,7 @@ def formatTime(timetmp):
     timetmp_time = time.strftime('%H%M%S', timedata)
     return timetmp_date, timetmp_time
 
-def collectArgs(fstring, argslist, name, errname, strict):
+def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
     try:
         nametmp = argslist[name]
         if strict:
@@ -84,9 +84,13 @@ def collectArgs(fstring, argslist, name, errname, strict):
             fstring = fstring + ',' + str(nametmp)
             return fstring
     except KeyError:
-        sys.stderr.write(("%s,%s") % (errname, line))
-        raise ValueError("args is illegal")
-        return
+        if isNaN:
+            fstring = fstring + ',-'
+            return fstring
+        else:
+            sys.stderr.write(("%s,%s") % (errname, line))
+            raise ValueError("args is illegal")
+            return
 
 def ott_vv_311_20151012_format(line):
     formatstring = ""
@@ -158,19 +162,19 @@ def ott_vv_311_20151012_format(line):
 
     try:
         # uid
-        formatstring = collectArgs(formatstring, record, "uuid", "uuiderr", False)
+        formatstring = collectArgs(formatstring, record, "uuid", "uuiderr", False, True)
         # uuid
-        formatstring = collectArgs(formatstring, record, "suuid", "suuiderr", True)
+        formatstring = collectArgs(formatstring, record, "suuid", "suuiderr", False, True)
         # guid
-        formatstring = collectArgs(formatstring, record, "guid", "guiderr", True)
+        formatstring = collectArgs(formatstring, record, "guid", "guiderr", False, True)
         # ref
-        formatstring = collectArgs(formatstring, record, "ref", "referr", False)
+        formatstring = collectArgs(formatstring, record, "ref", "referr", False, True)
         # bid
         formatstring = collectArgs(formatstring, record, "bid", "biderr", True)
         # cid
-        formatstring = collectArgs(formatstring, record, "cid", "ciderr", False)
+        formatstring = collectArgs(formatstring, record, "cid", "ciderr", False, True)
         # plid
-        formatstring = collectArgs(formatstring, record, "oplid", "opliderr", False)
+        formatstring = collectArgs(formatstring, record, "oplid", "opliderr", False, True)
         # vid
         formatstring = collectArgs(formatstring, record, "ovid", "oviderr", True)
         # tid
@@ -179,10 +183,10 @@ def ott_vv_311_20151012_format(line):
             tid = record["tid"]
             formatstring = formatstring + ',' + str(tid)
         except KeyError:
-            formatstring = formatstring + ','
+            formatstring = formatstring + ',-'
 
         # vts
-        formatstring = collectArgs(formatstring, record, "vts", "vtserr", True)
+        formatstring = collectArgs(formatstring, record, "vts", "vtserr", False, True)
         # cookie
         formatstring = collectArgs(formatstring, record, "did", "diderr", True)
         # pt
@@ -198,7 +202,7 @@ def ott_vv_311_20151012_format(line):
         # ln
         formatstring = formatstring + ','
         # cf
-        formatstring = collectArgs(formatstring, record, "cf", "cferr", True)
+        formatstring = collectArgs(formatstring, record, "cf", "cferr", False, True)
         # definition
         formatstring = collectArgs(formatstring, record, "def", "deferr", True)
         # act
