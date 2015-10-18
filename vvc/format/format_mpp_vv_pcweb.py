@@ -210,8 +210,8 @@ def pcp_format(line):
             sys.stderr.write(("pterr,%s") % line)
             return
         formatstring = collectArgs(formatstring, urlarglist, "ln", "lnerr", False, True)
-        formatstring = collectArgs(formatstring, urlarglist, "cf", "cferr", True)
-        formatstring = collectArgs(formatstring, urlarglist, "definition", "definitionerr", True)
+        formatstring = collectArgs(formatstring, urlarglist, "cf", "cferr", False, True)
+        formatstring = collectArgs(formatstring, urlarglist, "definition", "definitionerr", False, True)
         # act
         formatstring = formatstring + "," + str(act)
         # CLIENTTP

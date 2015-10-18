@@ -56,7 +56,9 @@ def testTime(timetmp, start_time, end_time, topic, dirpath):
         except ValueError:
             raise ValueError("timeerr")
 
-    timeexit = int(end_time) + 1800
+    # 当出现日志落地时间超过endtime ＋60分钟，退出
+    # 设置60分钟防止延迟过大。
+    timeexit = int(end_time) + 3600
     if (int(start_time) <= timeStamp < int(end_time)):
         return True
     elif (timeStamp > timeexit):

@@ -205,9 +205,9 @@ def padweb_format(line):
 
         # ln
         formatstring = collectArgs(formatstring, urlarglist, "ln", "lnerr", False, True)
-        formatstring = collectArgs(formatstring, urlarglist, "cf", "cferr", True)
+        formatstring = collectArgs(formatstring, urlarglist, "cf", "cferr", False, True)
         # definition
-        formatstring = collectArgs(formatstring, urlarglist, "def", "dererr", True)
+        formatstring = collectArgs(formatstring, urlarglist, "def", "dererr", False, True)
 
         # act
         formatstring = formatstring + "," + str(act)

@@ -204,8 +204,7 @@ def ott_41_format(line):
             else:
                 formatstring = formatstring + ',' + str(definition)
         except KeyError:
-            sys.stderr.write(("video_info.definitionerr,%s") % line)
-            return
+            formatstring = formatstring + ',－'
 
         # act
         formatstring = formatstring + ',' + 'play'

@@ -205,7 +205,7 @@ def ott_44_format(line):
         # cf
         formatstring = collectArgs(formatstring, record, "cf", "cferr", False, True)
         # definition
-        formatstring = collectArgs(formatstring, record, "def", "deferr", True)
+        formatstring = collectArgs(formatstring, record, "def", "deferr", False, True)
         # act
         formatstring = formatstring + "," + str(act)
         # CLIENTTP

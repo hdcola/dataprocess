@@ -1,5 +1,5 @@
 #!/bin/sh
-# ./service/py_dota_reprocess.sh 20151013 0 23
+# ./service/reprocess.sh 20151013 0 23
 if [[ -e "/etc/pydota.conf" ]]; then
   . /etc/pydota_reprocess.conf
 fi
