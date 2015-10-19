@@ -51,8 +51,13 @@ function count_vv_pertopic() {
     rawfile="${rawfile_dict[${rawfile_dict_key}]}"
     report_client=${rawfile_dict_key}
     reportfile="${checkreport_path}/topic_guodong_${atime}_${report_client}.csv"
-    bzcat ${rawfile} | wc -l | awk '{printf "%s,%s,%s\n", ahour, $1, clienttype}' ahour="${ahour}" clienttype=${report_client} >> ${reportfile}
+    #bzcat ${rawfile} | wc -l | awk '{printf "%s,%s,%s\n", ahour, $1, clienttype}' ahour="${ahour}" clienttype=${report_client} >> ${reportfile}
     #echo ${rawfile}
+    if [ ${rawfile_dict_key} = "mpp_vv_ott" ] || [ ${rawfile_dict_key} = "ott_vv_41" ] || [ ${rawfile_dict_key} = "ott_vv_44" ] || [ ${rawfile_dict_key} = "ott_vv_311_20151012" ]; then
+      bzcat ${rawfile} | awk -F',' '{if ($7!="-" && $7!="") print $7 }' | wc -l | awk '{printf "%s,%s,%s\n", ahour, $1, clienttype}' ahour="${ahour}" clienttype=${report_client} >> ${reportfile}
+    else
+      bzcat ${rawfile} | wc -l | awk '{printf "%s,%s,%s\n", ahour, $1, clienttype}' ahour="${ahour}" clienttype=${report_client} >> ${reportfile}
+    fi
   }&
   done
 }
