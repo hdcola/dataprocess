@@ -188,7 +188,15 @@ def ott_vv_311_20151012_format(line):
         # vts
         formatstring = collectArgs(formatstring, record, "vts", "vtserr", False, True)
         # cookie
-        formatstring = collectArgs(formatstring, record, "did", "diderr", True)
+        try:
+            did = record["did"]
+            if str(did) == "":
+                sys.stderr.write(("diderr,%s") % line)
+                return
+            formatstring = formatstring + ',' + str(did).lower()
+        except KeyError:
+            sys.stderr.write(("diderr,%s") % line)
+            return
         # pt
         try:
             pt = record['pt']

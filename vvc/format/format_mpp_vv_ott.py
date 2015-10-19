@@ -169,7 +169,15 @@ def ott_format(line):
         # vts
         formatstring = formatstring + ','
         # cookie
-        formatstring = collectArgs(formatstring, record, "mac", "macerr", True)
+        try:
+            mac = record["mac"]
+            if str(mac) == "":
+                sys.stderr.write(("macerr,%s") % line)
+                return
+            formatstring = formatstring + ',' + str(mac).lower()
+        except KeyError:
+            sys.stderr.write(("macerr,%s") % line)
+            return
         # pt
         formatstring = formatstring + ',' + '0'
         # ln
