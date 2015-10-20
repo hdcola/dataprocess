@@ -290,8 +290,9 @@ def mobile_format(line):
                         sys.stderr.write(("apk_versionerr,%s") % line)
                         return
             else:
-                sys.stderr.write(("apk_versionerr,%s") % line)
-                return
+                formatstring = formatstring + ',' + str(clientver)
+                # sys.stderr.write(("apk_versionerr,%s") % line)
+                # return
             formatstring = formatstring + ',' + str(clientver)
         except KeyError:
             sys.stderr.write(("apk_versionerr,%s") % line)

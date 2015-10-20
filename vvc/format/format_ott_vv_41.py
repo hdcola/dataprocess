@@ -146,7 +146,7 @@ def ott_41_format(line):
             uuid = record["play_session"]
             formatstring = formatstring + ',' + str(uuid)
         except KeyError:
-            formatstring = formatstring + ','
+            formatstring = formatstring + ',-'
         # guid
         formatstring = collectArgs(formatstring, record, "guid", "guiderr", False, True)
         # ref
@@ -198,7 +198,17 @@ def ott_41_format(line):
             sys.stderr.write(("macerr,%s") % line)
             return
         # pt
-        formatstring = formatstring + ',' + '0'
+        try:
+            data_type = record["data_type"]
+            if str(data_type) == 'vod':
+                pt = "0"
+            else:
+                sys.stderr.write(("pterr,%s") % line)
+                return
+            formatstring = formatstring + ',' + str(pt)
+        except KeyError:
+            sys.stderr.write(("pterr,%s") % line)
+            return
         # ln
         formatstring = collectArgs(formatstring, record, "ln", "lnerr", False, True)
         # cf
