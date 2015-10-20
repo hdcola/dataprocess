@@ -219,7 +219,20 @@ def ott_44_format(line):
         # CLIENTTP
         formatstring = formatstring + ',' + "ott"
         # aver
-        formatstring = collectArgs(formatstring, record, "aver", "avererr", True)
+        try:
+            aver = str(record["aver"]).lower()
+            if str(aver) == "":
+                sys.stderr.write(("avererr,%s") % line)
+                return
+            aver_tmp = aver.split('.')
+            if aver_tmp[5] == "dxjd" or aver_tmp[5] == "jllt" or aver_tmp[5] == "fjyd" \
+                or aver_tmp[5] == "shyd19" or aver_tmp[0] == "yys":
+                return
+            formatstring = formatstring + ',' + str(aver).lower()
+        except KeyError:
+            sys.stderr.write(("avererr,%s") % line)
+            return
+
         print formatstring
     except ValueError:
         return
