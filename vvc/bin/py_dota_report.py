@@ -120,9 +120,15 @@ def process(start_time, args):
         for i, line in enumerate(fp):
             try:
                 record = line.split(',')
-                platform = record[21].strip()
-                version = record[22].strip()
+                act = str(record[20]).strip()
+                platform = str(record[21]).strip()
+                version = str(record[22]).strip()
                 cid = str(record[10].strip())
+
+                if act != "play":
+                    wrong_num += 1
+                    continue
+
                 channel_name = "0"
                 if cid in channel:
                     channel_name = str(cid)

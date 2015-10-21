@@ -180,6 +180,8 @@ def mobile_new_version_format(line):
                 clienttag = "aphone452"
             else:
                 clienttag = "aphonel452"
+        elif str(clientver).startswith("aphone"):
+            clienttag = "aphoneother"
         elif clientver == "4.5.2":
             clienttag = "aphone452"
         else:
@@ -204,7 +206,8 @@ def mobile_new_version_format(line):
         formatstring = collectArgs(formatstring, record, "ref", "referr", False, True)
 
         # bid
-        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
+        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454" \
+                or clienttag == "aphoneother":
             formatstring = collectArgs(formatstring, record, "bid", "biderr", True)
         else:
             formatstring = formatstring + ','
@@ -216,7 +219,8 @@ def mobile_new_version_format(line):
         formatstring = collectArgs(formatstring, record, "plid", "pliderr", False, True)
 
         # vid
-        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
+        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454" \
+                or clienttag == "aphoneother":
             formatstring = collectArgs(formatstring, record, "vid", "viderr", True)
         else:
             formatstring = formatstring + ','
@@ -228,7 +232,8 @@ def mobile_new_version_format(line):
         formatstring = collectArgs(formatstring, record, "vts", "vtserr", False, True)
 
         # cookie
-        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454":
+        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454" \
+                or clienttag == "aphoneother":
             try:
                 cookie = record["did"]
                 if str(cookie).strip() == "":
@@ -275,7 +280,7 @@ def mobile_new_version_format(line):
             except KeyError:
                 sys.stderr.write(("acterr,%s") % line)
                 return
-        elif clienttag == "iphone450453":
+        elif clienttag == "iphone450453" or clienttag == "aphoneother":
             for i in range(len(recordall)):
                 try:
                     if recordall[i]["act"] == "play":
@@ -336,6 +341,12 @@ def mobile_new_version_format(line):
                     else:
                         sys.stderr.write(("avererr,%s") % line)
                         return
+                else:
+                    sys.stderr.write(("playreperr,%s") % line)
+                    return
+            elif str(clientver).startswith("aphone"):
+                if act == 'play':
+                    formatstring = formatstring + ',' + str(clientver)
                 else:
                     sys.stderr.write(("playreperr,%s") % line)
                     return
