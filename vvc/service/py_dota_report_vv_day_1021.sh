@@ -20,13 +20,16 @@ sub_path=${sub_path_year}/${sub_path_month}
 work_path="${pydota_path}"
 bearychat="${work_path}/bin/bearychat.sh"
 
-proctime=`date "+%Y/%m/%d %H:%M:%S"`
-./bin/py_dota_report.py -t ${start_time} ${pydota_des}/${sub_path}/${start_time}*
-
 filename=*${start_time}*vv.csv
+
+proctime=`date "+%Y/%m/%d %H:%M:%S"`
+rm ${pydota_report}${sub_path}/${filename}
+
+./bin/py_dota_report.py -t ${start_time} -d ${pydota_report}/${sub_path} ${pydota_des}/${sub_path}/${start_time}*
+
 files=`ls ${pydota_report}${sub_path}/${filename}`
 
-for file in files;do
+for file in ${files};do
     topmsg=`cat ${file}`
     report_size=`ls -lh ${file} | awk '{print $5}'`
     file_name=`basename ${file}`

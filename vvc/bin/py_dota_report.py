@@ -9,9 +9,7 @@ import json
 import csv
 
 
-def genCsvFileName(start_time, key):
-    reportdir = "/Users/guodongxu/Work/src/dataprocess/vvc/bin/" + str(start_time)[0:4] + "/" + str(start_time)[4:6]
-    # reportdir = "/home/xuguodong/pydota/report/" + str(start_time)[0:4] + "/" + str(start_time)[4:6]
+def genCsvFileName(start_time, key, reportdir):
     return str(reportdir)+"/"+str(key)+"_"+str(start_time)+"_vv.csv"
 
 
@@ -23,8 +21,8 @@ def join_str(str_src, dicta, name):
     return str_src
 
 
-def output_version_report(platform_key, report, start_time):
-    csvfilename = genCsvFileName(start_time, platform_key)
+def output_version_report(platform_key, report, start_time, reportdir):
+    csvfilename = genCsvFileName(start_time, platform_key, reportdir)
     cfp = open(csvfilename, 'a+')
 
     title = platform_key + "版本,总计,综艺,电视剧,电影,音乐,纪录片,原创,动漫,生活,女性,新闻,品牌专区,其他\n"
@@ -52,8 +50,8 @@ def output_version_report(platform_key, report, start_time):
     cfp.close()
 
 
-def output_total_report(report, start_time):
-    csvfilename = genCsvFileName(start_time, "total")
+def output_total_report(report, start_time, reportdir):
+    csvfilename = genCsvFileName(start_time, "total", reportdir)
     cfp = open(csvfilename, 'a+')
     title = "平台,总计,综艺,电视剧,电影,音乐,纪录片,原创,动漫,生活,女性,新闻,品牌专区,其他\n"
     cfp.write(title)
@@ -80,8 +78,7 @@ def output_total_report(report, start_time):
     cfp.close()
 
 
-
-def process(start_time, args):
+def process(start_time, args, reportdir):
     wrong_num = 0
     version_report = {"ott": {"total": {"total": 0}},
                       "pcweb": {"total": {"total": 0}},
@@ -126,6 +123,7 @@ def process(start_time, args):
                 cid = str(record[10].strip())
 
                 if act != "play":
+                    sys.stderr.write(("acterr,%s") % line)
                     wrong_num += 1
                     continue
 
@@ -138,6 +136,7 @@ def process(start_time, args):
 
                 # 从version角度计算
                 if platform not in version_report:
+                    sys.stderr.write(("platformerr,%s") % line)
                     wrong_num += 1
                     continue
                 try:
@@ -192,35 +191,34 @@ def process(start_time, args):
             except IndexError:
                 print "IndexError"
 
-    output_total_report(total_report, start_time)
+    output_total_report(total_report, start_time, reportdir)
     for platform_key in version_report.keys():
-        output_version_report(platform_key, version_report[platform_key], start_time)
+        output_version_report(platform_key, version_report[platform_key], start_time, reportdir)
 
-    # print json.dumps(total_report, ensure_ascii=False)
-    # print "==========="
-    sys.stderr.write(("数据格式错误数目: %s\n") % str(wrong_num))
-    # print "==========="
-    # for key, value in version_report.items():
-    #     # result = sorted(value.iteritems(), key=lambda ab: ab[1], reverse=True)
-    #     print key + ":" + str(value)
-    # print version_report
+    sys.stderr.write(("%s 数据格式错误数目: %s\n") % (str(start_time), str(wrong_num)))
 
 
 def main():
     try:
-        opts, args = getopt(sys.argv[1:], 't:')
+        opts, args = getopt(sys.argv[1:], 't:d:')
     except GetoptError:
         sys.stderr.write("get opts erron\n")
         sys.exit(-1)
 
     start_time = ""
+    reportdir = ""
     for opt in opts:
         if opt[0] == "-t":
             start_time = opt[1]
-        else:
-            sys.exit(-1)
 
-    process(start_time, args)
+        if opt[0] == "-d":
+            reportdir = opt[1]
+
+    if start_time != "" and reportdir != "":
+        process(start_time, args, reportdir)
+    else:
+        sys.stderr.write("参数输入错误\n")
+        sys.exit(-1)
 
 
 if __name__ == "__main__":
