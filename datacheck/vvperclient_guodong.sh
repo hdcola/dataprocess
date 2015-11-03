@@ -49,7 +49,7 @@ function count_vv() {
     rawfile="${rawfile_dict[${rawfile_dict_key}]}"
     report_client=${rawfile_dict_key#*_}
     reportfile="${checkreport_path}/guodong_${atime}_${report_client}.csv"
-    bzcat ${rawfile} | wc -l | awk '{printf "%s,%s,%s\n", ahour, $1, clienttype}' ahour="${ahour}" clienttype=${report_client} >> ${reportfile}
+    cat ${rawfile} | wc -l | awk '{printf "%s,%s,%s\n", ahour, $1, clienttype}' ahour="${ahour}" clienttype=${report_client} >> ${reportfile}
     #echo ${rawfile}
   }&
   done

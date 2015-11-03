@@ -21,7 +21,7 @@ len_aclock=${#aclock[@]}
 
 #定义各 topic 通配符
 mpp_vv_pcweb="_playrawdata_mpp_vv_pcweb*"
-mpp_vv_mobile="_playrawdata_mpp_vv_mobile.bz2"
+mpp_vv_mobile="_playrawdata_mpp_vv_mobile"
 mpp_vv_mobile_new_version="_playrawdata_mpp_vv_mobile_new_version*"
 mpp_vv_mobile_211_20151012="_playrawdata_mpp_vv_mobile_211_20151012*"
 mpp_vv_pcclient="_playrawdata_mpp_vv_pcclient*"
@@ -53,11 +53,11 @@ function count_vv_pertopic() {
     reportfile="${checkreport_path}/topic_guodong_${atime}_${report_client}.csv"
     #bzcat ${rawfile} | wc -l | awk '{printf "%s,%s,%s\n", ahour, $1, clienttype}' ahour="${ahour}" clienttype=${report_client} >> ${reportfile}
     #echo ${rawfile}
-    if [ ${rawfile_dict_key} = "mpp_vv_ott" ] || [ ${rawfile_dict_key} = "ott_vv_41" ] || [ ${rawfile_dict_key} = "ott_vv_44" ] || [ ${rawfile_dict_key} = "ott_vv_311_20151012" ]; then
-      bzcat ${rawfile} | awk -F',' '{if ($7!="-" && $7!="") print $7 }' | wc -l | awk '{printf "%s,%s,%s\n", ahour, $1, clienttype}' ahour="${ahour}" clienttype=${report_client} >> ${reportfile}
-    else
-      bzcat ${rawfile} | wc -l | awk '{printf "%s,%s,%s\n", ahour, $1, clienttype}' ahour="${ahour}" clienttype=${report_client} >> ${reportfile}
-    fi
+    #if [ ${rawfile_dict_key} = "mpp_vv_ott" ] || [ ${rawfile_dict_key} = "ott_vv_41" ] || [ ${rawfile_dict_key} = "ott_vv_44" ] || [ ${rawfile_dict_key} = "ott_vv_311_20151012" ]; then
+      #bzcat ${rawfile} | awk -F',' '{if ($7!="-" && $7!="") print $7 }' | wc -l | awk '{printf "%s,%s,%s\n", ahour, $1, clienttype}' ahour="${ahour}" clienttype=${report_client} >> ${reportfile}
+    #else
+      cat ${rawfile} | wc -l | awk '{printf "%s,%s,%s\n", ahour, $1, clienttype}' ahour="${ahour}" clienttype=${report_client} >> ${reportfile}
+    #fi
   }&
   done
 }
