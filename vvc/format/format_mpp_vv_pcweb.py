@@ -6,77 +6,15 @@ import sys
 import time
 import string
 import urllib
-from IPy import IP
+from pydota_common import formatLocation, loadGeoIp, formatTime, write_to_file
 
-filesfps = []
-filesfpscount = 0
-GEOIP_SORT = []
-GEOIP  = {}
-
-def loadGeoIp(filename):
-    fp  = open(filename)
-    for i, line in enumerate(fp):
-        try:
-            record = string.split(line, "\t")
-            rangmin  = record[0]
-            rangmax  = record[1]
-            country  = record[2]
-            province = record[3]
-            city     = record[4]
-            operator = record[6]
-            rangmin = IP(rangmin).int()
-            rangmax = IP(rangmax).int()
-            GEOIP[rangmin] = [rangmax, country, province, city, operator]
-            GEOIP_SORT.append(rangmin)
-        except ValueError:
-            sys.stderr.write(("value error,%s") % line)
-    GEOIP_SORT.sort()
-    fp.close()
-
-def getRangeKey(userip):
-    low = 0
-    height = len(GEOIP_SORT)-1
-    while low < height:
-        mid = (low+height)/2
-        if GEOIP_SORT[mid] < userip and GEOIP_SORT[mid + 1] < userip:
-            low = mid + 1
-        elif GEOIP_SORT[mid] > userip and GEOIP_SORT[mid - 1] > userip:
-            height = mid - 1
-        elif GEOIP_SORT[mid] <= userip and GEOIP_SORT[mid +1] > userip:
-            return GEOIP_SORT[mid]
-        elif GEOIP_SORT[mid -1] <= userip and GEOIP_SORT[mid] > userip:
-            return GEOIP_SORT[mid -1]
-        elif GEOIP_SORT[mid + 1] == userip:
-            return GEOIP_SORT[mid +1]
-        else:
-            return None
-    return None
-
-def formatLocation(userip):
-    userip = userip.strip('""')
-    userip = IP(userip).int()
-    location = getRangeKey(userip)
-    if location and GEOIP[location]:
-        if location <= userip <= GEOIP[location][0]:
-            return GEOIP[location]
-    else:
-        return None
-
-def formatTime(timetmp):
-    try:
-        timedata = time.strptime(timetmp, "[%d/%b/%Y:%H:%M:%S+0800]")
-    except ValueError:
-        raise ValueError("timeerr")
-    timetmp_date = time.strftime('%Y%m%d', timedata)
-    timetmp_time = time.strftime('%H%M%S', timedata)
-    return timetmp_date, timetmp_time
 
 def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
     try:
         nametmp = argslist[name]
         if strict:
             if str(nametmp).strip() == "":
-                sys.stderr.write(("%s,%s") % (errname, line))
+                write_to_file(("%s,%s") % (errname, line), topic, log_time, start_time, "des_err")
                 raise ValueError("args is illegal")
                 return
             else:
@@ -90,12 +28,13 @@ def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
             fstring = fstring + ',-'
             return fstring
         else:
-            sys.stderr.write(("%s,%s") % (errname, line))
+            write_to_file(("%s,%s") % (errname, line), topic, log_time, start_time, "des_err")
             raise ValueError("args is illegal")
             return
 
 
 def pcp_format(line):
+    global log_time
     formatstring = ""
     if len(line.strip('\n')) == 0:
         return
@@ -104,25 +43,31 @@ def pcp_format(line):
         recordtmp = record[1].strip().split(' ')
         timetmp = str(recordtmp[0]) + str(recordtmp[1])
     except IndexError:
-        sys.stderr.write(("indexerr,%s") % line)
+        write_to_file(("indexerr,%s") % line, topic, start_time, start_time, "orig_err")
         return
     # date, time
     try:
-        timetmp_date, timetmp_time = formatTime(timetmp)
+        timedata = time.strptime(timetmp, "[%d/%b/%Y:%H:%M:%S+0800]")
+        timetmp_date, timetmp_time, timeStamp = formatTime(timedata)
+        log_time = timetmp_date + timetmp_time[:2] + "00"
         formatstring = str(timetmp_date) + ',' + str(timetmp_time)
     except ValueError:
-        sys.stderr.write(("timeerr,%s") % line)
+        write_to_file(("timeerr,%s") % line, topic, start_time, start_time, "orig_err")
         return
+
+    # 写入时间正确的原始到orig文件
+    write_to_file(line, topic, log_time, start_time, "orig")
+
     # IP
     try:
         iptmp = record[0].strip().split(',')
         if len(iptmp) != 1:
-            sys.stderr.write(("iperr,%s") % line)
+            write_to_file(("iperr,%s") % line, topic, log_time, start_time, "des_err")
             return
         else:
             formatstring = formatstring + ',' + str(iptmp[0])
     except IndexError:
-            sys.stderr.write(("iperr,%s") % line)
+            write_to_file(("iperr,%s") % line, topic, log_time, start_time, "des_err")
             return
 
     # location
@@ -132,16 +77,17 @@ def pcp_format(line):
         location_city = locationtmp[3]
         formatstring = formatstring + ',' + str(location_province) + ',' + str(location_city)
     except ValueError:
-        sys.stderr.write(("locationerr,%s") % line)
+        write_to_file(("locationerr,%s") % line, topic, log_time, start_time, "des_err")
         return
     except TypeError:
-        sys.stderr.write(("locationerr,%s") % line)
+        write_to_file(("locationerr,%s") % line, topic, log_time, start_time, "des_err")
         return
+
     # url args
     try:
         urlargtmp = record[1].strip().split(' ')[3].split('?')[1].split('&')
     except ValueError or IndexError:
-        sys.stderr.write(("urlargerr,%s") % line)
+        write_to_file(("urlargerr,%s") % line, topic, log_time, start_time, "des_err")
         return
 
     urlarglist = {}
@@ -151,7 +97,7 @@ def pcp_format(line):
             argvalue = urlargtmptmp.split('=')[1]
             urlarglist[argkey] = argvalue
         except IndexError:
-            sys.stderr.write(("urlargerr,%s") % line)
+            write_to_file(("urlargerr,%s") % line, topic, log_time, start_time, "des_err")
             return
 
     # act提前校验
@@ -160,12 +106,12 @@ def pcp_format(line):
         if str(act).strip() == "play":
             act = "play"
         elif str(act).strip() == "":
-            sys.stderr.write(("acterr,%s") % line)
+            write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
             return
         else:
             return
     except KeyError:
-        sys.stderr.write(("acterr,%s") % line)
+        write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
         return
 
     try:
@@ -190,7 +136,16 @@ def pcp_format(line):
         formatstring = collectArgs(formatstring, urlarglist, "plid", "pliderr", False, True)
         formatstring = collectArgs(formatstring, urlarglist, "vid", "viderr", True)
 
-        formatstring = collectArgs(formatstring, urlarglist, "tid", "tiderr", False, True)
+        try:
+            tid = urlarglist["tid"]
+            if tid.strip() == "":
+                formatstring = formatstring + ','
+            else:
+                if tid.find(",") != -1:
+                    tid = tid.replace(",", "_")
+                formatstring = formatstring + ',' + str(tid)
+        except KeyError:
+            formatstring = formatstring + ',-'
 
         formatstring = collectArgs(formatstring, urlarglist, "vts", "vtserr", False, True)
         formatstring = collectArgs(formatstring, urlarglist, "cookie", "cookieerr", True)
@@ -204,10 +159,10 @@ def pcp_format(line):
                 pt = urlarglist['pt']
             formatstring = formatstring + ',' + str(pt)
             if str(pt) != '0':
-                sys.stderr.write(("pterr,%s") % line)
+                write_to_file(("pterr,%s") % line, topic, log_time, start_time, "des_err")
                 return
         except KeyError:
-            sys.stderr.write(("pterr,%s") % line)
+            write_to_file(("pterr,%s") % line, topic, log_time, start_time, "des_err")
             return
         formatstring = collectArgs(formatstring, urlarglist, "ln", "lnerr", False, True)
         formatstring = collectArgs(formatstring, urlarglist, "cf", "cferr", False, True)
@@ -218,7 +173,8 @@ def pcp_format(line):
         formatstring = formatstring + ',' + "pcweb"
         # aver
         formatstring = formatstring + ','
-        print formatstring
+
+        write_to_file(formatstring, topic, log_time, start_time, "des")
     except ValueError:
         return
 
@@ -226,5 +182,7 @@ if __name__ == '__main__':
     # gzcat abc.gz | python pcp_format.py ./genip -
     # python pcp_format.py ./genip afile bfile cfile
     loadGeoIp(sys.argv[1])
-    for line in fileinput.input(sys.argv[2:]):
+    start_time = sys.argv[2]
+    topic = "mpp_vv_pcweb"
+    for line in fileinput.input(sys.argv[3:]):
         pcp_format(line)

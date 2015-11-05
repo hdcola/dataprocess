@@ -23,7 +23,10 @@ except IndexError as e:
     pass
 
 # 连接kafka，获取数据，并输出到stdout
-client = KafkaClient(hosts="10.100.1.51:9092,10.100.1.52:9092,10.100.1.53:9092,10.100.1.54:9092")
+if pipe_type == "rt_live_pcweb":
+    client = KafkaClient(hosts="10.27.100.26:9092,10.27.100.102:9092,10.27.100.101:9092,10.27.100.100:9092")
+else:
+    client = KafkaClient(hosts="10.100.1.51:9092,10.100.1.52:9092,10.100.1.53:9092,10.100.1.54:9092,10.100.1.8:9092,10.100.1.9:9092")
 topic  = client.topics[pipe_type]
 balanced_consumer = topic.get_simple_consumer()
 #balanced_consumer = topic.get_balanced_consumer(

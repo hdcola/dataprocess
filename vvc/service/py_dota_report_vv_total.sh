@@ -1,40 +1,54 @@
 #!/bin/sh
-# 从raw数据中计算一天VV数据
-# py_dota_report_day_gibbs.sh 20151007 ott_vv_44
-if [[ -e "/etc/pydota.conf" ]]; then
-  . /etc/pydota.conf
-fi
-
-if [[ -n "$HOME" && -e "$HOME/.pydota" ]]; then
-  . "$HOME/.pydota"
-fi
+# 从raw数据中计算各个平台一天总VV数据
+# py_dota_report_total.sh 20151007
 
 #设置bearychat发送目标为dota-日报
 export BEARYCHAT_WEBHOOK="https://hook.bearychat.com/=bw7by/incoming/5a3d3583ecb52af13590a801bab94aa9"
 
-start_time=$1
-topic=$2
+if [ $# -ge 1 ];then
+    start_time=$1
+else
+    start_time=`date -d yesterday +%Y%m%d`
+fi
 sub_path_year=${start_time:0:4}
 sub_path_month=${start_time:4:2}
 sub_path_day=${start_time:6:2}
+sub_path_hour=${start_time:8:2}
+
+
 sub_path=${sub_path_year}/${sub_path_month}
-work_path="${pydota_path}"
-bearychat="${work_path}/bin/bearychat.sh"
+work_path="/home/xuguodong/pydota/pydota"
+pydota_des="/home/xuguodong/data/des"
+pydota_report="/home/xuguodong/data/dailyreport"
+
+mkdir -p ${pydota_report}/${sub_path} 2>/dev/null
 
 cd $work_path
 
 function report_vv_total(){
-    proctime=`date "+%Y/%m/%d %H:%M:%S"`
 
-    filenameraw=${start_time}*"_playrawdata_"*.bz2
+    filenameraw=${start_time}*
 
-    files=`ls ${pydota_des}${sub_path}/${filenameraw}`
+    files=`ls ${pydota_des}/${sub_path}/${filenameraw}  | grep -v "live"`
+    #files=`ls ${pydota_des}/${sub_path}/${filenameraw} ${pydota_des}/${sub_path_nextday}/${filenamenext}`
 
-    bzcat ${files} | awk -F, '{
-    if($21=="play"){
-      print $1","$22}
-    }' | sort | uniq -c | sort -rn |awk '{print $2","$1}'\
-    > ${pydota_report}/${sub_path}/day_vv_total_${start_time}.csv
+    cat ${files} | awk -F, -v start_time=${start_time} '{
+    if($21=="play" && $1==start_time && $17==0){
+      print $1","substr($2,1,2)","$22}
+    }' | sort | uniq -c | awk '{print $2","$1}' | sort -rn \
+    > ${pydota_report}/${sub_path}/day_vv_hour_${start_time}.csv
+
+    cat ${pydota_report}/${sub_path}/day_vv_hour_${start_time}.csv | awk -F, '{
+    type=$1","$3;
+    if(!(type in sum)){
+      sum[type]=0};
+      sum[type]=sum[type]+$NF
+    }
+    END{
+      for(i in sum){
+        print sum[i]" "i
+      }
+    }'|awk '{print $2","$1}'>${pydota_report}/${sub_path}/day_vv_total_${start_time}.csv
 
     cat ${pydota_report}/${sub_path}/day_vv_total_${start_time}.csv | awk -F, '{
     type=$1",总计";
@@ -49,16 +63,5 @@ function report_vv_total(){
     }'|awk '{print $2","$1}'>>${pydota_report}/${sub_path}/day_vv_total_${start_time}.csv
 
     sed -i '1i\日期,平台,vv'  ${pydota_report}/${sub_path}/day_vv_total_${start_time}.csv
-
-    topmsg=`cat ${pydota_report}/${sub_path}/day_vv_total_${start_time}.csv`
-    report_size=`ls -lh ${pydota_report}/${sub_path}/day_vv_total_${start_time}.csv | awk '{print $5}'`
-
-    msg="report_size大小${report_size}
-${topmsg}"
-nowtime=`date "+%Y/%m/%d %H:%M:%S"`
-msg="${msg}
-${proctime}-${nowtime}@${py_dota_process_user}"
-echo "${msg}" | $bearychat -t "${start_time}的各个端总vv"
-
 }
 report_vv_total

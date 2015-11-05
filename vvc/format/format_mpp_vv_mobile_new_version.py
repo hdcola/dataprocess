@@ -5,88 +5,16 @@ import fileinput
 import sys
 import time
 import string
-import urllib
+from pydota_common import formatLocation, loadGeoIp, formatTime, write_to_file, getVersionNum
 import json
-from IPy import IP
 
-filesfps = []
-filesfpscount = 0
-GEOIP_SORT = []
-GEOIP  = {}
-
-def loadGeoIp(filename):
-    fp  = open(filename)
-    for i, line in enumerate(fp):
-        try:
-            record = string.split(line, "\t")
-            rangmin  = record[0]
-            rangmax  = record[1]
-            country  = record[2]
-            province = record[3]
-            city     = record[4]
-            operator = record[6]
-            rangmin = IP(rangmin).int()
-            rangmax = IP(rangmax).int()
-            GEOIP[rangmin] = [rangmax, country, province, city, operator]
-            GEOIP_SORT.append(rangmin)
-        except ValueError:
-            sys.stderr.write(("value error,%s") % line)
-    GEOIP_SORT.sort()
-    fp.close()
-
-def getRangeKey(userip):
-    low = 0
-    height = len(GEOIP_SORT)-1
-    while low < height:
-        mid = (low+height)/2
-        if GEOIP_SORT[mid] < userip and GEOIP_SORT[mid + 1] < userip:
-            low = mid + 1
-        elif GEOIP_SORT[mid] > userip and GEOIP_SORT[mid - 1] > userip:
-            height = mid - 1
-        elif GEOIP_SORT[mid] <= userip and GEOIP_SORT[mid +1] > userip:
-            return GEOIP_SORT[mid]
-        elif GEOIP_SORT[mid -1] <= userip and GEOIP_SORT[mid] > userip:
-            return GEOIP_SORT[mid -1]
-        elif GEOIP_SORT[mid + 1] == userip:
-            return GEOIP_SORT[mid +1]
-        else:
-            return None
-    return None
-
-def formatLocation(userip):
-    userip = userip.strip('""')
-    userip = IP(userip).int()
-    location = getRangeKey(userip)
-    if location and GEOIP[location]:
-        if location <= userip <= GEOIP[location][0]:
-            return GEOIP[location]
-    else:
-        return None
-
-def formatTime(timetmp):
-    timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
-    timetmp_date = time.strftime('%Y%m%d', timedata)
-    timetmp_time = time.strftime('%H%M%S', timedata)
-    return timetmp_date, timetmp_time
-
-def getVersionNum(verstr):
-    try:
-        vertmp = verstr.split('.')
-        if len(vertmp) >= 3:
-            return int(vertmp[0])*100+int(vertmp[1])*10+int(vertmp[2])
-        else:
-            return int(vertmp[0])*100+int(vertmp[1])*10
-    except IndexError:
-        return 0
-    except ValueError:
-        return 0
 
 def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
     try:
         nametmp = argslist[name]
         if strict:
             if str(nametmp).strip() == "":
-                sys.stderr.write(("%s,%s") % (errname, line))
+                write_to_file(("%s,%s") % (errname, line), topic, log_time, start_time, "des_err")
                 raise ValueError("args is illegal")
                 return
             else:
@@ -100,11 +28,13 @@ def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
             fstring = fstring + ',-'
             return fstring
         else:
-            sys.stderr.write(("%s,%s") % (errname, line))
+            write_to_file(("%s,%s") % (errname, line), topic, log_time, start_time, "des_err")
             raise ValueError("args is illegal")
             return
 
+
 def mobile_new_version_format(line):
+    global log_time
     formatstring = ""
     if len(line.strip('\n')) == 0:
         return
@@ -115,13 +45,13 @@ def mobile_new_version_format(line):
         timetmp  = lineall[0]
         iptmp  = lineall[1].strip()
     except IndexError:
-        sys.stderr.write(("indexerr,%s") % line)
+        write_to_file(("indexerr,%s") % line, topic, start_time, start_time, "orig_err")
         return
 
     try:
         recordall = json.loads(jsonline)
     except ValueError:
-        sys.stderr.write(("jsonerr,%s") % line)
+        write_to_file(("jsonerr,%s") % line, topic, start_time, start_time, "orig_err")
         return
 
     try:
@@ -131,17 +61,22 @@ def mobile_new_version_format(line):
 
     # date, time
     try:
-        timetmp_date, timetmp_time = formatTime(timetmp)
+        timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
+        timetmp_date, timetmp_time, timeStamp = formatTime(timedata)
+        log_time = timetmp_date + timetmp_time[:2] + "00"
         formatstring = str(timetmp_date) + ',' + str(timetmp_time)
     except (ValueError, KeyError):
-        sys.stderr.write(("timeerr,%s") % line)
+        write_to_file(("timeerr,%s") % line, topic, start_time, start_time, "orig_err")
         return
+
+    # 写入时间正确的原始到orig文件
+    write_to_file(line, topic, log_time, start_time, "orig")
 
     # IP
     try:
         formatstring = formatstring + ',' + str(iptmp)
     except ValueError:
-        sys.stderr.write(("iperr,%s") % line)
+        write_to_file(("iperr,%s") % line, topic, log_time, start_time, "des_err")
         return
 
     # location
@@ -150,11 +85,8 @@ def mobile_new_version_format(line):
         location_province = locationtmp[2]
         location_city = locationtmp[3]
         formatstring = formatstring + ',' + str(location_province) + ',' + str(location_city)
-    except ValueError:
-        sys.stderr.write(("locationerr,%s") % line)
-        return
-    except TypeError:
-        sys.stderr.write(("locationerr,%s") % line)
+    except (ValueError, TypeError):
+        write_to_file(("locationerr,%s") % line, topic, log_time, start_time, "des_err")
         return
 
     clienttag = ""
@@ -187,8 +119,48 @@ def mobile_new_version_format(line):
         else:
             clienttag = ""
     except KeyError:
-        sys.stderr.write(("clienttypeerr,%s") % line)
+        write_to_file(("clienttypeerr,%s") % line, topic, log_time, start_time, "des_err")
         return
+
+    # act
+    act = ""
+    if clienttag == "aphone452" or clienttag == "iphone454":
+        try:
+            act = record["act"]
+            if act.strip() == "":
+                write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
+                return
+            elif act.strip() == "aplay":
+                act = "play"
+            else:
+                return
+        except KeyError:
+            write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
+            return
+    elif clienttag == "iphone450453" or clienttag == "aphoneother":
+        for i in range(len(recordall)):
+            try:
+                if recordall[i]["act"] == "play":
+                    act = "play"
+                    break
+            except KeyError:
+                continue
+        if act.strip() == "":
+            write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
+            return
+    else:
+        try:
+            act = record["act"]
+            if act.strip() == "":
+                write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
+                return
+            elif act.strip() == "aplay":
+                act = "play"
+            else:
+                return
+        except KeyError:
+            write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
+            return
 
     try:
         # iphone 4.5.0以后的版本，未登陆，没uid相关字段。
@@ -206,11 +178,8 @@ def mobile_new_version_format(line):
         formatstring = collectArgs(formatstring, record, "ref", "referr", False, True)
 
         # bid
-        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454" \
-                or clienttag == "aphoneother":
-            formatstring = collectArgs(formatstring, record, "bid", "biderr", True)
-        else:
-            formatstring = formatstring + ','
+
+        formatstring = collectArgs(formatstring, record, "bid", "biderr", True)
 
         # cid
         formatstring = collectArgs(formatstring, record, "cid", "ciderr", False, True)
@@ -219,42 +188,43 @@ def mobile_new_version_format(line):
         formatstring = collectArgs(formatstring, record, "plid", "pliderr", False, True)
 
         # vid
-        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454" \
-                or clienttag == "aphoneother":
-            formatstring = collectArgs(formatstring, record, "vid", "viderr", True)
-        else:
-            formatstring = formatstring + ','
+        formatstring = collectArgs(formatstring, record, "vid", "viderr", True)
 
         # tid
-        formatstring = collectArgs(formatstring, record, "tid", "tiderr", False, True)
+        try:
+            tid = record["tid"]
+            if tid.strip() == "":
+                formatstring = formatstring + ','
+            else:
+                if tid.find(",") != -1:
+                    tid = tid.replace(",", "_")
+                formatstring = formatstring + ',' + str(tid)
+        except KeyError:
+            formatstring = formatstring + ',-'
 
         # vts
         formatstring = collectArgs(formatstring, record, "vts", "vtserr", False, True)
 
         # cookie
-        if clienttag == "aphone452" or clienttag == "iphone450453" or clienttag == "iphone454" \
-                or clienttag == "aphoneother":
-            try:
-                cookie = record["did"]
-                if str(cookie).strip() == "":
-                    sys.stderr.write(("diderr,%s") % line)
-                    return
-                formatstring = formatstring + ',' + str(cookie).lower()
-            except KeyError:
-                sys.stderr.write(("diderr,%s") % line)
+        try:
+            cookie = record["did"]
+            if str(cookie).strip() == "":
+                write_to_file(("diderr,%s") % line, topic, log_time, start_time, "des_err")
                 return
-        else:
-            formatstring = formatstring + ','
+            formatstring = formatstring + ',' + str(cookie).lower()
+        except KeyError:
+            write_to_file(("diderr,%s") % line, topic, log_time, start_time, "des_err")
+            return
 
         # pt
         try:
             pt = record['pt']
             formatstring = formatstring + ',' + str(pt)
             if str(pt) != '0':
-                sys.stderr.write(("pterr,%s") % line)
+                write_to_file(("pterr,%s") % line, topic, log_time, start_time, "des_err")
                 return
         except KeyError:
-            sys.stderr.write(("pterr,%s") % line)
+            write_to_file(("pterr,%s") % line, topic, log_time, start_time, "des_err")
             return
         # ln
         formatstring = collectArgs(formatstring, record, "ln", "lnerr", False, True)
@@ -264,38 +234,7 @@ def mobile_new_version_format(line):
         formatstring = collectArgs(formatstring, record, "def", "deferr", False, True)
 
         # act
-        act = ""
-        if clienttag == "aphone452" or clienttag == "iphone454":
-            try:
-                act = record["act"]
-                if act.strip() == "":
-                    sys.stderr.write(("acterr,%s") % line)
-                    return
-                elif act == "aplay":
-                    act = 'play'
-                else:
-                    sys.stderr.write(("acterr,%s") % line)
-                    return
-                formatstring = formatstring + ',' + str(act)
-            except KeyError:
-                sys.stderr.write(("acterr,%s") % line)
-                return
-        elif clienttag == "iphone450453" or clienttag == "aphoneother":
-            for i in range(len(recordall)):
-                try:
-                    if recordall[i]["act"] == "play":
-                        act = "play"
-                        break
-                except KeyError:
-                    continue
-            if act.strip() == "":
-                sys.stderr.write(("acterr,%s") % line)
-                return
-            else:
-                formatstring = formatstring + ',' + str(act)
-        else:
-            formatstring = formatstring + ',' + 'play'
-
+        formatstring = formatstring + ',' + str(act)
 
         # CLIENTTP
         try:
@@ -306,7 +245,7 @@ def mobile_new_version_format(line):
                 clienttp = 'android'
             formatstring = formatstring + ',' + str(clienttp)
         except KeyError:
-            sys.stderr.write(("avererr,%s") % line)
+            write_to_file(("avererr,%s") % line, topic, log_time, start_time, "des_err")
             return
 
         # CLIENTVER
@@ -319,18 +258,10 @@ def mobile_new_version_format(line):
                     if 450 <= versionnum:
                         formatstring = formatstring + ',' + str(clientver)
                     else:
-                        sys.stderr.write(("avererr,%s") % line)
+                        write_to_file(("avererr,%s") % line, topic, log_time, start_time, "des_err")
                         return
-                # elif act == 'aplay':
-                #     version = clientver.split('_')
-                #     versionnum = getVersionNum(version[2])
-                #     if versionnum >= 453:
-                #         formatstring = formatstring + ',' + str(clientver)
-                #     else:
-                #         sys.stderr.write(("playreperr,%s") % line)
-                #         return
                 else:
-                    sys.stderr.write(("acterr,%s") % line)
+                    write_to_file(("avererr,%s") % line, topic, log_time, start_time, "des_err")
                     return
             elif "imgotv_aphone" in clientver:
                 if act == "play":
@@ -339,16 +270,16 @@ def mobile_new_version_format(line):
                     if versionnum >= 452:
                         formatstring = formatstring + ',' + str(clientver)
                     else:
-                        sys.stderr.write(("avererr,%s") % line)
+                        write_to_file(("avererr,%s") % line, topic, log_time, start_time, "des_err")
                         return
                 else:
-                    sys.stderr.write(("playreperr,%s") % line)
+                    write_to_file(("playreperr,%s") % line, topic, log_time, start_time, "des_err")
                     return
             elif str(clientver).startswith("aphone"):
                 if act == 'play':
                     formatstring = formatstring + ',' + str(clientver)
                 else:
-                    sys.stderr.write(("playreperr,%s") % line)
+                    write_to_file(("playreperr,%s") % line, topic, log_time, start_time, "des_err")
                     return
             else:
                 if act == 'play':
@@ -356,61 +287,16 @@ def mobile_new_version_format(line):
                     if versionnum >= 452:
                         formatstring = formatstring + ',' + str(clientver)
                     else:
-                        sys.stderr.write(("avererr,%s") % line)
+                        write_to_file(("avererr,%s") % line, topic, log_time, start_time, "des_err")
                         return
                 else:
-                    sys.stderr.write(("playreperr,%s") % line)
+                    write_to_file(("playreperr,%s") % line, topic, log_time, start_time, "des_err")
                     return
 
-            # act = record["act"]
-            # clientver = record["aver"].lower()
-            # if "imgotv_iphone" in clientver:
-            #     if act == 'play':
-            #         version = clientver.split('_')
-            #         versionnum = getVersionNum(version[2])
-            #         if versionnum >= 450 or versionnum <= 453:
-            #             formatstring = formatstring + ',' + str(clientver)
-            #         else:
-            #             sys.stderr.write(("avererr,%s") % line)
-            #             return
-            #     elif act == 'aplay':
-            #         version = clientver.split('_')
-            #         versionnum = getVersionNum(version[2])
-            #         if versionnum >= 453:
-            #             formatstring = formatstring + ',' + str(clientver)
-            #         else:
-            #             sys.stderr.write(("playreperr,%s") % line)
-            #             return
-            #     else:
-            #         sys.stderr.write(("acterr,%s") % line)
-            #         return
-            # elif "imgotv_aphone" in clientver:
-            #     if act == "aplay":
-            #         version = clientver.split('_')
-            #         versionnum = getVersionNum(version[2])
-            #         if versionnum >= 452:
-            #             formatstring = formatstring + ',' + str(clientver)
-            #         else:
-            #             sys.stderr.write(("avererr,%s") % line)
-            #             return
-            #     else:
-            #         sys.stderr.write(("playreperr,%s") % line)
-            #         return
-            # else:
-            #     if act == 'aplay':
-            #         versionnum = getVersionNum(clientver)
-            #         if versionnum >= 452:
-            #             formatstring = formatstring + ',' + str(clientver)
-            #         else:
-            #             sys.stderr.write(("avererr,%s") % line)
-            #             return
-            #     else:
-            #         sys.stderr.write(("playreperr,%s") % line)
-            #         return
         except KeyError:
-            sys.stderr.write(("avererr,%s") % line)
+            write_to_file(("avererr,%s") % line, topic, log_time, start_time, "des_err")
             return
-        print formatstring
+        write_to_file(formatstring, topic, log_time, start_time, "des")
     except ValueError:
         return
 
@@ -418,5 +304,7 @@ if __name__ == '__main__':
     # gzcat abc.gz | python pcp_format.py ./genip -
     # python pcp_format.py ./genip afile bfile cfile
     loadGeoIp(sys.argv[1])
-    for line in fileinput.input(sys.argv[2:]):
+    start_time = sys.argv[2]
+    topic = "mpp_vv_mobile_new_version"
+    for line in fileinput.input(sys.argv[3:]):
         mobile_new_version_format(line)

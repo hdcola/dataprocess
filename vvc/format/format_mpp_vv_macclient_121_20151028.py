@@ -33,13 +33,13 @@ def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
             return
 
 
-def ott_44_format(line):
+def macclient_121_20151028_format(line):
     global log_time
     formatstring = ""
     if len(line.strip('\n')) == 0:
         return
-
     lineall = string.split(line.strip(), '\t')
+
     try:
         jsonline = lineall[7].strip()
         timetmp  = lineall[0]
@@ -47,15 +47,13 @@ def ott_44_format(line):
     except IndexError:
         write_to_file(("indexerr,%s") % line, topic, start_time, start_time, "orig_err")
         return
+
     try:
         record = json.loads(jsonline)
     except ValueError:
         write_to_file(("jsonerr,%s") % line, topic, start_time, start_time, "orig_err")
         return
-    try:
-        record = record[0]
-    except KeyError:
-        record = record
+
     # date, time
     try:
         timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
@@ -73,7 +71,7 @@ def ott_44_format(line):
     try:
         formatstring = formatstring + ',' + str(iptmp)
     except ValueError:
-        write_to_file(("iperr,%s") % line, topic, start_time, start_time, "des_err")
+        write_to_file(("iperr,%s") % line, topic, log_time, start_time, "des_err")
         return
 
     # location
@@ -82,41 +80,53 @@ def ott_44_format(line):
         location_province = locationtmp[2]
         location_city = locationtmp[3]
         formatstring = formatstring + ',' + str(location_province) + ',' + str(location_city)
-    except (ValueError, TypeError):
-        write_to_file(("locationerr,%s") % line, topic, start_time, start_time, "des_err")
+    except ValueError:
+        write_to_file(("locationerr,%s") % line, topic, log_time, start_time, "des_err")
+        return
+    except TypeError:
+        write_to_file(("locationerr,%s") % line, topic, log_time, start_time, "des_err")
         return
 
-    # act提前校验
+
+    # act
+    act = ""
     try:
         act = record["act"]
-        if str(act).strip() == "play":
-            act = "play"
-        elif str(act).strip() == "":
-            write_to_file(("acterr,%s") % line, topic, start_time, start_time, "des_err")
+        if str(act) != "play":
+            write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
             return
         else:
-            return
+            act = "play"
     except KeyError:
-        write_to_file(("acterr,%s") % line, topic, start_time, start_time, "des_err")
+        write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
         return
 
     try:
         # uid
         formatstring = collectArgs(formatstring, record, "uid", "uiderr", False, True)
+
         # uuid
-        formatstring = collectArgs(formatstring, record, "bg_uuid", "bg_uuiderr", False, True)
+        formatstring = collectArgs(formatstring, record, "uuid", "uuiderr", False, True)
+
         # guid
         formatstring = collectArgs(formatstring, record, "guid", "guiderr", False, True)
+
         # ref
         formatstring = collectArgs(formatstring, record, "ref", "referr", False, True)
+
         # bid
+
         formatstring = collectArgs(formatstring, record, "bid", "biderr", True)
+
         # cid
         formatstring = collectArgs(formatstring, record, "cid", "ciderr", False, True)
+
         # plid
-        formatstring = collectArgs(formatstring, record, "oplid", "opliderr", False, True)
+        formatstring = collectArgs(formatstring, record, "plid", "pliderr", False, True)
+
         # vid
-        formatstring = collectArgs(formatstring, record, "ovid", "oviderr", True)
+        formatstring = collectArgs(formatstring, record, "vid", "viderr", True)
+
         # tid
         try:
             tid = record["tid"]
@@ -131,28 +141,27 @@ def ott_44_format(line):
 
         # vts
         formatstring = collectArgs(formatstring, record, "vts", "vtserr", False, True)
+
         # cookie
         try:
-            did = record["did"]
-            if str(did) == "":
-                write_to_file(("diderr,%s") % line, topic, start_time, start_time, "des_err")
+            cookie = record["did"]
+            if str(cookie).strip() == "":
+                write_to_file(("diderr,%s") % line, topic, log_time, start_time, "des_err")
                 return
-            formatstring = formatstring + ',' + str(did).lower()
+            formatstring = formatstring + ',' + str(cookie).lower()
         except KeyError:
-            write_to_file(("diderr,%s") % line, topic, start_time, start_time, "des_err")
+            write_to_file(("diderr,%s") % line, topic, log_time, start_time, "des_err")
             return
+
         # pt
         try:
-            bid = record["bid"]
-            pt = record["pt"]
-            if str(bid) == '3.0.1' and str(pt) == '1':
-                pt = '0'
-            formatstring = formatstring + ',' + str(pt)
+            pt = record['pt']
             if str(pt) != '0':
-                write_to_file(("pterr,%s") % line, topic, start_time, start_time, "des_err")
+                write_to_file(("pterr,%s") % line, topic, log_time, start_time, "des_err")
                 return
+            formatstring = formatstring + ',' + str(pt)
         except KeyError:
-            write_to_file(("pterr,%s") % line, topic, start_time, start_time, "des_err")
+            write_to_file(("pterr,%s") % line, topic, log_time, start_time, "des_err")
             return
         # ln
         formatstring = collectArgs(formatstring, record, "ln", "lnerr", False, True)
@@ -160,24 +169,23 @@ def ott_44_format(line):
         formatstring = collectArgs(formatstring, record, "cf", "cferr", False, True)
         # definition
         formatstring = collectArgs(formatstring, record, "def", "deferr", False, True)
-        # act
-        formatstring = formatstring + "," + str(act)
-        # CLIENTTP
-        formatstring = formatstring + ',' + "ott"
-        # aver
-        try:
-            aver = str(record["aver"]).lower()
-            if str(aver) == "":
-                write_to_file(("avererr,%s") % line, topic, start_time, start_time, "des_err")
-                return
-            aver_tmp = aver.split('.')
-            if aver_tmp[5] in ["dxjd", "jllt", "fjyd", "shyd19"] or aver_tmp[0] == "yys":
-                return
-            formatstring = formatstring + ',' + str(aver).lower()
-        except KeyError:
-            write_to_file(("avererr,%s") % line, topic, start_time, start_time, "des_err")
-            return
 
+        # act
+        formatstring = formatstring + ',' + str(act)
+
+        # CLIENTTP
+        formatstring = formatstring + ',' + 'macclient'
+
+        # CLIENTVER
+        try:
+            ver = record["ver"]
+            if str(ver) == "":
+                write_to_file(("vererr,%s") % line, topic, log_time, start_time, "des_err")
+                return
+            formatstring = formatstring + ',' + str(ver).lower()
+        except KeyError:
+            write_to_file(("vererr,%s") % line, topic, log_time, start_time, "des_err")
+            return
         write_to_file(formatstring, topic, log_time, start_time, "des")
     except ValueError:
         return
@@ -187,6 +195,6 @@ if __name__ == '__main__':
     # python pcp_format.py ./genip afile bfile cfile
     loadGeoIp(sys.argv[1])
     start_time = sys.argv[2]
-    topic = "ott_vv_44"
+    topic = "mpp_vv_macclient_121_20151028"
     for line in fileinput.input(sys.argv[3:]):
-        ott_44_format(line)
+        macclient_121_20151028_format(line)

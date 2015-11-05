@@ -5,76 +5,16 @@ import fileinput
 import sys
 import time
 import string
+from pydota_common import formatLocation, loadGeoIp, formatTime, write_to_file
 import json
-import urllib
-from IPy import IP
 
-filesfps = []
-filesfpscount = 0
-GEOIP_SORT = []
-GEOIP  = {}
-
-def loadGeoIp(filename):
-    fp  = open(filename)
-    for i, line in enumerate(fp):
-        try:
-            record = string.split(line, "\t")
-            rangmin  = record[0]
-            rangmax  = record[1]
-            country  = record[2]
-            province = record[3]
-            city     = record[4]
-            operator = record[6]
-            rangmin = IP(rangmin).int()
-            rangmax = IP(rangmax).int()
-            GEOIP[rangmin] = [rangmax, country, province, city, operator]
-            GEOIP_SORT.append(rangmin)
-        except ValueError:
-            sys.stderr.write(("value error,%s") % line)
-    GEOIP_SORT.sort()
-    fp.close()
-
-def getRangeKey(userip):
-    low = 0
-    height = len(GEOIP_SORT)-1
-    while low < height:
-        mid = (low+height)/2
-        if GEOIP_SORT[mid] < userip and GEOIP_SORT[mid + 1] < userip:
-            low = mid + 1
-        elif GEOIP_SORT[mid] > userip and GEOIP_SORT[mid - 1] > userip:
-            height = mid - 1
-        elif GEOIP_SORT[mid] <= userip and GEOIP_SORT[mid +1] > userip:
-            return GEOIP_SORT[mid]
-        elif GEOIP_SORT[mid -1] <= userip and GEOIP_SORT[mid] > userip:
-            return GEOIP_SORT[mid -1]
-        elif GEOIP_SORT[mid + 1] == userip:
-            return GEOIP_SORT[mid +1]
-        else:
-            return None
-    return None
-
-def formatLocation(userip):
-    userip = userip.strip('""')
-    userip = IP(userip).int()
-    location = getRangeKey(userip)
-    if location and GEOIP[location]:
-        if location <= userip <= GEOIP[location][0]:
-            return GEOIP[location]
-    else:
-        return None
-
-def formatTime(timetmp):
-    timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
-    timetmp_date = time.strftime('%Y%m%d', timedata)
-    timetmp_time = time.strftime('%H%M%S', timedata)
-    return timetmp_date, timetmp_time
 
 def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
     try:
         nametmp = argslist[name]
         if strict:
             if str(nametmp).strip() == "":
-                sys.stderr.write(("%s,%s") % (errname, line))
+                write_to_file(("%s,%s") % (errname, line), topic, log_time, start_time, "des_err")
                 raise ValueError("args is illegal")
                 return
             else:
@@ -88,11 +28,13 @@ def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
             fstring = fstring + ',-'
             return fstring
         else:
-            sys.stderr.write(("%s,%s") % (errname, line))
+            write_to_file(("%s,%s") % (errname, line), topic, log_time, start_time, "des_err")
             raise ValueError("args is illegal")
             return
 
+
 def ott_vv_311_20151012_format(line):
+    global log_time
     formatstring = ""
     if len(line.strip('\n')) == 0:
         return
@@ -103,17 +45,30 @@ def ott_vv_311_20151012_format(line):
         timetmp  = lineall[0]
         iptmp  = lineall[1].strip()
     except IndexError:
-        sys.stderr.write(("indexerr,%s") % line)
+        write_to_file(("indexerr,%s") % line, topic, start_time, start_time, "orig_err")
         return
     try:
         record = json.loads(jsonline)
     except ValueError:
-        sys.stderr.write(("jsonerr,%s") % line)
+        write_to_file(("jsonerr,%s") % line, topic, start_time, start_time, "orig_err")
         return
     try:
         record = record[0]
     except KeyError:
         record = record
+
+    # date, time
+    try:
+        timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
+        timetmp_date, timetmp_time, timeStamp = formatTime(timedata)
+        log_time = timetmp_date + timetmp_time[:2] + "00"
+        formatstring = str(timetmp_date) + ',' + str(timetmp_time)
+    except (ValueError, KeyError):
+        write_to_file(("timeerr,%s") % line, topic, start_time, start_time, "orig_err")
+        return
+
+    # 写入时间正确的原始到orig文件
+    write_to_file(line, topic, log_time, start_time, "orig")
 
     # act提前校验
     try:
@@ -121,30 +76,19 @@ def ott_vv_311_20151012_format(line):
         if str(act).strip() == "play":
             act = "play"
         elif str(act).strip() == "":
-            sys.stderr.write(("acterr,%s") % line)
+            write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
             return
         else:
             return
     except KeyError:
-        sys.stderr.write(("acterr,%s") % line)
-        return
-
-    # date, time
-    try:
-        timetmp_date, timetmp_time = formatTime(timetmp)
-        formatstring = str(timetmp_date) + ',' + str(timetmp_time)
-    except ValueError:
-        sys.stderr.write(("timeerr,%s") % line)
-        return
-    except KeyError:
-        sys.stderr.write(("timeerr,%s") % line)
+        write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
         return
 
     # IP
     try:
         formatstring = formatstring + ',' + str(iptmp)
     except ValueError:
-        sys.stderr.write(("iperr,%s") % line)
+        write_to_file(("iperr,%s") % line, topic, log_time, start_time, "des_err")
         return
 
     # location
@@ -153,11 +97,8 @@ def ott_vv_311_20151012_format(line):
         location_province = locationtmp[2]
         location_city = locationtmp[3]
         formatstring = formatstring + ',' + str(location_province) + ',' + str(location_city)
-    except ValueError:
-        sys.stderr.write(("locationerr,%s") % line)
-        return
-    except TypeError:
-        sys.stderr.write(("locationerr,%s") % line)
+    except (ValueError, TypeError):
+        write_to_file(("locationerr,%s") % line, topic, log_time, start_time, "des_err")
         return
 
     try:
@@ -181,7 +122,12 @@ def ott_vv_311_20151012_format(line):
         # formatstring = collectArgs(formatstring, record, "tid", "tiderr", False)
         try:
             tid = record["tid"]
-            formatstring = formatstring + ',' + str(tid)
+            if tid.strip() == "":
+                formatstring = formatstring + ','
+            else:
+                if tid.find(",") != -1:
+                    tid = tid.replace(",", "_")
+                formatstring = formatstring + ',' + str(tid)
         except KeyError:
             formatstring = formatstring + ',-'
 
@@ -191,21 +137,21 @@ def ott_vv_311_20151012_format(line):
         try:
             did = record["did"]
             if str(did) == "":
-                sys.stderr.write(("diderr,%s") % line)
+                write_to_file(("diderr,%s") % line, topic, log_time, start_time, "des_err")
                 return
             formatstring = formatstring + ',' + str(did).lower()
         except KeyError:
-            sys.stderr.write(("diderr,%s") % line)
+            write_to_file(("diderr,%s") % line, topic, log_time, start_time, "des_err")
             return
         # pt
         try:
             pt = record['pt']
             formatstring = formatstring + ',' + str(pt)
             if str(pt) != '0':
-                sys.stderr.write(("pterr,%s") % line)
+                write_to_file(("pterr,%s") % line, topic, log_time, start_time, "des_err")
                 return
         except KeyError:
-            sys.stderr.write(("pterr,%s") % line)
+            write_to_file(("pterr,%s") % line, topic, log_time, start_time, "des_err")
             return
         # ln
         formatstring = formatstring + ','
@@ -222,18 +168,17 @@ def ott_vv_311_20151012_format(line):
         try:
             aver = str(record["aver"]).lower()
             if str(aver) == "":
-                sys.stderr.write(("avererr,%s") % line)
+                write_to_file(("avererr,%s") % line, topic, log_time, start_time, "des_err")
                 return
             aver_tmp = aver.split('.')
-            if aver_tmp[5] == "dxjd" or aver_tmp[5] == "jllt" or aver_tmp[5] == "fjyd" \
-                or aver_tmp[5] == "shyd19" or aver_tmp[0] == "yys":
+            if aver_tmp[5] in ["dxjd", "jllt", "fjyd", "shyd19"] or aver_tmp[0] == "yys":
                 return
             formatstring = formatstring + ',' + str(aver).lower()
         except KeyError:
-            sys.stderr.write(("avererr,%s") % line)
+            write_to_file(("avererr,%s") % line, topic, log_time, start_time, "des_err")
             return
 
-        print formatstring.lower()
+        write_to_file(formatstring, topic, log_time, start_time, "des")
     except ValueError:
         return
 
@@ -241,5 +186,7 @@ if __name__ == '__main__':
     # gzcat abc.gz | python pcp_format.py ./genip -
     # python pcp_format.py ./genip afile bfile cfile
     loadGeoIp(sys.argv[1])
-    for line in fileinput.input(sys.argv[2:]):
+    start_time = sys.argv[2]
+    topic = "ott_vv_311_20151012"
+    for line in fileinput.input(sys.argv[3:]):
         ott_vv_311_20151012_format(line)

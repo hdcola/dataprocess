@@ -17,7 +17,7 @@ def setSplitDone(start_time, dirpath, topic):
     except ValueError:
         raise ValueError("timeerr")
     timetmp_date = time.strftime('%Y%m%d%H', timedata)
-    f = open(dirpath+"/"+"done_"+str(timetmp_date)+"00_"+topic, 'a+')
+    f = open(dirpath+"/"+".done_"+str(timetmp_date)+"00_"+topic, 'a+')
     f.close()
 
 def setSplitStart(start_time, dirpath, topic):
@@ -27,7 +27,7 @@ def setSplitStart(start_time, dirpath, topic):
         raise ValueError("timeerr")
     timetmp_date = time.strftime('%Y%m%d%H', timedata)
     try:
-        os.remove(dirpath+"/"+"done_"+str(timetmp_date)+"00_"+topic)
+        os.remove(dirpath+"/"+".done_"+str(timetmp_date)+"00_"+topic)
     except OSError:
         pass
 
@@ -48,8 +48,14 @@ def testTime(timetmp, start_time, end_time, topic, dirpath):
             raise ValueError("timeerr")
     elif topic == "mpp_vv_mobile" or topic == "mpp_vv_ott" or topic == "ott_vv_41":
         timeStamp = int(timetmp)
-    elif topic == "mpp_vv_mobile_new_version" or topic == "mpp_vv_padweb" or topic == "ott_vv_44" \
-            or topic == "ott_vv_311_20151012" or topic == "mpp_vv_mobile_211_20151012":
+    elif topic in ["mpp_vv_mobile_new_version",
+                   "mpp_vv_padweb", "ott_vv_44",
+                   "ott_vv_311_20151012",
+                   "mpp_vv_mobile_211_20151012",
+                   "rt_live_pcweb",
+                   "rt_live_mobile_new",
+                   "mpp_vv_macclient_121_20151028",
+                   "mpp_vv_win10client_511_20151028"]:
         try:
             timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
             timeStamp = int(time.mktime(timedata))
@@ -83,16 +89,32 @@ def split_kafka(line, start_time, end_time, topic, dirpath):
         except IndexError:
             sys.stderr.write(("indexerr,%s") % line)
             return
-        timetmp = str(record[0]) + str(record[1])
+        try:
+            timetmp = str(record[0]) + str(record[1])
+        except KeyError:
+            sys.stderr.write(("indexerr,%s") % line)
+            return
+
     elif topic == "mpp_vv_mobile" or topic == "mpp_vv_ott" or topic == "ott_vv_41":
         try:
             record = json.loads(line)
         except ValueError:
             sys.stderr.write(("jsonerr,%s") % line)
             return
-        timetmp = str(record["time"])
-    elif topic == "mpp_vv_mobile_new_version" or topic == "mpp_vv_padweb" or topic == "ott_vv_44" \
-            or topic == "ott_vv_311_20151012" or topic == "mpp_vv_mobile_211_20151012":
+        if "time" in record:
+            timetmp = str(record["time"])
+        else:
+            sys.stderr.write(("timeerr,%s") % line)
+            return
+
+    elif topic in ["mpp_vv_mobile_new_version",
+                   "mpp_vv_padweb", "ott_vv_44",
+                   "ott_vv_311_20151012",
+                   "mpp_vv_mobile_211_20151012",
+                   "rt_live_pcweb",
+                   "rt_live_mobile_new",
+                   "mpp_vv_macclient_121_20151028",
+                   "mpp_vv_win10client_511_20151028"]:
         record = string.split(line, '\t')
         timetmp = record[0].strip()
 

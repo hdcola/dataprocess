@@ -1,0 +1,14 @@
+[db]
+db_port = 3306
+db_user = dsj_mgboss
+db_host = 192.168.1.157
+db_passwd = dsj_mgboss2015
+
+[meizi]
+output_path = /home/xuguodong/pydota/meizi/
+
+[output_path]
+orig = /Users/guodongxu/Work/src/dataprocess/vvc/data/orig/
+orig_err = /Users/guodongxu/Work/src/dataprocess/vvc/data/orig/
+des = /Users/guodongxu/Work/src/dataprocess/vvc/data/des/
+des_err = /Users/guodongxu/Work/src/dataprocess/vvc/data/des/

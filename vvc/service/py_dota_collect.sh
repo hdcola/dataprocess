@@ -11,7 +11,8 @@ if [[ -n "$HOME" && -e "$HOME/.pydota" ]]; then
   . "$HOME/.pydota"
 fi
 
-topics=("mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient mpp_vv_msite mpp_vv_padweb mpp_vv_ott ott_vv_41 ott_vv_44 mpp_vv_mobile_211_20151012 ott_vv_311_20151012")
+topics=("mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient mpp_vv_msite mpp_vv_padweb mpp_vv_ott ott_vv_41 ott_vv_44 \
+mpp_vv_mobile_211_20151012 ott_vv_311_20151012 mpp_vv_macclient_121_20151028 mpp_vv_win10client_511_20151028 rt_live_mobile_new rt_live_pcweb")
 work_path="${pydota_path}"
 bearychat="${work_path}/bin/bearychat.sh"
 
@@ -41,11 +42,11 @@ msg=""
 # 接受目标kafka topic数据，合要求的数据压缩落地，非法数据写入对应错误日志
 for topic in ${topics}; do
     filenameerr="err_"${start_time}"_play_"${topic}".log"
-    filename=${start_time}"_play_"${topic}".bz2"
-    # 后台运行，结束时间半小时后，进程退出
+    filename=${start_time}"_play_"${topic}
+    # 后台运行，结束时间1小时后的数据到达后，进程退出
     ./bin/kafka_connect.py ${topic} ${pydota_collect_pids} \
       | ./bin/kafka_split.py ${start_time} ${end_time} ${topic} ${pydota_orig}/${sub_path} 2>${pydota_orig}/${sub_path}/$filenameerr \
-      | bzip2 > ${pydota_orig}/${sub_path}/$filename &
+      | tee > ${pydota_orig}/${sub_path}/$filename &
 
     msg="${msg}./bin/kafka_connect.py ${topic} ${pydota_collect_pids} | ./bin/kafka_split.py ${start_time} ${end_time} ${topic} 2>${pydota_orig}/${sub_path}/$filenameerr | bzip2 > ${pydota_orig}/${sub_path}/$filename
 
