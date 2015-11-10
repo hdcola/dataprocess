@@ -7,7 +7,7 @@ import time
 import string
 import urllib
 import json
-from pydota_common import formatLocation, loadGeoIp, formatTime, write_to_file, getVersionNum
+from pydota_common import formatLocation, loadGeoIp, formatTime, write_to_file, getVersionNum, check_act_field
 
 
 def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
@@ -47,15 +47,6 @@ def mobile_new_version_211_20151012_format(line):
     except IndexError:
         write_to_file(("indexerr,%s") % line, topic, start_time, start_time, "orig_err")
         return
-    try:
-        recordall = json.loads(jsonline)
-    except ValueError:
-        write_to_file(("jsonerr,%s") % line, topic, start_time, start_time, "orig_err")
-        return
-    try:
-        record = recordall[0]
-    except KeyError:
-        record = recordall
 
     # date, time
     try:
@@ -69,6 +60,20 @@ def mobile_new_version_211_20151012_format(line):
 
     # 写入时间正确的原始到orig文件
     write_to_file(line, topic, log_time, start_time, "orig")
+
+    if not check_act_field(jsonline, "aplay"):
+        write_to_file("acterr,", topic, log_time, start_time, "des_err")
+        return
+
+    try:
+        recordall = json.loads(jsonline)
+    except ValueError:
+        write_to_file(("jsonerr,%s") % line, topic, log_time, start_time, "des_err")
+        return
+    try:
+        record = recordall[0]
+    except KeyError:
+        record = recordall
 
     # IP
     try:
@@ -88,7 +93,7 @@ def mobile_new_version_211_20151012_format(line):
         else:
             return
     except KeyError:
-        write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
+        write_to_file("acterr,", topic, log_time, start_time, "des_err")
         return
 
     # pt

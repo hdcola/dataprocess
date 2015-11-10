@@ -19,9 +19,9 @@ clienttypes=(android iphone pcweb ipad apad phonem ott pcclient padweb win10clie
 
 
 sub_path=${sub_path_year}/${sub_path_month}
-work_path="/data/xuguodong/pydota"
-pydota_des="/data/xuguodong/des"
-pydota_report="/data/xuguodong/data/dailyreport"
+work_path="/home/xuguodong/pydota/pydota"
+pydota_des="/home/xuguodong/data/des"
+pydota_report="/home/xuguodong/data/dailyreport"
 
 mkdir -p ${pydota_report}/${sub_path} 2>/dev/null
 

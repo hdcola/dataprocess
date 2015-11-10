@@ -81,7 +81,7 @@ def pcc_format(line):
     # url args
     try:
         urlargtmp = record[1].strip().split(' ')[3].split('?')[1].split('&')
-    except ValueError or IndexError:
+    except (ValueError, IndexError):
         write_to_file(("urlargerr,%s") % line, topic, log_time, start_time, "des_err")
         return
 

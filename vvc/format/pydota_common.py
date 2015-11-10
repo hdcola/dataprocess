@@ -271,3 +271,14 @@ def getVersionNum(verstr):
         return 0
     except ValueError:
         return 0
+
+
+def check_act_field(line, *args):
+    if len(line.strip('\n')) == 0 or len(args) == 0:
+        return False
+    for arg in args:
+        act_str = '"act":"' + arg + '"'
+        if line.find(act_str) != -1:
+            return True
+
+    return False

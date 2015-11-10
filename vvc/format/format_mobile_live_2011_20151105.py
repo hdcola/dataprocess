@@ -4,27 +4,10 @@
 import fileinput
 import sys
 import time
-from pydota_common import LoadLiveMeizi, CheckLiveTime, formatLocation, loadGeoIp, formatTime
+from pydota_common import formatLocation, loadGeoIp, formatTime, getVersionNum, write_to_file
 import string
 import urllib
 import json
-
-filesfps = []
-filesfpscount = 0
-Meizi_info = {}
-
-
-def getVersionNum(verstr):
-    try:
-        vertmp = verstr.split('.')
-        if len(vertmp) >= 3:
-            return int(vertmp[0])*100+int(vertmp[1])*10+int(vertmp[2])
-        else:
-            return int(vertmp[0])*100+int(vertmp[1])*10
-    except IndexError:
-        return 0
-    except ValueError:
-        return 0
 
 
 def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
@@ -32,7 +15,7 @@ def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
         nametmp = argslist[name]
         if strict:
             if str(nametmp).strip() == "":
-                sys.stderr.write(("%s,%s") % (errname, line))
+                write_to_file(("%s,%s") % (errname, line), topic, log_time, start_time, "des_err")
                 raise ValueError("args is illegal")
                 return
             else:
@@ -46,12 +29,13 @@ def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
             fstring = fstring + ',-'
             return fstring
         else:
-            sys.stderr.write(("%s,%s") % (errname, line))
+            write_to_file(("%s,%s") % (errname, line), topic, log_time, start_time, "des_err")
             raise ValueError("args is illegal")
             return
 
 
-def rt_live_mobile_new_format(line):
+def mobile_live_2011_20151105_format(line):
+    global log_time
     formatstring = ""
     if len(line.strip('\n')) == 0:
         return
@@ -62,19 +46,32 @@ def rt_live_mobile_new_format(line):
         timetmp  = lineall[0]
         iptmp  = lineall[1].strip()
     except IndexError:
-        sys.stderr.write(("indexerr,%s") % line)
+        write_to_file(("indexerr,%s") % line, topic, start_time, start_time, "orig_err")
         return
 
     try:
         recordall = json.loads(jsonline)
     except ValueError:
-        sys.stderr.write(("jsonerr,%s") % line)
+        write_to_file(("jsonerr,%s") % line, topic, start_time, start_time, "orig_err")
         return
 
     try:
         record = recordall[0]
     except KeyError:
         record = recordall
+
+    # date, time
+    try:
+        timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
+        timetmp_date, timetmp_time, timeStamp = formatTime(timedata)
+        log_time = timetmp_date + timetmp_time[:2] + "00"
+        formatstring = str(timetmp_date) + ',' + str(timetmp_time)
+    except (ValueError, KeyError):
+        write_to_file(("timeerr,%s") % line, topic, start_time, start_time, "orig_err")
+        return
+
+    # 写入时间正确的原始到orig文件
+    write_to_file(line, topic, log_time, start_time, "orig")
 
 
     clienttag = ""
@@ -84,29 +81,46 @@ def rt_live_mobile_new_format(line):
             clienttag = "ipad"
         elif "apad" in clientver:
             clienttag = "apad"
-        elif "imgotv_iphone" in clientver:
+        elif "iphone" in clientver:
             version = clientver.split('_')
-            versionnum = getVersionNum(version[2])
+            if len(version) != 3:
+                version = clientver.split('-')
+            if len(version) == 3:
+                versionnum = getVersionNum(version[2])
+            else:
+                write_to_file(("clientavererr,%s") % line, topic, log_time, start_time, "des_err")
             if versionnum < 454:
                 clienttag = "iphonel454"
             elif versionnum >= 454:
                 clienttag = "iphone454"
+        elif "aphone" in clientver:
+            version = clientver.split('_')
+            if len(version) != 3:
+                version = clientver.split('-')
+            if len(version) == 3:
+                versionnum = getVersionNum(version[2])
+            else:
+                write_to_file(("clientavererr,%s") % line, topic, log_time, start_time, "des_err")
+            if versionnum < 452:
+                clienttag = "aphonel452"
+            elif versionnum >= 452:
+                clienttag = "aphone452"
         elif clientver == "4.5.2":
             clienttag = "aphone452"
         else:
-            clienttag = "aphonel452"
+            clienttag = ""
     except KeyError:
-        sys.stderr.write(("clienttypeerr,%s") % line)
+        write_to_file(("clienttypeerr,%s") % line, topic, log_time, start_time, "des_err")
         return
 
     # pt 提前校验
     try:
         pt = record['pt']
         if str(pt) != '4':
-            sys.stderr.write(("pterr,%s") % line)
+            write_to_file(("pterr,%s") % line, topic, log_time, start_time, "des_err")
             return
     except KeyError:
-        sys.stderr.write(("pterr,%s") % line)
+        write_to_file(("pterr,%s") % line, topic, log_time, start_time, "des_err")
         return
 
     # act 提前校验
@@ -115,70 +129,74 @@ def rt_live_mobile_new_format(line):
         try:
             act = record["act"]
             if act.strip() == "":
-                sys.stderr.write(("acterr,%s") % line)
+                write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
                 return
             elif act == "aplay":
                 act = 'play'
             else:
-                sys.stderr.write(("acterr,%s") % line)
+                write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
                 return
         except KeyError:
-            sys.stderr.write(("acterr,%s") % line)
+            write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
             return
     elif clienttag == "aphonel452" or clienttag == "iphonel454":
         try:
             act = record["act"]
             if act.strip() == "":
-                sys.stderr.write(("acterr,%s") % line)
+                write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
                 return
             elif act == "play":
                 act = 'play'
             else:
-                sys.stderr.write(("acterr,%s") % line)
+                write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
                 return
         except KeyError:
-            sys.stderr.write(("acterr,%s") % line)
+            write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
             return
     else:
-        return
+        # ipad apad 以及一些无法解析的版本，同一按play过滤
+        try:
+            act = record["act"]
+            if act.strip() == "":
+                write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
+                return
+            elif act == "play":
+                act = 'play'
+            else:
+                write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
+                return
+        except KeyError:
+            write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
+            return
 
     # sourceid 提前校验
     try:
         lid = record["lid"]
         if str(lid) == "":
-            sys.stderr.write(("liderr,%s") % line)
+            write_to_file(("liderr,%s") % line, topic, log_time, start_time, "des_err")
             return
-        if lid not in Meizi_info.keys():
-            sys.stderr.write(("liderr,%s") % line)
-            return
+        # if lid not in Meizi_info.keys():
+        #     sys.stderr.write(("liderr,%s") % line)
+        #     return
     except KeyError:
-        sys.stderr.write(("liderr,%s") % line)
+        write_to_file(("liderr,%s") % line, topic, log_time, start_time, "des_err")
         return
 
-    # date, time
-    try:
-        timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
-        timetmp_date, timetmp_time, timeStamp = formatTime(timedata)
-        formatstring = str(timetmp_date) + ',' + str(timetmp_time)
-    except (ValueError, KeyError):
-        sys.stderr.write(("timeerr,%s") % line)
-        return
-
-    live_infos = Meizi_info[lid]
-    isvalid, activityid, cameraid = CheckLiveTime(timeStamp, live_infos)
-
-    if isvalid == -1:
-        sys.stderr.write(("timeerr,%s") % line)
-        return
-    elif isvalid == -2:
-        sys.stderr.write(("overtimerr,%s") % line)
-        return
+    # live_infos = Meizi_info[lid]
+    # isvalid, activityid, cameraid = CheckLiveTime(timeStamp, live_infos)
+    #
+    # if isvalid == -1:
+    #     sys.stderr.write(("timeerr,%s") % line)
+    #     return
+    # elif isvalid == -2:
+    #     sys.stderr.write(("overtimerr,%s") % line)
+    #     return
 
     # IP
     try:
         formatstring = formatstring + ',' + str(iptmp)
     except ValueError:
-        sys.stderr.write(("iperr,%s") % line)
+        write_to_file(("iperr,%s") % line, topic, log_time, start_time, "des_err")
         return
 
     # location
@@ -187,11 +205,8 @@ def rt_live_mobile_new_format(line):
         location_province = locationtmp[2]
         location_city = locationtmp[3]
         formatstring = formatstring + ',' + str(location_province) + ',' + str(location_city)
-    except ValueError:
-        sys.stderr.write(("locationerr,%s") % line)
-        return
-    except TypeError:
-        sys.stderr.write(("locationerr,%s") % line)
+    except (ValueError, TypeError):
+        write_to_file(("locationerr,%s") % line, topic, log_time, start_time, "des_err")
         return
 
     try:
@@ -231,11 +246,11 @@ def rt_live_mobile_new_format(line):
         try:
             cookie = record["did"]
             if str(cookie).strip() == "":
-                sys.stderr.write(("diderr,%s") % line)
+                write_to_file(("diderr,%s") % line, topic, log_time, start_time, "des_err")
                 return
             formatstring = formatstring + ',' + str(cookie).lower()
         except KeyError:
-            sys.stderr.write(("diderr,%s") % line)
+            write_to_file(("diderr,%s") % line, topic, log_time, start_time, "des_err")
             return
 
         # pt
@@ -261,22 +276,27 @@ def rt_live_mobile_new_format(line):
             clientver = record["aver"].lower()
             if 'iphone' in clientver:
                 clienttp = 'iphone'
+            elif 'apad' in clientver:
+                clienttp = 'apad'
+            elif 'ipad' in clientver:
+                clienttp = 'ipad'
             else:
-                clienttp = 'android'
+                clienttp = "android"
+
             formatstring = formatstring + ',' + str(clienttp)
             formatstring = formatstring + ',' + str(clientver)
         except KeyError:
-            sys.stderr.write(("avererr,%s") % line)
+            write_to_file(("avererr,%s") % line, topic, log_time, start_time, "des_err")
             return
 
         formatstring = formatstring + ',' + str(lid)
 
         # cameraid
-        formatstring = formatstring + ',' + str(cameraid)
+        formatstring = formatstring + ','
         # activityid
-        formatstring = formatstring + ',' + str(activityid)
+        formatstring = formatstring + ','
 
-        print formatstring
+        write_to_file(formatstring, topic, log_time, start_time, "des")
     except ValueError:
         return
 
@@ -285,6 +305,7 @@ if __name__ == '__main__':
     # python pcp_format.py ./genip afile bfile cfile
     loadGeoIp(sys.argv[1])
     start_time = sys.argv[2]
-    Meizi_info = LoadLiveMeizi(start_time)
+    topic = "mobile_live_2011_20151105"
+    # Meizi_info = LoadLiveMeizi(start_time)
     for line in fileinput.input(sys.argv[3:]):
-        rt_live_mobile_new_format(line)
+        mobile_live_2011_20151105_format(line)

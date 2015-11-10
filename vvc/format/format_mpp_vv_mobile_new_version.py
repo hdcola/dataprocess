@@ -5,7 +5,7 @@ import fileinput
 import sys
 import time
 import string
-from pydota_common import formatLocation, loadGeoIp, formatTime, write_to_file, getVersionNum
+from pydota_common import formatLocation, loadGeoIp, formatTime, write_to_file, getVersionNum, check_act_field
 import json
 
 
@@ -48,17 +48,6 @@ def mobile_new_version_format(line):
         write_to_file(("indexerr,%s") % line, topic, start_time, start_time, "orig_err")
         return
 
-    try:
-        recordall = json.loads(jsonline)
-    except ValueError:
-        write_to_file(("jsonerr,%s") % line, topic, start_time, start_time, "orig_err")
-        return
-
-    try:
-        record = recordall[0]
-    except KeyError:
-        record = recordall
-
     # date, time
     try:
         timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
@@ -71,6 +60,21 @@ def mobile_new_version_format(line):
 
     # 写入时间正确的原始到orig文件
     write_to_file(line, topic, log_time, start_time, "orig")
+
+    if not check_act_field(jsonline, "play", "aplay"):
+        write_to_file("acterr,", topic, log_time, start_time, "des_err")
+        return
+
+    try:
+        recordall = json.loads(jsonline)
+    except ValueError:
+        write_to_file(("jsonerr,%s") % line, topic, start_time, start_time, "des_err")
+        return
+
+    try:
+        record = recordall[0]
+    except KeyError:
+        record = recordall
 
     # IP
     try:
@@ -135,7 +139,7 @@ def mobile_new_version_format(line):
             else:
                 return
         except KeyError:
-            write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
+            write_to_file("acterr,", topic, log_time, start_time, "des_err")
             return
     elif clienttag == "iphone450453" or clienttag == "aphoneother":
         for i in range(len(recordall)):
@@ -146,7 +150,6 @@ def mobile_new_version_format(line):
             except KeyError:
                 continue
         if act.strip() == "":
-            write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
             return
     else:
         try:
@@ -159,7 +162,7 @@ def mobile_new_version_format(line):
             else:
                 return
         except KeyError:
-            write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
+            write_to_file("acterr,", topic, log_time, start_time, "des_err")
             return
 
     try:

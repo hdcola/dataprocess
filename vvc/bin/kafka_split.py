@@ -53,7 +53,7 @@ def testTime(timetmp, start_time, end_time, topic, dirpath):
                    "ott_vv_311_20151012",
                    "mpp_vv_mobile_211_20151012",
                    "rt_live_pcweb",
-                   "rt_live_mobile_new",
+                   "mobile_live_2011_20151105",
                    "mpp_vv_macclient_121_20151028",
                    "mpp_vv_win10client_511_20151028"]:
         try:
@@ -112,7 +112,7 @@ def split_kafka(line, start_time, end_time, topic, dirpath):
                    "ott_vv_311_20151012",
                    "mpp_vv_mobile_211_20151012",
                    "rt_live_pcweb",
-                   "rt_live_mobile_new",
+                   "mobile_live_2011_20151105",
                    "mpp_vv_macclient_121_20151028",
                    "mpp_vv_win10client_511_20151028"]:
         record = string.split(line, '\t')

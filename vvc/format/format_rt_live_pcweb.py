@@ -3,14 +3,12 @@
 
 import fileinput
 import sys
-from pydota_common import LoadLiveMeizi, CheckLiveTime, formatLocation, loadGeoIp, formatTime
+from pydota_common import formatLocation, loadGeoIp, formatTime, write_to_file
 import string
 import urllib
 import time
 
-filesfps = []
-filesfpscount = 0
-Meizi_info = {}
+# Meizi_info = {}
 
 
 def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
@@ -18,7 +16,7 @@ def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
         nametmp = argslist[name]
         if strict:
             if str(nametmp).strip() == "":
-                sys.stderr.write(("%s,%s") % (errname, line))
+                write_to_file(("%s,%s") % (errname, line), topic, log_time, start_time, "des_err")
                 raise ValueError("args is illegal")
                 return
             else:
@@ -32,12 +30,13 @@ def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
             fstring = fstring + ',-'
             return fstring
         else:
-            sys.stderr.write(("%s,%s") % (errname, line))
+            write_to_file(("%s,%s") % (errname, line), topic, log_time, start_time, "des_err")
             raise ValueError("args is illegal")
             return
 
 
 def rt_live_pcweb_format(line):
+    global log_time
     formatstring = ""
     if len(line.strip('\n')) == 0:
         return
@@ -48,8 +47,22 @@ def rt_live_pcweb_format(line):
         timetmp  = lineall[0]
         iptmp  = lineall[1].strip()
     except IndexError:
-        sys.stderr.write(("indexerr,%s") % line)
+        write_to_file(("indexerr,%s") % line, topic, start_time, start_time, "orig_err")
         return
+
+    # date, time
+    try:
+        timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
+        timetmp_date, timetmp_time, timeStamp = formatTime(timedata)
+        log_time = timetmp_date + timetmp_time[:2] + "00"
+        formatstring = str(timetmp_date) + ',' + str(timetmp_time)
+    except (ValueError, KeyError):
+        write_to_file(("timeerr,%s") % line, topic, start_time, start_time, "orig_err")
+        return
+
+    # 写入时间正确的原始到orig文件
+    write_to_file(line, topic, log_time, start_time, "orig")
+
 
     recordtmp = recordtmp.strip().split('&')
 
@@ -60,8 +73,9 @@ def rt_live_pcweb_format(line):
             argvalue = recordtmptmp.split('=')[1]
             record[argkey] = argvalue
         except IndexError:
-            sys.stderr.write(("recorderr,%s") % line)
+            write_to_file(("recorderr,%s") % line, topic, start_time, start_time, "des_err")
             return
+
 
     # act提前校验
     try:
@@ -69,65 +83,53 @@ def rt_live_pcweb_format(line):
         if str(act).strip() == "play":
             act = "play"
         elif str(act).strip() == "":
-            sys.stderr.write(("acterr,%s") % line)
+            write_to_file(("acterr,%s") % line, topic, start_time, start_time, "des_err")
             return
         else:
             return
     except KeyError:
-        sys.stderr.write(("acterr,%s") % line)
+        write_to_file(("acterr,%s") % line, topic, start_time, start_time, "des_err")
         return
 
     # pt提前校验
     try:
         pt = record["pt"]
         if str(pt) != '4':
-            sys.stderr.write(("pterr,%s") % line)
+            write_to_file(("pterr,%s") % line, topic, start_time, start_time, "des_err")
             return
     except KeyError:
-        sys.stderr.write(("pterr,%s") % line)
+        write_to_file(("pterr,%s") % line, topic, start_time, start_time, "des_err")
         return
 
     # sourceid 提前校验
     try:
         lid = record["lid"]
         if str(lid) == "":
-            sys.stderr.write(("liderr,%s") % line)
+            write_to_file(("liderr,%s") % line, topic, start_time, start_time, "des_err")
             return
-        if lid not in Meizi_info.keys():
-            sys.stderr.write(("liderr,%s") % line)
-            return
+        # if lid not in Meizi_info.keys():
+        #     sys.stderr.write(("liderr,%s") % line)
+        #     return
     except KeyError:
-        sys.stderr.write(("liderr,%s") % line)
+        write_to_file(("liderr,%s") % line, topic, start_time, start_time, "des_err")
         return
 
-    # date, time
-    try:
-        timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
-        timetmp_date, timetmp_time, timeStamp = formatTime(timedata)
-        formatstring = str(timetmp_date) + ',' + str(timetmp_time)
-    except ValueError:
-        sys.stderr.write(("timeerr,%s") % line)
-        return
-    except KeyError:
-        sys.stderr.write(("timeerr,%s") % line)
-        return
-
-    live_infos = Meizi_info[lid]
-    isvalid, activityid, cameraid = CheckLiveTime(timeStamp, live_infos)
-
-    if isvalid == -1:
-        sys.stderr.write(("timeerr,%s") % line)
-        return
-    elif isvalid == -2:
-        sys.stderr.write(("overtimerr,%s") % line)
-        return
+    # live_infos = Meizi_info[lid]
+    # isvalid, activityid, cameraid = CheckLiveTime(timeStamp, live_infos)
+    #
+    # if isvalid == -1:
+    #     sys.stderr.write(("timeerr,%s") % line)
+    #     return
+    # elif isvalid == -2:
+    #     sys.stderr.write(("overtimerr,%s") % line)
+    #     return
 
 
     # IP
     try:
         formatstring = formatstring + ',' + str(iptmp)
     except ValueError:
-        sys.stderr.write(("iperr,%s") % line)
+        write_to_file(("iperr,%s") % line, topic, start_time, start_time, "des_err")
         return
 
     # location
@@ -136,11 +138,8 @@ def rt_live_pcweb_format(line):
         location_province = locationtmp[2]
         location_city = locationtmp[3]
         formatstring = formatstring + ',' + str(location_province) + ',' + str(location_city)
-    except ValueError:
-        sys.stderr.write(("locationerr,%s") % line)
-        return
-    except TypeError:
-        sys.stderr.write(("locationerr,%s") % line)
+    except (ValueError, TypeError):
+        write_to_file(("locationerr,%s") % line, topic, start_time, start_time, "des_err")
         return
 
     try:
@@ -196,11 +195,11 @@ def rt_live_pcweb_format(line):
             elif str(platform) == "0":
                 clienttp = "pcweb"
             else:
-                sys.stderr.write(("platform, %s") % line)
+                write_to_file(("platformerr,%s") % line, topic, start_time, start_time, "des_err")
                 return
             formatstring = formatstring + ',' + clienttp
         except KeyError:
-            sys.stderr.write(("platform, %s") % line)
+            write_to_file(("platformerr,%s") % line, topic, start_time, start_time, "des_err")
             return
 
         # aver
@@ -210,10 +209,10 @@ def rt_live_pcweb_format(line):
         formatstring = formatstring + ',' + str(lid)
 
         # cameraid
-        formatstring = formatstring + ',' + str(cameraid)
+        formatstring = formatstring + ','
         # activityid
-        formatstring = formatstring + ',' + str(activityid)
-        print formatstring
+        formatstring = formatstring + ','
+        write_to_file(formatstring, topic, log_time, start_time, "des")
     except ValueError:
         return
 
@@ -222,6 +221,7 @@ if __name__ == '__main__':
     # python pcp_format.py ./genip afile bfile cfile
     loadGeoIp(sys.argv[1])
     start_time = sys.argv[2]
-    Meizi_info = LoadLiveMeizi(start_time)
+    topic = "rt_live_pcweb"
+    # Meizi_info = LoadLiveMeizi(start_time)
     for line in fileinput.input(sys.argv[3:]):
         rt_live_pcweb_format(line)
