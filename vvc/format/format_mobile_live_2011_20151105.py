@@ -9,6 +9,9 @@ import string
 import urllib
 import json
 
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
 
 def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
     try:

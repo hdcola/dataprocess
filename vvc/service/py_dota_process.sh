@@ -1,6 +1,6 @@
 #!/bin/sh
 # py_dota_process.sh 直接处理上小时的数据
-# py_dota_process.sh 201510072300 处理指定时间的数据
+# py_dota_process.sh 2015100723 处理指定时间的数据
 
 if [ $# -ge 1 ];then
     start_time=$1
@@ -8,7 +8,7 @@ else
     start_time=`date --date="$DATE - 1 hour" +%Y%m%d%H`
 fi
 
-topics=(mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient mpp_vv_msite mpp_vv_padweb mpp_vv_ott ott_vv_41 ott_vv_44 mpp_vv_mobile_211_20151012 ott_vv_311_20151012 mpp_vv_macclient_121_20151028 mpp_vv_win10client_511_20151030 rt_live_pcweb mobile_live_2011_20151105)
+topics=(mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient mpp_vv_msite mpp_vv_padweb mpp_vv_ott ott_vv_41 ott_vv_44 mpp_vv_mobile_211_20151012 ott_vv_311_20151012 mpp_vv_macclient_121_20151028 mpp_vv_win10client_511_20151030 rt_live_pcweb mobile_live_2011_20151105 ott_live)
 #topics=("mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient mpp_vv_msite mpp_vv_padweb mpp_vv_ott ott_vv_41 ott_vv_44")
 
 start_time=${start_time}"00"
@@ -22,6 +22,7 @@ sub_path=${sub_path_year}/${sub_path_month}
 work_path="/home/xuguodong/pydota/pydota"
 
 pydota_orig="/home/xuguodong/data/recv"
+pydota_ott_live="/data/nfs/live_recv"
 
 #获取数组中给定元素的下标
 #参数：1 数组; 2 元素
@@ -48,6 +49,12 @@ pydota_orig="/home/xuguodong/data/recv"
 #}
 
 cd $work_path
+
+# 收集ott_live日志
+ott_live_file=(`ls ${pydota_ott_live}/OTT_Live_recv_${start_time:0:10}*`)
+if [ ${#ott_live_file[@]} -gt 1 ];then
+    cat ${ott_live_file[*]} > ${pydota_orig}/recv_${sub_path_year}"_"${sub_path_month}"_"${sub_path_day}"_"${sub_path_hour}"_ott_live_log"
+fi
 
 for topic in ${topics[*]};
 do

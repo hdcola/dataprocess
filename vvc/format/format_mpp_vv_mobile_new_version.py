@@ -8,6 +8,9 @@ import string
 from pydota_common import formatLocation, loadGeoIp, formatTime, write_to_file, getVersionNum, check_act_field
 import json
 
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
 
 def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
     try:
