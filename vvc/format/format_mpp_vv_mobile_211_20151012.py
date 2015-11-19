@@ -12,6 +12,7 @@ from pydota_common import formatLocation, loadGeoIp, formatTime, write_to_file, 
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
+
 def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
     try:
         nametmp = argslist[name]

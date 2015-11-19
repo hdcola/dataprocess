@@ -18,4 +18,4 @@ pydota_des="/home/xuguodong/data/des"
 cd $work_path
 filenameraw=des_${start_time}"_"${topic}
 
-cat ${pydota_orig}/$filename | python format/format_${topic}.py ./geoip ${start_time} &
+cat ${pydota_orig}/${filename} | python format/format_${topic}.py ./geoip ${start_time} &

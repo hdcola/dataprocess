@@ -17,9 +17,9 @@ sub_path_hour=${start_time:8:2}
 
 
 sub_path=${sub_path_year}/${sub_path_month}
-work_path="/home/xuguodong/pydota/pydota"
-pydota_des="/home/xuguodong/data/des"
-pydota_report="/home/xuguodong/data/dailyreport"
+work_path="/home/dota/pydota/pydota"
+pydota_des="/home/dota/data/des"
+pydota_report="/home/dota/data/dailyreport"
 
 mkdir -p ${pydota_report}/${sub_path} 2>/dev/null
 
@@ -32,10 +32,10 @@ function report_vv_total(){
     files=`ls ${pydota_des}/${sub_path}/${filenameraw}  | grep -v "live"`
     #files=`ls ${pydota_des}/${sub_path}/${filenameraw} ${pydota_des}/${sub_path_nextday}/${filenamenext}`
 
-    cat ${files} | awk -F, -v start_time=${start_time} '{
-    if($21=="play" && $1==start_time && $17==0){
+    cat ${files} | awk -F, '{
+    if($21=="play" && $17==0){
       print $1","substr($2,1,2)","$22}
-    }' | sort | uniq -c | awk '{print $2","$1}' | sort -rn \
+    }' | sort | uniq -c | awk '{print $2","$1}' | sort -n \
     > ${pydota_report}/${sub_path}/day_vv_hour_${start_time}.csv
 
     cat ${pydota_report}/${sub_path}/day_vv_hour_${start_time}.csv | awk -F, '{
