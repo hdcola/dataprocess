@@ -25,32 +25,36 @@ py_dota_process_user="gibbsxu@10.100.1.141"
 
 cd ${work_path}
 
-function report_vv(){
+function report_live_vv(){
     sub_topic=$1
     topic_num=$2
     # 全天运行，逐小时合并各个topic数据
-    echo "DATE,TIME,CID,PLID,VID,PT,LN,CLIENTTP,CLIENTVER,VV" >${pydota_report}/${sub_path}/${start_time}_vv_${clienttype}_vid.csv
-    rm ${pydota_report}/${sub_path}/.done_${start_time}_vv_${clienttype}_vid.csv
+    echo "DATE,TIME,PT,LN,CLIENTTP,CLIENTVER,SOURCEID,CAMERAID,ACTIVITYID,VV" >${pydota_report}/${sub_path}/live_${start_time}_vv_${clienttype}_sourceid.csv
+    rm ${pydota_report}/${sub_path}/.done_live_${start_time}_vv_${clienttype}_sourceid.csv
     for i in {0..23}
     do
         cur_time=`date --date="$start_time $i hour" +%Y%m%d%H`
         filename=${cur_time}*${sub_topic}*
 
         # 某一个小时时，只有所有相关topic的文件
-        files=(`ls ${pydota_des}/${sub_path}/${filename}|grep -v "live"`)
+        if [[ ${sub_topic} == "mobile" ]];then
+            files=(`ls ${pydota_des}/${sub_path}/${cur_time}*mobile_live* ${pydota_des}/${sub_path}/${cur_time}*mobile_211_*`)
+        else
+            files=(`ls ${pydota_des}/${sub_path}/${filename}`)
+        fi
 
         is_null=$?
         if [[ ${is_null} -ne 0 && ${#files[@]} -eq 0 ]];then
             continue
         fi
 
-        cat ${files[@]} | awk -F, -v clienttype=${clienttype} '{ if($21=="play" && $22==clienttype && $17==0 )
-        {print $1","substr($2,1,2)","$11","$12","$13","$17","$18","$22","$23} }' \
+        cat ${files[@]} | awk -F, -v clienttype=${clienttype} '{ if($21=="play" && $22==clienttype && $17==4 )
+        {print $1","substr($2,1,2)","$17","$18","$22","$23","$24","$25","$26} }' \
         | sort | uniq -c | sort -rn |awk '{print $2","$1}' \
-        >> ${pydota_report}/${sub_path}/${start_time}_vv_${clienttype}_vid.csv
+        >> ${pydota_report}/${sub_path}/live_${start_time}_vv_${clienttype}_sourceid.csv
 
-        topmsg=`cat ${pydota_report}/${sub_path}/${start_time}_vv_${clienttype}_vid.csv|tail -n 10`
-        report_size=`ls -lh ${pydota_report}/${sub_path}/${start_time}_vv_${clienttype}_vid.csv | awk '{print $5}'`
+        topmsg=`cat ${pydota_report}/${sub_path}/live_${start_time}_vv_${clienttype}_sourceid.csv|tail -n 10`
+        report_size=`ls -lh ${pydota_report}/${sub_path}/live_${start_time}_vv_${clienttype}_sourceid.csv | awk '{print $5}'`
 
         msg="report_size大小${report_size}
         ${topmsg}"
@@ -60,39 +64,29 @@ function report_vv(){
 
     # for
     done
-    touch ${pydota_report}/${sub_path}/.done_${start_time}_vv_${clienttype}_vid.csv
-    sudo cp ${pydota_report}/${sub_path}/${start_time}_vv_${clienttype}_vid.csv ${pydota_nfs}/${sub_path}/${start_time}_vv_${clienttype}_vid.csv
+    touch ${pydota_report}/${sub_path}/.done_live_${start_time}_vv_${clienttype}_sourceid.csv
+    sudo cp ${pydota_report}/${sub_path}/live_${start_time}_vv_${clienttype}_sourceid.csv ${pydota_nfs}/${sub_path}/live_${start_time}_vv_${clienttype}_sourceid.csv
     exit 0
 }
 
 if [ -n "$1" ]; then
   clienttype=$1
   if [ x"${clienttype}" == "xpcweb" ];then
-    report_vv pcweb 1
+    report_live_vv live_pcweb 1
   elif [ x"${clienttype}" == "xipad" ];then
-    report_vv mobile 3
-  elif [ x"${clienttype}" == "xapad" ];then
-    report_vv mobile 3
+    report_live_vv mpp_vv_mobile_211_20151012 1
   elif [ x"${clienttype}" == "xiphone" ];then
-    report_vv mobile 3
-  elif [ x"${clienttype}" == "xphonem" ];then
-    report_vv msite 1
+    report_live_vv mobile 2
   elif [ x"${clienttype}" == "xandroid" ];then
-    report_vv mobile 3
+    report_live_vv mobile 2
   elif [ x"${clienttype}" == "xott" ];then
-    report_vv ott 4
+    report_live_vv ott_live 1
   elif [ x"${clienttype}" == "xpcclient" ];then
-    report_vv pcclient 1
-  elif [ x"${clienttype}" == "xpadweb" ];then
-    report_vv padweb 1
-  elif [ x"${clienttype}" == "xwin10client" ];then
-    report_vv win10client 1
-  elif [ x"${clienttype}" == "xmacclient" ];then
-    report_vv macclient 1
+    report_live_vv live_pcweb 1
   else
     exit -1
   fi
 else
   clienttype="phonem"
-  report_vv msite 1
+  report_live_vv msite 1
 fi

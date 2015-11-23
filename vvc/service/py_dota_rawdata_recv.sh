@@ -33,4 +33,7 @@ local_file_path=${recv_path}/${sub_year}/${sub_month}/${topic}/
 
 cd ${work_path}
 
-cat ${local_file_path}/${filename} | python format/format_${topic}.py ./geoip ${start_time} &
+file=(`ls ${local_file_path}/${filename}`)
+if [ ${#file[@]} -ge 1 ];then
+    cat ${file[*]} | python format/format_${topic}.py ./geoip ${start_time} &
+fi

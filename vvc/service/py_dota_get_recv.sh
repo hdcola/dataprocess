@@ -49,8 +49,8 @@ declare -A topic_file_prefix=([mpp_vv_pcweb]="printf access_%s-%s-%s-%s*" [mpp_v
 
 
 # 日志收集的topic名称
-#topics=("rt_live_pcweb mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient mpp_vv_msite mpp_vv_padweb mpp_vv_ott ott_vv_41 ott_vv_44 mpp_vv_mobile_211_20151012 ott_vv_311_20151012 mpp_vv_macclient_121_20151028 mpp_vv_win10client_511_20151030 mobile_live_2011_20151105")
-topics=("mpp_vv_msite")
+topics=("rt_live_pcweb mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient mpp_vv_msite mpp_vv_padweb mpp_vv_ott ott_vv_41 ott_vv_44 mpp_vv_mobile_211_20151012 ott_vv_311_20151012 mpp_vv_macclient_121_20151028 mpp_vv_win10client_511_20151030 mobile_live_2011_20151105")
+#topics=("mpp_vv_msite")
 
 if [ $# -ge 1 ];then
     start_time=$1
@@ -108,7 +108,7 @@ for topic in ${topics};do
 
     for IP in ${log_hosts};do
         # 远程ls，检测文件是否存在。防止数据量小时，某些机器无数据文件，干扰后续
-        ssh "dota@"${IP} "cd ${topic_path[${topic}]} && ls ${filename}"
+        errmsg=`ssh "dota@"${IP} "cd ${topic_path[${topic}]} && ls ${filename}" 2>&1 `
         isexist=$?
 
         if [[ ${isexist} -eq 0 ]];then
@@ -123,7 +123,14 @@ for topic in ${topics};do
                 错误码:${scp_errno}"
                 proxychains curl -X POST --data-urlencode "payload={\"text\":\"${err_msg_scp}\"}" https://hook.bearychat.com/=bw7by/incoming/71a4dcf2093e6b443a8b8f33d48fdac8
             fi
+        elif [[ ${isexist} -eq 2 ]];then
+            continue
         else
+            err_msg="${start_time}:${IP}:${topic}
+            错误信息:${errmsg}
+            错误码:${isexist}"
+            proxychains curl -X POST --data-urlencode "payload={\"text\":\"${err_msg}\"}" https://hook.bearychat.com/=bw7by/incoming/71a4dcf2093e6b443a8b8f33d48fdac8
+
             continue
         fi
 
