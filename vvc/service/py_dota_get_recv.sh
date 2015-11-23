@@ -29,7 +29,9 @@ declare -A topic_path=([mpp_vv_pcweb]="${mpp_vv_pcweb}" [mpp_vv_mobile]="${mpp_v
 [mpp_vv_macclient_121_20151028]="${mpp_vv_macclient_121_20151028}" \
 [mpp_vv_win10client_511_20151030]="${mpp_vv_win10client_511_20151030}" \
 [rt_live_pcweb]="${rt_live_pcweb}" \
-[mobile_live_2011_20151105]="${mobile_live_2011_20151105}")
+[mobile_live_2011_20151105]="${mobile_live_2011_20151105}" \
+[mobile_pv]="${mobile_pv}" \
+[pcweb_pv]="${pcweb_pv}")
 
 # 不同topic的文件名称格式
 declare -A topic_file_prefix=([mpp_vv_pcweb]="printf access_%s-%s-%s-%s*" [mpp_vv_mobile]="printf mobile-vod_%s%s%s_%s*" \
@@ -45,7 +47,9 @@ declare -A topic_file_prefix=([mpp_vv_pcweb]="printf access_%s-%s-%s-%s*" [mpp_v
 [mpp_vv_macclient_121_20151028]="printf bid-1.2.1-default_%s%s%s_%s*" \
 [mpp_vv_win10client_511_20151030]="printf bid-5.1.1-default_%s%s%s_%s*" \
 [rt_live_pcweb]="printf bid-1.1.1.1-default_%s%s%s_%s_*" \
-[mobile_live_2011_20151105]="printf bid-2.0.1.1-default_%s%s%s_%s*")
+[mobile_live_2011_20151105]="printf bid-2.0.1.1-default_%s%s%s_%s*" \
+[mobile_pv]="printf bid-2.2.1-default_%s%s%s_%s*" \
+[pcweb_pv]="printf bid-1.1.2-default_%s%s%s_%s*")
 
 
 # 日志收集的topic名称

@@ -56,7 +56,7 @@ if [ ${#ott_live_file[@]} -gt 1 ];then
     cat ${ott_live_file[*]} > ${recv_path}/${sub_year}/${sub_month}/ott_live/${start_time:0:10}"_ott_live_log"
 fi
 # 当ott_live无数据时，也生成.done文件
-touch ${recv_path}/${sub_year}/${sub_month}/ott_live/".done_"${start_time}"_ott_live"
+touch ${recv_path}/${sub_year}/${sub_month}/ott_live/".done_"${start_time:0:10}"_ott_live"
 
 
 while true
