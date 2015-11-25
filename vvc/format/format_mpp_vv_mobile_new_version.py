@@ -71,7 +71,7 @@ def mobile_new_version_format(line):
     try:
         recordall = json.loads(jsonline)
     except ValueError:
-        write_to_file(("jsonerr,%s") % line, topic, start_time, start_time, "des_err")
+        write_to_file(("jsonerr,%s") % line, topic, log_time, start_time, "des_err")
         return
 
     try:

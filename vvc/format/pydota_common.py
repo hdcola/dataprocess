@@ -191,8 +191,12 @@ def __genOutputFileName(log_time, topic, start_time, data_type):
         file_str = '{0}/{1}/{2}/err_{3}_{4}_{5}'.format(str(output_path), log_time[0:4],
                                                 log_time[4:6], log_time, topic, start_time)
     elif "des" == data_type:
-        file_str = '{0}/{1}/{2}/{3}_playrawdata_{4}_{5}'.format(str(output_path), log_time[0:4],
-                                                log_time[4:6], log_time, topic, start_time)
+        if "_pv" in topic:
+            file_str = '{0}/{1}/{2}/{3}_pvrawdata_{4}_{5}'.format(str(output_path), log_time[0:4],
+                                                    log_time[4:6], log_time, topic, start_time)
+        else:
+            file_str = '{0}/{1}/{2}/{3}_playrawdata_{4}_{5}'.format(str(output_path), log_time[0:4],
+                                                    log_time[4:6], log_time, topic, start_time)
     else:
         file_str = '{0}/{1}/{2}/{3}_{4}_{5}'.format(str(output_path), log_time[0:4],
                                                 log_time[4:6], log_time, topic, start_time)

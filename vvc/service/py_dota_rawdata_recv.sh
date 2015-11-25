@@ -14,7 +14,9 @@ declare -A topic_file_prefix=([mpp_vv_pcweb]="printf access_%s-%s-%s-%s*" [mpp_v
 [mpp_vv_win10client_511_20151030]="printf bid-5.1.1-default_%s%s%s_%s*" \
 [rt_live_pcweb]="printf bid-1.1.1.1-default_%s%s%s_%s_*" \
 [mobile_live_2011_20151105]="printf bid-2.0.1.1-default_%s%s%s_%s*" \
-[ott_live]="printf %s%s%s%s_ott_live_log")
+[ott_live]="printf %s%s%s%s_ott_live_log" \
+[mobile_pv]="printf bid-2.2.1-default_%s%s%s_%s*" \
+[pcweb_pv]="printf bid-1.1.2-default_%s%s%s_%s*")
 
 
 topic=$1

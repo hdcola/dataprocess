@@ -20,6 +20,7 @@ sub_path=${sub_path_year}/${sub_path_month}
 work_path="/home/dota/pydota/pydota"
 pydota_des="/home/dota/data/des"
 pydota_report="/home/dota/data/dailyreport"
+bearychat="/home/dota/pydota/pydota/bin/bearychat.sh"
 
 mkdir -p ${pydota_report}/${sub_path} 2>/dev/null
 
