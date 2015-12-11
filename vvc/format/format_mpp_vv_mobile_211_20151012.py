@@ -102,7 +102,7 @@ def mobile_new_version_211_20151012_format(line):
     # pt
     try:
         pt = record['pt']
-        if str(pt) != '0' and str(pt) != '4':
+        if str(pt) != '0' and str(pt) != '3' and str(pt) != '4':
             write_to_file(("pterr,%s") % line, topic, log_time, start_time, "des_err")
             return
     except KeyError:
@@ -130,7 +130,7 @@ def mobile_new_version_211_20151012_format(line):
         # ref
         formatstring = collectArgs(formatstring, record, "ref", "referr", False, True)
         formatstring = collectArgs(formatstring, record, "bid", "biderr", True)
-        if str(pt) == '0':
+        if str(pt) == '0' or str(pt) == '3':
             formatstring = collectArgs(formatstring, record, "cid", "ciderr", False, True)
 
             #plid
@@ -179,7 +179,7 @@ def mobile_new_version_211_20151012_format(line):
         except KeyError:
             formatstring = formatstring + ",-"
 
-        if str(pt) == '0':
+        if str(pt) == '0' or str(pt) == '3':
             # cf
             formatstring = collectArgs(formatstring, record, "cf", "cferr", False, True)
         else:
@@ -254,6 +254,19 @@ def mobile_new_version_211_20151012_format(line):
         formatstring = formatstring + ','
         # activityid
         formatstring = formatstring + ','
+
+        # url
+        try:
+            url_str = record['url']
+            if url_str.strip() == "":
+                formatstring = formatstring + ','
+            else:
+                url_str = urllib.unquote(url_str)
+                if url_str.find(",") != -1:
+                    url_str = url_str.replace(",", "")
+                formatstring = formatstring + ',' + str(url_str)
+        except KeyError:
+            formatstring = formatstring + ',-'
 
         write_to_file(formatstring, topic, log_time, start_time, "des")
     except ValueError:

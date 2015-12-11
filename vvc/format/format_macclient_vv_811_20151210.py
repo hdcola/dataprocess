@@ -33,25 +33,43 @@ def collectArgs(fstring, argslist, name, errname, strict, isNaN=False):
             return
 
 
-def msite_format(line):
+def macclient_vv_811_20151210_format(line):
     global log_time
     formatstring = ""
     if len(line.strip('\n')) == 0:
         return
+
+    lineall = string.split(line.strip(), '\t')
     try:
-        record = string.split(line, '- -')
-        recordtmp = record[1].strip().split(' ')
-        timetmp = str(recordtmp[0]) + str(recordtmp[1])
+        recordtmp = lineall[7].strip()
+        timetmp  = lineall[0]
+        iptmp  = lineall[1].strip()
     except IndexError:
         write_to_file(("indexerr,%s") % line, topic, start_time, start_time, "orig_err")
         return
+
+    recordtmp = recordtmp.strip().split('&')
+
+    record = {}
+    for recordtmptmp in recordtmp:
+        _l = recordtmptmp.split("=")
+        if len(_l) != 2:
+            continue
+        try:
+            argkey = _l[0]
+            argvalue = _l[1]
+            record[argkey] = argvalue
+        except IndexError:
+            write_to_file(("recorderr,%s") % line, topic, start_time, start_time, "orig_err")
+            return
+
     # date, time
     try:
-        timedata = time.strptime(timetmp, "[%d/%b/%Y:%H:%M:%S+0800]")
+        timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")
         timetmp_date, timetmp_time, timeStamp = formatTime(timedata)
         log_time = timetmp_date + timetmp_time[:2] + "00"
         formatstring = str(timetmp_date) + ',' + str(timetmp_time)
-    except ValueError:
+    except (ValueError, KeyError):
         write_to_file(("timeerr,%s") % line, topic, start_time, start_time, "orig_err")
         return
 
@@ -60,19 +78,14 @@ def msite_format(line):
 
     # IP
     try:
-        iptmp = record[0].strip().split(',')
-        if len(iptmp) != 1:
-            write_to_file(("iperr,%s") % line, topic, log_time, start_time, "des_err")
-            return
-        else:
-            formatstring = formatstring + ',' + str(iptmp[0])
-    except IndexError:
-            write_to_file(("iperr,%s") % line, topic, log_time, start_time, "des_err")
-            return
+        formatstring = formatstring + ',' + str(iptmp)
+    except ValueError:
+        write_to_file(("iperr,%s") % line, topic, log_time, start_time, "des_err")
+        return
 
     # location
     try:
-        locationtmp = formatLocation(iptmp[0])
+        locationtmp = formatLocation(iptmp)
         location_province = locationtmp[2]
         location_city = locationtmp[3]
         formatstring = formatstring + ',' + str(location_province) + ',' + str(location_city)
@@ -80,30 +93,13 @@ def msite_format(line):
         write_to_file(("locationerr,%s") % line, topic, log_time, start_time, "des_err")
         return
 
-    # url args
-    try:
-        urlargtmp = record[1].strip().split(' ')[3].split('?')[1].split('&')
-    except (ValueError, IndexError):
-        write_to_file(("urlargerr,%s") % line, topic, log_time, start_time, "des_err")
-        return
-
-    urlarglist = {}
-    for urlargtmptmp in urlargtmp:
-        try:
-            argkey = urlargtmptmp.split('=')[0]
-            argvalue = urlargtmptmp.split('=')[1]
-            urlarglist[argkey] = argvalue
-        except IndexError:
-            write_to_file(("urlargerr,%s") % line, topic, log_time, start_time, "des_err")
-            return
-
     # act提前校验
     try:
-        act = urlarglist["act"]
+        act = record["act"]
         if str(act).strip() == "play":
             act = "play"
         elif str(act).strip() == "":
-            write_to_file(("urlargerr,%s") % line, topic, log_time, start_time, "des_err")
+            write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
             return
         else:
             return
@@ -112,20 +108,24 @@ def msite_format(line):
         return
 
     try:
-        formatstring = collectArgs(formatstring, urlarglist, "uid", "uiderr", False, True)
-        formatstring = collectArgs(formatstring, urlarglist, "uuid", "uuiderr", False, True)
-        # guid
-        formatstring = collectArgs(formatstring, urlarglist, "guid", "guiderr", False, True)
+        formatstring = collectArgs(formatstring, record, "uuid", "uuiderr", False, True)
+        formatstring = collectArgs(formatstring, record, "suuid", "suuiderr", False, True)
+        formatstring = collectArgs(formatstring, record, "guid", "guiderr", False, True)
         # ref
-        formatstring = collectArgs(formatstring, urlarglist, "ref", "referr", False, True)
-        formatstring = collectArgs(formatstring, urlarglist, "bid", "biderr", True)
-        formatstring = collectArgs(formatstring, urlarglist, "cid", "ciderr", False, True)
+        formatstring = collectArgs(formatstring, record, "ref", "referr", False, True)
+
+        formatstring = collectArgs(formatstring, record, "bid", "biderr", True)
+         # cid
+        formatstring = collectArgs(formatstring, record, "cid", "ciderr", False, True)
+
         # plid
-        formatstring = collectArgs(formatstring, urlarglist, "plid", "pliderr", False, True)
-        formatstring = collectArgs(formatstring, urlarglist, "vid", "viderr", True)
+        formatstring = collectArgs(formatstring, record, "plid", "pliderr", False, True)
+
+        # vid
+        formatstring = collectArgs(formatstring, record, "vid", "viderr", True)
         # tid
         try:
-            tid = urlarglist["tid"]
+            tid = record["tid"]
             if tid.strip() == "":
                 formatstring = formatstring + ','
             else:
@@ -134,37 +134,50 @@ def msite_format(line):
                 formatstring = formatstring + ',' + str(tid)
         except KeyError:
             formatstring = formatstring + ',-'
+        # vts
+        formatstring = collectArgs(formatstring, record, "vts", "vtserr", False, True)
 
-        formatstring = collectArgs(formatstring, urlarglist, "vts", "vtserr", False, True)
-        formatstring = collectArgs(formatstring, urlarglist, "cookie", "cookieerr", True)
+        try:
+            cookie = record["did"]
+            if str(cookie).strip() == "":
+                write_to_file(("diderr,%s") % line, topic, log_time, start_time, "des_err")
+                return
+            formatstring = formatstring + ',' + str(cookie).lower()
+        except KeyError:
+            write_to_file(("diderr,%s") % line, topic, log_time, start_time, "des_err")
+            return
         # pt
         try:
-            bid = urlarglist['bid']
-            if str(bid) == '3':
-                pt = "0"
-            else:
-                pt = urlarglist['pt']
-            formatstring = formatstring + ',' + str(pt)
+            pt = record["pt"]
             if str(pt) != '0':
                 write_to_file(("pterr,%s") % line, topic, log_time, start_time, "des_err")
                 return
         except KeyError:
-            write_to_file(("urlargerr,%s") % line, topic, log_time, start_time, "des_err")
+            write_to_file(("pterr,%s") % line, topic, log_time, start_time, "des_err")
             return
-        # ln
-        formatstring = collectArgs(formatstring, urlarglist, "ln", "lnerr", False, True)
-        # cf
-        formatstring = collectArgs(formatstring, urlarglist, "cf", "cferr", False, True)
-        # definition
-        formatstring = collectArgs(formatstring, urlarglist, "def", "deferr", False, True)
+        formatstring = formatstring + ',' + str(pt)
 
-        # act act不存在或者为空时，报错，非play时丢弃该数据
-        formatstring = formatstring + ',' + str(act)
+        formatstring = collectArgs(formatstring, record, "ln", "lnerr", False, True)
+
+
+        formatstring = collectArgs(formatstring, record, "cf", "cferr", False, True)
+        formatstring = collectArgs(formatstring, record, "def", "deferr", False, True)
+        # act
+        formatstring = formatstring + "," + str(act)
 
         # CLIENTTP
-        formatstring = formatstring + ',' + "phonem"
+        formatstring = formatstring + "," + "mactclient"
+
         # aver
-        formatstring = formatstring + ','
+        try:
+            aver = record["aver"]
+            if str(aver) == "":
+                write_to_file(("avererr,%s") % line, topic, log_time, start_time, "des_err")
+                return
+            formatstring = formatstring + ',' + str(aver).lower()
+        except KeyError:
+            write_to_file(("avererr,%s") % line, topic, log_time, start_time, "des_err")
+            return
 
         # sourceid
         formatstring = formatstring + ','
@@ -176,7 +189,7 @@ def msite_format(line):
 
         # url
         try:
-            url_str = urlarglist['url']
+            url_str = record['url']
             if url_str.strip() == "":
                 formatstring = formatstring + ','
             else:
@@ -196,6 +209,6 @@ if __name__ == '__main__':
     # python pcp_format.py ./genip afile bfile cfile
     loadGeoIp(sys.argv[1])
     start_time = sys.argv[2]
-    topic = "mpp_vv_msite"
+    topic = "macclient_vv_811_20151210"
     for line in fileinput.input(sys.argv[3:]):
-        msite_format(line)
+        macclient_vv_811_20151210_format(line)

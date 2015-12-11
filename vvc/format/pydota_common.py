@@ -221,7 +221,7 @@ def __output_to_files(log_time, line, topic, start_time, data_type):
         log_file = file_list[str_log_file]
     else:
         try:
-            log_file = open(str_log_file, 'a+')
+            log_file = open(str_log_file, 'w')
             file_list[str_log_file] = log_file
         except IOError as e:
             logging.error("IOError: %s" % str(e))

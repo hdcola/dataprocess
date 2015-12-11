@@ -16,7 +16,8 @@ declare -A topic_file_prefix=([mpp_vv_pcweb]="printf access_%s-%s-%s-%s*" [mpp_v
 [mobile_live_2011_20151105]="printf bid-2.0.1.1-default_%s%s%s_%s*" \
 [ott_live]="printf %s%s%s%s_ott_live_log" \
 [mobile_pv]="printf bid-2.2.1-default_%s%s%s_%s*" \
-[pcweb_pv]="printf bid-1.1.2-default_%s%s%s_%s*")
+[pcweb_pv]="printf bid-1.1.2-default_%s%s%s_%s*" \
+[macclient_vv_811_20151210]="printf bid-8.1.1-default_%s%s%s_%s*")
 
 
 topic=$1
@@ -30,6 +31,9 @@ work_path="/home/dota/pydota/pydota"
 
 # 存原始日志的本机目录,和logserver服务器文件名一样
 recv_path="/home/dota/data/recv/"
+des_path="/home/dota/data/des/"
+md5_check_path="/home/dota/data/md5_check/"
+mkdir -p ${md5_check_path}/${sub_year}/${sub_month}/ 2>/dev/null
 
 local_file_path=${recv_path}/${sub_year}/${sub_month}/${topic}/
 
@@ -37,5 +41,25 @@ cd ${work_path}
 
 file=(`ls ${local_file_path}/${filename}`)
 if [ ${#file[@]} -ge 1 ];then
-    cat ${file[*]} | python format/format_${topic}.py ./geoip ${start_time} &
+    cat ${file[*]} | python format/format_${topic}.py ./geoip ${start_time}
+
+    desfiles=(`ls ${des_path}/*/*/*playrawdata_${topic}_${start_time}`)
+
+    if [ ${#desfiles[@]} -ge 1 ];then
+        for des_file in ${desfiles[*]};
+        do
+            tmp_file_name=`basename ${des_file}`
+            if [[ ${topic} == "mpp_vv_mobile_211_20151012" ]];then
+                cat ${des_file} |awk -F, '{if($17==0 || $17 ==3){print $0}}'| python service/made_md5.py > ${md5_check_path}/${sub_year}/${sub_month}/${tmp_file_name}.md5
+            else
+                cat ${des_file} | python service/made_md5.py > ${md5_check_path}/${sub_year}/${sub_month}/${tmp_file_name}.md5
+            fi
+        done
+
+    fi
+    touch ${md5_check_path}/${sub_year}/${sub_month}/.done_${topic}_${start_time}.md5
+
+    exit 0
+else
+    touch ${md5_check_path}/${sub_year}/${sub_month}/.done_${topic}_${start_time}.md5
 fi

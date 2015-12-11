@@ -7,8 +7,14 @@ from pydota_common import write_to_file
 import json
 
 
-def collectFiled(formatlist, record, index, filed, islower=True):
+def collectFiled(formatlist, record, index, filed, islower=True, isnull=True):
     if filed in record.keys():
+        if not isnull:
+            if str(record[filed]) == "":
+                write_to_file(("%s_err,%s") % (filed, line), topic, log_time, start_time, "des_err")
+                raise ValueError("args is null")
+                return
+
         if islower:
             formatlist[index] = str(record[filed]).lower()
         else:
@@ -21,7 +27,7 @@ def collectFiled(formatlist, record, index, filed, islower=True):
 
 def ott_live_format(line):
     global log_time
-    formatlist = [""]*26
+    formatlist = [""]*27
     if len(line.strip('\n')) == 0:
         return
     if "play_realtime" not in line:
@@ -62,8 +68,9 @@ def ott_live_format(line):
         formatlist[16] = "4"
         formatlist[20] = "play"
         formatlist[21] = "ott"
+        formatlist[26] = "-"
         collectFiled(formatlist, record, 15, "user_cookie")
-        collectFiled(formatlist, record, 23, "source_id", False)
+        collectFiled(formatlist, record, 23, "source_id", False, False)
     except ValueError:
         return
 

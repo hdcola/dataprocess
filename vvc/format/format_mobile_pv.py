@@ -4,7 +4,7 @@
 import fileinput
 import sys
 import time
-from pydota_common import formatLocation, loadGeoIp, formatTime, write_to_file, check_act_field
+from pydota_common import formatLocation, loadGeoIp, formatTime, write_to_file
 import string
 import json
 
@@ -64,10 +64,6 @@ def mobile_pv_format(line):
     # 写入时间正确的原始到orig文件
     write_to_file(line, topic, log_time, start_time, "orig")
 
-    if not check_act_field(jsonline, "pv"):
-        write_to_file("acterr,", topic, log_time, start_time, "des_err")
-        return
-
     try:
         recordall = json.loads(jsonline)
     except ValueError:
@@ -85,10 +81,6 @@ def mobile_pv_format(line):
         act = record["act"]
         if act.strip() == "":
             write_to_file(("acterr,%s") % line, topic, log_time, start_time, "des_err")
-            return
-        elif act.strip() == "pv":
-            act = "pv"
-        else:
             return
     except KeyError:
         write_to_file("acterr,", topic, log_time, start_time, "des_err")

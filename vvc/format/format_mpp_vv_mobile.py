@@ -4,6 +4,7 @@
 import fileinput
 import sys
 import time
+import urllib
 from pydota_common import formatLocation, loadGeoIp, formatTime, write_to_file, getVersionNum
 import json
 
@@ -209,6 +210,28 @@ def mobile_format(line):
         except KeyError:
             write_to_file(("apk_versionerr,%s") % line, topic, log_time, start_time, "des_err")
             return
+
+        # sourceid
+        formatstring = formatstring + ','
+
+        # cameraid
+        formatstring = formatstring + ','
+        # activityid
+        formatstring = formatstring + ','
+
+        # url
+        try:
+            url_str = record['url']
+            if url_str.strip() == "":
+                formatstring = formatstring + ','
+            else:
+                url_str = urllib.unquote(url_str)
+                if url_str.find(",") != -1:
+                    url_str = url_str.replace(",", "")
+                formatstring = formatstring + ',' + str(url_str)
+        except KeyError:
+            formatstring = formatstring + ',-'
+
         write_to_file(formatstring, topic, log_time, start_time, "des")
     except ValueError:
         return

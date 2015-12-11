@@ -31,7 +31,8 @@ declare -A topic_path=([mpp_vv_pcweb]="${mpp_vv_pcweb}" [mpp_vv_mobile]="${mpp_v
 [rt_live_pcweb]="${rt_live_pcweb}" \
 [mobile_live_2011_20151105]="${mobile_live_2011_20151105}" \
 [mobile_pv]="${mobile_pv}" \
-[pcweb_pv]="${pcweb_pv}")
+[pcweb_pv]="${pcweb_pv}" \
+[macclient_vv_811_20151210]="${macclient_vv_811_20151210}")
 
 # 不同topic的文件名称格式
 declare -A topic_file_prefix=([mpp_vv_pcweb]="printf access_%s-%s-%s-%s*" [mpp_vv_mobile]="printf mobile-vod_%s%s%s_%s*" \
@@ -49,12 +50,13 @@ declare -A topic_file_prefix=([mpp_vv_pcweb]="printf access_%s-%s-%s-%s*" [mpp_v
 [rt_live_pcweb]="printf bid-1.1.1.1-default_%s%s%s_%s_*" \
 [mobile_live_2011_20151105]="printf bid-2.0.1.1-default_%s%s%s_%s*" \
 [mobile_pv]="printf bid-2.2.1-default_%s%s%s_%s*" \
-[pcweb_pv]="printf bid-1.1.2-default_%s%s%s_%s*")
+[pcweb_pv]="printf bid-1.1.2-default_%s%s%s_%s*" \
+[macclient_vv_811_20151210]="printf bid-8.1.1-default_%s%s%s_%s*")
 
 
 # 日志收集的topic名称
-topics=("rt_live_pcweb mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient mpp_vv_msite mpp_vv_padweb mpp_vv_ott ott_vv_41 ott_vv_44 mpp_vv_mobile_211_20151012 ott_vv_311_20151012 mpp_vv_macclient_121_20151028 mpp_vv_win10client_511_20151030 mobile_live_2011_20151105")
-#topics=("mpp_vv_msite")
+#topics=("rt_live_pcweb mpp_vv_pcweb mpp_vv_mobile mpp_vv_mobile_new_version mpp_vv_pcclient mpp_vv_msite mpp_vv_padweb mpp_vv_ott ott_vv_41 ott_vv_44 mpp_vv_mobile_211_20151012 ott_vv_311_20151012 mpp_vv_macclient_121_20151028 mpp_vv_win10client_511_20151030 mobile_live_2011_20151105")
+topics=("mobile_pv pcweb_pv")
 
 if [ $# -ge 1 ];then
     start_time=$1
@@ -80,11 +82,15 @@ function md5_check(){
     logserver_md5_file=$1
     locacl_md5_file=$2
     err_md5_check=$3
-    cat ${logserver_md5_file} ${locacl_md5_file} | sort | uniq -c | awk '{if($1!=2) print $0}' > ${err_md5_check}
+    cat ${logserver_md5_file} ${locacl_md5_file} | awk '{print $1}' | sort | uniq -c | awk '{if($1!=2) print $0}' > ${err_md5_check}
     failed_num=`wc -l ${err_md5_check}|awk '{print $1}'`
+
+    if [[ ${failed_num} -ge 1 ]];then
+        cat ${logserver_md5_file} ${locacl_md5_file} | sort | uniq -c | awk '{if($1!=2) print $0}' > ${err_md5_check}
+    fi
+
     return ${failed_num}
 }
-
 
 for topic in ${topics};do
     if [[ ${topic} == "rt_live_pcweb" ]];then
@@ -94,6 +100,7 @@ for topic in ${topics};do
     fi
 
     flag_scp_topic=0
+    flag_ssh_file=0
 
     # 远程日志服务器上面的文件名称
     filename=`${topic_file_prefix[${topic}]} ${sub_year} ${sub_month} ${sub_day} ${sub_hour}`
@@ -123,14 +130,15 @@ for topic in ${topics};do
             # scp失败后，报警通知
             if [ ${scp_errno} -ne 0 ];then
                 flag_scp_topic=1
-                err_msg_scp="${start_time}:${IP}:${topic} scp文件失败
+                err_msg_scp="${local_host}@${start_time}:${IP}:${topic} scp文件失败
                 错误码:${scp_errno}"
                 proxychains curl -X POST --data-urlencode "payload={\"text\":\"${err_msg_scp}\"}" https://hook.bearychat.com/=bw7by/incoming/71a4dcf2093e6b443a8b8f33d48fdac8
             fi
         elif [[ ${isexist} -eq 2 ]];then
             continue
         else
-            err_msg="${start_time}:${IP}:${topic}
+            flag_ssh_file=1
+            err_msg="${local_host}@${start_time}:${IP}:${topic}
             错误信息:${errmsg}
             错误码:${isexist}"
             proxychains curl -X POST --data-urlencode "payload={\"text\":\"${err_msg}\"}" https://hook.bearychat.com/=bw7by/incoming/71a4dcf2093e6b443a8b8f33d48fdac8
@@ -158,10 +166,10 @@ for topic in ${topics};do
     errno=$?
     if [[ ${errno} -ge 1 ]];then
         err_msg=`cat ${err_md5_check}`
-        err_msg="${start_time}:${topic}的md5校验失败
+        err_msg="${local_host}@${start_time}:${topic}的md5校验失败
         ${err_msg}"
         proxychains curl -X POST --data-urlencode "payload={\"text\":\"${err_msg}\"}" https://hook.bearychat.com/=bw7by/incoming/71a4dcf2093e6b443a8b8f33d48fdac8
-    elif [[ ${flag_scp_topic} -eq 1 ]];then
+    elif [[ ${flag_scp_topic} -eq 1 || ${flag_ssh_file} -eq 1 ]];then
         continue
     else
         # 校验md5成功后，生成.done文件
