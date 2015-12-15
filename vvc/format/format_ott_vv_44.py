@@ -57,6 +57,9 @@ def ott_44_format(line):
         record = record[0]
     except KeyError:
         record = record
+    except TypeError:
+        write_to_file(("jsonerr,%s") % line, topic, start_time, start_time, "orig_err")
+        return
     # date, time
     try:
         timedata = time.strptime(timetmp, "%Y%m%d%H%M%S")

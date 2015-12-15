@@ -54,7 +54,7 @@ def mobile_format(line):
         timetmp_date, timetmp_time, timeStamp = formatTime(timedata)
         log_time = timetmp_date + timetmp_time[:2] + "00"
         formatstring = str(timetmp_date) + ',' + str(timetmp_time)
-    except (ValueError, KeyError):
+    except (ValueError, KeyError, TypeError):
         write_to_file(("timeerr,%s") % line, topic, start_time, start_time, "orig_err")
         return
 

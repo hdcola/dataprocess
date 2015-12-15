@@ -166,7 +166,7 @@ def macclient_vv_811_20151210_format(line):
         formatstring = formatstring + "," + str(act)
 
         # CLIENTTP
-        formatstring = formatstring + "," + "mactclient"
+        formatstring = formatstring + "," + "macclient"
 
         # aver
         try:

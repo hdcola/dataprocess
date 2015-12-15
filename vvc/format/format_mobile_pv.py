@@ -74,6 +74,9 @@ def mobile_pv_format(line):
         record = recordall[0]
     except KeyError:
         record = recordall
+    except TypeError:
+        write_to_file(("jsonerr,%s") % line, topic, start_time, start_time, "orig_err")
+        return
 
     # act 提前校验
     act = ""

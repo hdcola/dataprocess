@@ -59,9 +59,15 @@ do
 
     for topic in ${topics[*]};
     do
-        local_file_path=${recv_path}/${sub_year}/${sub_month}/${topic}/
+        if [[ ${topic} == "live_mpp_vv_mobile_211_20151012" ]];then
+            local_file_path=${recv_path}/${sub_year}/${sub_month}/mpp_vv_mobile_211_20151012/
+            done_file=${local_file_path}".done_"${start_time:0:10}"_mpp_vv_mobile_211_20151012"
+        else
+            local_file_path=${recv_path}/${sub_year}/${sub_month}/${topic}/
+            done_file=${local_file_path}".done_"${start_time:0:10}"_"${topic}
+        fi
 
-        if [ -f ${local_file_path}".done_"${start_time:0:10}"_"${topic} ];then
+        if [ -f ${done_file} ];then
             ./service/py_dota_rawdata_recv.sh ${topic} ${start_time} &
             xrsh_arritemidx "$topics_tmp" "$topic"
             i=$?

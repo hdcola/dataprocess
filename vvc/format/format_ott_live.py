@@ -41,7 +41,7 @@ def ott_live_format(line):
         else:
             write_to_file("playrealtimeerr,%s" % line, topic, start_time, start_time, "orig_err")
             return
-    except ValueError:
+    except (ValueError, TypeError):
         write_to_file("jsonerr,%s" % line, topic, start_time, start_time, "orig_err")
         return
 

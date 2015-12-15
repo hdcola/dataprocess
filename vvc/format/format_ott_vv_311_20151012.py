@@ -57,6 +57,9 @@ def ott_vv_311_20151012_format(line):
         record = record[0]
     except KeyError:
         record = record
+    except TypeError:
+        write_to_file(("jsonerr,%s") % line, topic, start_time, start_time, "orig_err")
+        return
 
     # date, time
     try:

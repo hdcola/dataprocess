@@ -43,14 +43,18 @@ file=(`ls ${local_file_path}/${filename}`)
 if [ ${#file[@]} -ge 1 ];then
     cat ${file[*]} | python format/format_${topic}.py ./geoip ${start_time}
 
-    desfiles=(`ls ${des_path}/*/*/*playrawdata_${topic}_${start_time}`)
+    desfiles=(`ls ${des_path}/*/*/*rawdata_${topic}_${start_time}`)
 
     if [ ${#desfiles[@]} -ge 1 ];then
         for des_file in ${desfiles[*]};
         do
             tmp_file_name=`basename ${des_file}`
             if [[ ${topic} == "mpp_vv_mobile_211_20151012" ]];then
-                cat ${des_file} |awk -F, '{if($17==0 || $17 ==3){print $0}}'| python service/made_md5.py > ${md5_check_path}/${sub_year}/${sub_month}/${tmp_file_name}.md5
+                cat ${des_file} |awk -F, '{if($17==0 || $17==3){print $0}}'| python service/made_md5.py > ${md5_check_path}/${sub_year}/${sub_month}/${tmp_file_name}.md5
+                # 生成mobile_211中的直播md5文件
+                len=${#tmp_file_name}
+                cat ${des_file} |awk -F, '{if($17==4){print $0}}'| python service/made_md5.py > ${md5_check_path}/${sub_year}/${sub_month}/${tmp_file_name:0:${len}-12}live_${tmp_file_name:${len}-12}.md5
+                touch ${md5_check_path}/${sub_year}/${sub_month}/.done_${topic}_live_${start_time}.md5
             else
                 cat ${des_file} | python service/made_md5.py > ${md5_check_path}/${sub_year}/${sub_month}/${tmp_file_name}.md5
             fi

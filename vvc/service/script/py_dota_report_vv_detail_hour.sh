@@ -44,7 +44,7 @@ function report_vv(){
             continue
         fi
 
-        cat ${files[@]} | awk -F, -v clienttype=${clienttype} '{ if($21=="play" && $22==clienttype && $17==0 )
+        cat ${files[@]} | awk -F, -v clienttype=${clienttype} '{ if($21=="play" && $22==clienttype && ($17==0 || $17==3))
         {print $1","substr($2,1,2)","$11","$12","$13","$17","$18","$22","$23} }' \
         | sort | uniq -c | sort -rn |awk '{print $2","$1}' \
         >> ${pydota_report}/${sub_path}/${start_time}_vv_${clienttype}_vid.csv
@@ -88,7 +88,7 @@ if [ -n "$1" ]; then
   elif [ x"${clienttype}" == "xwin10client" ];then
     report_vv win10client 1
   elif [ x"${clienttype}" == "xmacclient" ];then
-    report_vv macclient 1
+    report_vv macclient 2
   else
     exit -1
   fi

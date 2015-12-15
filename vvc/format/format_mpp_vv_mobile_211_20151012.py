@@ -77,6 +77,9 @@ def mobile_new_version_211_20151012_format(line):
         record = recordall[0]
     except KeyError:
         record = recordall
+    except TypeError:
+        write_to_file(("jsonerr,%s") % line, topic, start_time, start_time, "orig_err")
+        return
 
     # IP
     try:
