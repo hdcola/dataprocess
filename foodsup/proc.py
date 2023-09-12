@@ -41,6 +41,7 @@ def read_invoice_list(file_path):
                 if data:
                     invoice_no, customer_id, amount = data
                     invoice_data[invoice_no] = [customer_id, amount]
+            print(f"得到{len(invoice_data)}个invoice")
             return invoice_data
     except FileNotFoundError:
         print(f"文件 '{file_path}' 未找到")
@@ -75,6 +76,7 @@ def read_qb_bank(file_path):
                 if data:
                     pay_date, save_date, save_type, ref_no = data
                     dict_data[f"{pay_date},{save_date},{save_type}"] = ref_no
+            print(f"得到{len(dict_data)}个银行记录")
             return dict_data
     except FileNotFoundError:
         print(f"文件 '{file_path}' 未找到")
@@ -105,7 +107,7 @@ def parse_save(csv_line):
     fields = csv_line.strip().split(',')
 
     # 检查是否有足够的字段
-    if len(fields) >= 7:
+    if len(fields) >= 6:
         try:
             pay_date = fields[0].strip().replace('\ufeff', '', 1)
             save_date = fields[1].strip()
